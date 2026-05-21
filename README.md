@@ -202,6 +202,7 @@ just db-down                  # 모든 docker-compose 서비스 정지
 just db-migrate               # 미적용 Alembic 마이그레이션 실행 (upgrade head)
 just db-revision "메시지"     # 모델 변경분으로 새 마이그레이션 자동 생성
 just db-reset                 # 로컬 DB 완전 삭제 후 재생성 (DESTRUCTIVE)
+just seed                     # datasets/raw/*.csv → DB 적재 (TRUNCATE 후 재삽입, 멱등)
 just lint                     # ruff 검사 (코드 변경 없음)
 just fmt                      # ruff 자동 포맷 + auto-fix
 just test                     # pytest 실행
@@ -213,6 +214,12 @@ just test                     # pytest 실행
 2. `just db-revision "describe the change"` 실행 → 새 마이그레이션 파일 생성
 3. 생성된 파일을 한 번 훑어보고 (autogenerate가 놓치는 경우 있음) 커밋
 4. 팀원은 풀(pull) 후 `just db-migrate` 한 줄로 동기화
+
+#### 더미 데이터 로딩
+
+`just seed` 한 줄이면 `datasets/raw/{hr,github,slack,jira,calendar}/*.csv`가 전부 DB에 들어갑니다.
+실행 전 각 테이블을 `TRUNCATE ... RESTART IDENTITY CASCADE`로 비우므로 몇 번을 돌려도 결과는 동일합니다(전 도메인 100행씩 = 500행).
+CSV → Pydantic 검증 → ORM insert 순서라 스키마 drift가 있으면 시드 단계에서 바로 잡힙니다.
 
 > 모든 명령은 `uv run`을 통해 가상환경에서 실행되므로, 별도로 venv를 activate할 필요가 없습니다.
 
