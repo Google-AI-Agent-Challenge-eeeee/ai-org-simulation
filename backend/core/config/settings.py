@@ -22,7 +22,10 @@ class Settings(BaseSettings):
     env: Environment = Environment.DEVELOPMENT
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
-    database_url: str = "postgresql://user:password@localhost:5432/ai_org_simulation"
+    # SQLAlchemy URL — psycopg(3) 드라이버를 명시한다.
+    # 일반 ``postgresql://``로 시작하면 SQLAlchemy가 psycopg2를 우선 찾아서 실패한다.
+    database_url: str = "postgresql+psycopg://user:password@localhost:5432/ai_org_simulation"
+    db_echo: bool = False
 
     gcp_project_id: str | None = None
     google_application_credentials: str | None = None

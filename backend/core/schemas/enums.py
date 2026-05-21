@@ -63,3 +63,13 @@ class PerformanceRating(StrEnum):
     B = "B"
     C = "C"
     D = "D"
+
+
+class FetchStatus(StrEnum):
+    """외부 소스(GitHub/Slack/Jira/Calendar) 수집 결과 상태.
+
+    실패한 행도 DB에 남기고(원인 추적용), 분석/시뮬레이션 단계에서는 ``SUCCESS``만 필터링한다.
+    """
+
+    SUCCESS = "success"
+    FAILED = "failed"

@@ -9,6 +9,9 @@ dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "python-dotenv>=1.0",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.2",
 ]
 
 [dependency-groups]
@@ -30,6 +33,7 @@ extend-exclude = [
     "frontend",
     "datasets",
     "infra",
+    "backend/db/migrations/versions",
 ]
 
 [tool.ruff.lint]
