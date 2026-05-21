@@ -112,6 +112,14 @@ git checkout -b docs/update/readme-convention
 
 ### Step 1. 필수 도구 설치 (머신당 1회)
 
+우리가 이 도구들을 쓰는 이유:
+
+- `Git`: 코드 버전 관리와 브랜치/PR 협업을 위한 기본 도구입니다.
+- `Docker Desktop`: 로컬 Postgres처럼 팀원이 동일한 인프라 환경을 띄우기 위해 사용합니다.
+- `uv`: Python 가상환경, 의존성 설치, 잠금 파일(`uv.lock`) 관리를 빠르고 동일하게 처리합니다.
+- `just`: 맥/윈도우 명령어 차이를 숨기고 `just dev`, `just lint`처럼 공통 명령으로 개발하게 해줍니다.
+- `Node.js` + `corepack`: 프론트엔드 작업자가 `pnpm`을 동일한 방식으로 사용할 수 있게 합니다.
+
 #### Windows (PowerShell)
 
 ```powershell
