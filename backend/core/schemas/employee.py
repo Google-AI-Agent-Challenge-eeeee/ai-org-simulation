@@ -19,8 +19,7 @@ from backend.core.schemas.enums import (
     EmploymentStatus,
     EmploymentType,
     Gender,
-    JobFamily,
-    JobLevel,
+    JobCategoryCode,
     PerformanceRating,
 )
 
@@ -76,10 +75,7 @@ class Employee(BaseModel):
 
     # 조직/직무
     department: Department
-    team: str
-    job_family: JobFamily
-    job_title: str
-    job_level: JobLevel
+    job_category_code: JobCategoryCode
     manager_id: OptionalStr = None
 
     # 근무 정보
@@ -96,7 +92,6 @@ class Employee(BaseModel):
     last_performance_rating: PerformanceRating
     performance_score: float = Field(ge=0)
     kpi_score: float = Field(ge=0)
-    okr: str
     competency_score: float = Field(ge=0)
     peer_review_score: float = Field(ge=0)
     manager_review_score: float = Field(ge=0)
@@ -127,4 +122,4 @@ class Employee(BaseModel):
     github_id: OptionalStr = None
     slack_user_id: OptionalStr = None
     jira_account_id: OptionalStr = None
-    google_calendar_id: OptionalStr = None
+    google_email: OptionalStr = None  # Calendar 데이터셋과의 조인 키

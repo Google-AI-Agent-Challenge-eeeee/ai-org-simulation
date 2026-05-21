@@ -11,8 +11,7 @@ from backend.core.schemas.enums import (
     EmploymentStatus,
     EmploymentType,
     Gender,
-    JobFamily,
-    JobLevel,
+    JobCategoryCode,
     PerformanceRating,
 )
 
@@ -112,10 +111,7 @@ def _minimal_row() -> dict[str, str]:
         "employment_status": EmploymentStatus.ACTIVE.value,
         "employment_type": EmploymentType.FULL_TIME.value,
         "department": Department.DEVELOPMENT.value,
-        "team": "백엔드",
-        "job_family": JobFamily.SOFTWARE_ENGINEERING.value,
-        "job_title": "백엔드 엔지니어",
-        "job_level": JobLevel.L3.value,
+        "job_category_code": JobCategoryCode.BE.value,
         "manager_id": "E20260001",
         "work_location": "서울 본사",
         "education_level": "학사",
@@ -124,7 +120,6 @@ def _minimal_row() -> dict[str, str]:
         "last_performance_rating": PerformanceRating.A.value,
         "performance_score": "80.0",
         "kpi_score": "85.0",
-        "okr": "테스트 목표",
         "competency_score": "80.0",
         "peer_review_score": "80.0",
         "manager_review_score": "80.0",
@@ -143,7 +138,7 @@ def _minimal_row() -> dict[str, str]:
         "github_id": "gh-test",
         "slack_user_id": "U-test",
         "jira_account_id": "jira-test",
-        "google_calendar_id": "test@example.com",
+        "google_email": "test@example.com",
     }
 
 
@@ -153,4 +148,5 @@ def test_minimal_row_constructs_expected_employee() -> None:
     assert emp.gender is Gender.FEMALE
     assert emp.birth_date == date(1990, 1, 1)
     assert emp.department is Department.DEVELOPMENT
-    assert emp.job_level is JobLevel.L3
+    assert emp.job_category_code is JobCategoryCode.BE
+    assert emp.google_email == "test@example.com"

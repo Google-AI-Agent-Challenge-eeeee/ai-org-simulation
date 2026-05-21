@@ -32,20 +32,22 @@ class Department(StrEnum):
     QA = "QA 테스트"
 
 
-class JobFamily(StrEnum):
-    DESIGN = "Design"
-    SOFTWARE_ENGINEERING = "Software Engineering"
-    QA_ENGINEERING = "QA Engineering"
-    INFRASTRUCTURE = "Infrastructure"
+class JobCategoryCode(StrEnum):
+    """직무 카테고리 코드 — `department`보다 더 세분화된 실 업무 분류.
 
+    `department`가 "어느 본부 소속인지"라면, `job_category_code`는 "어떤 기술 도메인인지"다.
+    예: `department=개발`이면서 `job_category_code∈{BE, WEB, Android, iOS, Mobile, Infra}`
+    조합이 가능하다.
+    """
 
-class JobLevel(StrEnum):
-    L1 = "L1"
-    L2 = "L2"
-    L3 = "L3"
-    L4 = "L4"
-    L5 = "L5"
-    L6 = "L6"
+    DS = "DS"  # Design System / 디자인
+    BE = "BE"  # Backend
+    WEB = "WEB"  # Web frontend
+    ANDROID = "Android"
+    IOS = "iOS"
+    MOBILE = "Mobile"  # 모바일 공통/교차 영역
+    INFRA = "Infra"  # Infrastructure / DevOps / SRE
+    QA = "QA"  # Quality Assurance
 
 
 class EducationLevel(StrEnum):

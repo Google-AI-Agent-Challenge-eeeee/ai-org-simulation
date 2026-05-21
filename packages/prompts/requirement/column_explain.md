@@ -36,12 +36,19 @@
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
-| `department` | enum `디자인`/`개발`/`QA 테스트` | 한국어 부서명 |
-| `team` | `str` | 자유 텍스트 (예: `UI디자인`, `모바일개발`, `서비스QA`) |
-| `job_family` | enum `Design`/`Software Engineering`/`QA Engineering`/`Infrastructure` | 영문 직무군 (LLM 매칭/표준화용) |
-| `job_title` | `str` | 직책/직급명 (예: `리드`, `시니어매니저`, `사원`, `UI 디자이너`) |
-| `job_level` | enum `L1`~`L6` | 내부 직급 레벨 (L1이 가장 낮고 L6이 가장 높음) |
+| `department` | enum `디자인`/`개발`/`QA 테스트` | 한국어 본부/부서명 (조직도 단위) |
+| `job_category_code` | enum `DS`/`BE`/`WEB`/`Android`/`iOS`/`Mobile`/`Infra`/`QA` | 실 업무 직무 코드. `department`보다 한 단계 세분화 (예: `department=개발` AND `job_category_code∈{BE, WEB, Android, iOS, Mobile, Infra}`) |
 | `manager_id` | `str?` (FK → `employee_id`) | 상위 관리자의 `employee_id`. **CEO/최상위 직급은 null** |
+
+`job_category_code` 의미:
+
+- `DS` — Design System / 디자인
+- `BE` — Backend
+- `WEB` — Web frontend
+- `Android` / `iOS` — 네이티브 모바일
+- `Mobile` — 모바일 공통/교차 영역
+- `Infra` — Infrastructure / DevOps / SRE
+- `QA` — Quality Assurance
 
 ### 근무 정보
 
@@ -72,7 +79,6 @@
 | `last_performance_rating` | enum `S`/`A`/`B`/`C`/`D` | 최근 성과 등급 (S가 최상) |
 | `performance_score` | `float` | 종합 성과 점수 (0~100) |
 | `kpi_score` | `float` | KPI 목표 달성률 점수 |
-| `okr` | `str` | 분기 OKR 핵심 목표 (자유 텍스트) |
 | `competency_score` | `float` | 역량 평가 점수 |
 | `peer_review_score` | `float` | 동료 평가 점수 |
 | `manager_review_score` | `float` | 관리자 평가 점수 |
@@ -103,7 +109,7 @@
 | `github_id` | `str?` | GitHub 사용자 핸들 — `datasets/raw/github/` 데이터와 조인 |
 | `slack_user_id` | `str?` | Slack 사용자 ID — `datasets/raw/slack/` 데이터와 조인 |
 | `jira_account_id` | `str?` | Jira 계정 ID — `datasets/raw/jira/` 데이터와 조인 |
-| `google_calendar_id` | `str?` | Calendar 계정/이메일 — `datasets/raw/calendar/` 데이터와 조인 |
+| `google_email` | `str?` | Google 계정 이메일 — `datasets/raw/calendar/` 데이터와 조인 |
 
 ## GitHub 활동 데이터 (`datasets/raw/github/`)
 
@@ -319,8 +325,11 @@ PK는 surrogate `id`, 외부 식별자 `jira_account_id`는 UNIQUE+INDEX. 시계
 
 LLM 에이전트가 PRD/요청에서 사용자 표현을 표준 컬럼으로 매핑할 때 참고할 동의어/연관어:
 
-- **"시니어 백엔드"** → `job_family = "Software Engineering"` AND `job_level >= L4`
-- **"리더십"** → `job_title` 또는 `team` 내 리드/매니저/시니어매니저 직책
+- **"백엔드 개발자"** → `job_category_code = "BE"`
+- **"프론트엔드 개발자"** → `job_category_code = "WEB"`
+- **"모바일 개발자"** → `job_category_code ∈ {Android, iOS, Mobile}`
+- **"시니어급"** → `tenure_years >= 5` 또는 `last_performance_rating ∈ {S, A}` (현재 스키마에는 명시적 레벨 컬럼 없음)
+- **"리더십"** → 부하 직원이 있음 (`manager_id`로 본인을 가리키는 행이 존재)
 - **"안정적인 사람"** → `turnover_risk_score` 낮음, `tenure_years` 김, `disciplinary_actions_12m = 0`
 - **"성과가 높은 사람"** → `last_performance_rating ∈ {S, A}` AND `performance_score` 상위
 - **"협업이 좋은 사람"** → `peer_review_score`, `engagement_score` 상위
