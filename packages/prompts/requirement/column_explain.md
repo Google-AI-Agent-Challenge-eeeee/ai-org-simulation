@@ -321,6 +321,110 @@ PK는 surrogate `id`, 외부 식별자 `jira_account_id`는 UNIQUE+INDEX. 시계
 - **"오너십 강함"** → `ownership_score` 상위 AND `reopened_issue_count` 낮음
 - **"병목"** → `bottleneck_risk` 상위 (Slack `bottleneck_risk`와 함께 보면 더 신뢰도)
 
+## Google Calendar 활동 데이터 (`datasets/raw/calendar/`)
+
+직원 한 명의 **특정 캘린더(보통 `primary`) × 측정 구간 = 1행**. HR 데이터와는 `google_email`로 조인한다.
+
+PK는 surrogate `id`. 유니크 키는 `(google_email, calendar_id)` 복합 — 한 사람이 여러 캘린더(`primary` + 공유 캘린더)를 가질 수 있어 단일 컬럼이 아님.
+
+### 식별자 / 측정 구간
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `google_email` | `str` | Google Workspace 이메일 — HR `employees.google_email`과 조인 키 |
+| `calendar_id` | `str` | 분석 대상 캘린더 ID. 기본은 `"primary"` |
+| `measured_from` | `date` | 활동 집계 시작일 |
+| `measured_to` | `date` | 활동 집계 종료일 |
+
+### 이벤트 활동
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `event_count` | `int ≥ 0` | 전체 일정 수 |
+| `meeting_count` | `int ≥ 0` | 참석자/화상회의 정보 있는 회의성 일정 수 |
+| `total_meeting_minutes` | `int ≥ 0` | 회의에 잡힌 총 시간 (분) |
+| `avg_meeting_duration_minutes` | `float ≥ 0` | 평균 회의 길이 (분) |
+| `all_day_event_count` | `int ≥ 0` | 종일 일정 수 |
+
+### 스케줄 패턴
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `active_hours` | `str` (`HH:MM-HH:MM`) | 일정이 많이 잡히는 주 활동 시간대 |
+| `early_late_meeting_ratio` | `float` 0~1 | 09시 이전 또는 18시 이후 회의 비율 |
+| `weekend_meeting_ratio` | `float` 0~1 | 주말 회의 비율 |
+
+### 집중 시간
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `focus_time_count` | `int ≥ 0` | 집중 시간 일정 수 (`eventType=focusTime`) |
+| `focus_time_minutes` | `int ≥ 0` | 집중 시간 총량 (분) |
+| `fragmented_calendar_score` | `float ≥ 0` | 일정이 잘게 쪼개진 정도 (derived) |
+| `no_meeting_block_count` | `int ≥ 0` | 회의 없는 긴 작업 블록 수 (FreeBusy API 기반) |
+
+### 협업
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `organizer_event_count` | `int ≥ 0` | 본인이 주최한 일정 수 |
+| `attendee_event_count` | `int ≥ 0` | 본인이 참석자로 포함된 일정 수 |
+| `organizer_ratio` | `float` 0~1 | 전체 회의 중 본인이 주최한 회의 비율 |
+| `attendee_count_avg` | `float ≥ 0` | 회의별 평균 참석자 수 |
+| `large_meeting_ratio` | `float` 0~1 | 대규모 회의 비율 (대규모 기준은 별도 정의) |
+| `external_meeting_ratio` | `float` 0~1 | 외부 도메인 참석자 포함 회의 비율 |
+
+### 응답 패턴
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `accepted_attendee_count` | `int ≥ 0` | 수락한 일정 수 |
+| `declined_attendee_count` | `int ≥ 0` | 거절한 일정 수 |
+| `tentative_attendee_count` | `int ≥ 0` | 미정으로 응답한 일정 수 |
+| `no_response_ratio` | `float` 0~1 | 초대에 응답하지 않은 비율 |
+
+### 반복 일정 / 가용성
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `recurring_event_count` | `int ≥ 0` | 반복 일정 수 |
+| `recurring_meeting_ratio` | `float` 0~1 | 전체 회의 중 반복 회의 비율 |
+| `busy_minutes` | `int ≥ 0` | 바쁨으로 잡힌 총 시간 (분, FreeBusy 기반) |
+
+### 근무 위치
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `working_location_count` | `int ≥ 0` | 근무 위치 등록 횟수 |
+| `working_location_mix` | `dict[str, float]` | 위치별 비율 (`home`/`office`/`other` 등 키, 값 0~1). CSV는 `"home:30%;..."` 형식 |
+
+### 메타데이터
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `event_update_count` | `int ≥ 0` | 일정 수정 빈도 |
+| `meeting_provider_mix` | `dict[str, float]` | 회의 도구 분포 (`Google Meet`/`Zoom`/`Microsoft Teams`/`In-person`/`Other` 등 키, 값 0~1) |
+
+### 수집 메타데이터
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `fetched_at` | `datetime` (tz-aware) | Google Calendar API 조회 시각 |
+| `fetch_status` | enum `success`/`failed` | `FetchStatus` 재사용 |
+| `error_message` | `str?` | 실패 시 사유, 성공 시 `None` |
+
+### 도메인 어휘 (LLM 매핑용)
+
+- **"회의 많은 사람"** → `meeting_count` 상위 또는 `total_meeting_minutes` 상위
+- **"회의에 시달리는 사람"** → `total_meeting_minutes` 상위 AND `focus_time_minutes` 하위
+- **"집중 시간 잘 확보"** → `focus_time_minutes` 상위 또는 `no_meeting_block_count` 상위
+- **"회의 주최자형"** → `organizer_ratio > 0.5`
+- **"새벽/야간 회의 많음"** → `early_late_meeting_ratio` 상위 (Slack `night_activity_ratio`와 함께 보면 워라밸 시그널)
+- **"주말 근무 잦음"** → `weekend_meeting_ratio > 0`
+- **"외부 미팅 많음"** → `external_meeting_ratio` 상위 (영업/PM/리더십 시그널)
+- **"재택 위주"** → `working_location_mix["home"] > 0.5`
+- **"파편화된 일정"** → `fragmented_calendar_score` 상위 (생산성 저하 신호)
+
 ## 도메인 어휘 가이드
 
 LLM 에이전트가 PRD/요청에서 사용자 표현을 표준 컬럼으로 매핑할 때 참고할 동의어/연관어:
