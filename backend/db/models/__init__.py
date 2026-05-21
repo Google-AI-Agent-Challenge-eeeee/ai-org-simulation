@@ -7,6 +7,7 @@ so Alembic's ``autogenerate`` can see them. Add new models here when created.
 from backend.db.models.base import Base
 from backend.db.models.employee import Employee
 from backend.db.models.github_activity import GithubActivity
+from backend.db.models.jira_activity import JiraActivity
 from backend.db.models.slack_activity import SlackActivity
 
-__all__ = ["Base", "Employee", "GithubActivity", "SlackActivity"]
+__all__ = ["Base", "Employee", "GithubActivity", "JiraActivity", "SlackActivity"]

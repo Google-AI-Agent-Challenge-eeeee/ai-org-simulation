@@ -230,6 +230,91 @@
 - **"빠른 응답자"** → `avg_response_time` 하위 또는 `collaboration_style = "rapid_responder"`
 - **"병목 인물"** → `bottleneck_risk` 상위 + `dependency_score` 상위
 
+## Jira 활동 데이터 (`datasets/raw/jira/`)
+
+직원 한 명당 **현재 측정 구간 한 줄 = 1행** (Slack과 동일한 current-snapshot 패턴). HR 데이터와는 `jira_account_id`로 조인한다.
+
+PK는 surrogate `id`, 외부 식별자 `jira_account_id`는 UNIQUE+INDEX. 시계열로 가고 싶다면 UNIQUE를 `(jira_account_id, measured_from)`으로 확장.
+
+### 식별자 / 측정 구간
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `jira_account_id` | `str` (예: `jira-0008`) | Jira account ID — HR `employees.jira_account_id`와 조인 키 |
+| `measured_from` | `date` | 활동 집계 시작일 |
+| `measured_to` | `date` | 활동 집계 종료일 |
+
+### 이슈 활동
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `assigned_issue_count` | `int ≥ 0` | 담당자로 배정된 이슈 수 |
+| `reported_issue_count` | `int ≥ 0` | 요청자/보고자로 생성한 이슈 수 |
+| `completed_issue_count` | `int ≥ 0` | 완료한 이슈 수 |
+| `issue_type_mix` | `dict[str, float]` | 이슈 유형 분포 (값은 0~1 비율). CSV는 `"Type:48%;..."` 형식, 파싱 시 `{"Type": 0.48, ...}` |
+| `priority_mix` | `dict[str, float]` | 우선순위 분포 (`Highest`/`High`/`Medium`/`Low` 키, 값 0~1) |
+
+### 딜리버리 / 플래닝
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `avg_cycle_time` | `float` (일) | 이슈 생성부터 완료까지 평균 시간 |
+| `overdue_issue_count` | `int ≥ 0` | 마감 초과 이슈 수 |
+| `estimation_accuracy` | `float` (비율) | 추정 시간 ÷ 실제 시간. `1.0`이면 정확, `>1`이면 과대추정, `<1`이면 과소추정 |
+| `worklog_hours` | `float` (시간) | worklog 기록 누적 (worklog 문화 있는 팀에서만 의미 있음) |
+
+### 협업
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `comment_count` | `int ≥ 0` | 이슈 댓글 수 |
+| `avg_comment_response_time` | `float` (시간) | 댓글 응답 평균 시간 |
+| `collaboration_touchpoints` | `int ≥ 0` | 같은 이슈에서 협업한 고유 사용자 수 |
+
+### 워크플로우
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `status_transition_count` | `int ≥ 0` | 이슈 상태 변경 횟수 |
+| `avg_time_in_status` | `float` (시간) | 상태별 평균 체류 시간 |
+| `reopened_issue_count` | `int ≥ 0` | 완료 후 재오픈된 이슈 수 (품질/명세 정확도 시그널) |
+| `scope_change_count` | `int ≥ 0` | 주요 필드 변경 기반 범위 변경 횟수 |
+| `task_breakdown_count` | `int ≥ 0` | 하위 작업으로 쪼갠 업무 수 |
+
+### Agile / Sprint
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `sprint_participation` | `list[str]` | 참여 스프린트 ID 목록 (CSV는 `;` 구분) |
+| `sprint_completion_rate` | `float` 0~1 | 스프린트 내 담당 이슈 완료율 |
+
+### 업무 스타일 / 리스크 (derived)
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `context_switching_score` | `float` | 여러 이슈를 동시에 전환하는 정도 |
+| `autonomy_score` | `float` | 단독 진행 비율 기반 독립 작업 성향 (Slack의 동명 컬럼과 의미 다름 — 도메인 격리됨) |
+| `ownership_score` | `float` | 배정→완료까지 담당 유지율 + 완료율 기반 소유도 |
+| `bottleneck_risk` | `float` | 미완료·고우선순위·체류 시간 기반 병목 가능성 |
+
+### 수집 메타데이터
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `fetched_at` | `datetime` (tz-aware) | Jira API 조회 시각 |
+| `fetch_status` | enum `success`/`failed` | `FetchStatus` 재사용 |
+| `error_message` | `str?` | 실패 시 사유, 성공 시 `None` |
+
+### 도메인 어휘 (LLM 매핑용)
+
+- **"완료율 높은 사람"** → `completed_issue_count / assigned_issue_count` 상위
+- **"버그 많이 잡는 사람"** → `issue_type_mix["Bug"]` 상위
+- **"고난도 업무"** → `priority_mix["Highest"] + priority_mix["High"]` 상위
+- **"마감 잘 지킴"** → `overdue_issue_count = 0` AND `sprint_completion_rate > 0.8`
+- **"멀티태스킹 과한 사람"** → `context_switching_score` 상위
+- **"오너십 강함"** → `ownership_score` 상위 AND `reopened_issue_count` 낮음
+- **"병목"** → `bottleneck_risk` 상위 (Slack `bottleneck_risk`와 함께 보면 더 신뢰도)
+
 ## 도메인 어휘 가이드
 
 LLM 에이전트가 PRD/요청에서 사용자 표현을 표준 컬럼으로 매핑할 때 참고할 동의어/연관어:

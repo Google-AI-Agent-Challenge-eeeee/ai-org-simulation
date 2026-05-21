@@ -9,10 +9,12 @@ Repositories are thin, table-scoped CRUD wrappers. They:
 
 from backend.db.repositories.employee import EmployeeRepository
 from backend.db.repositories.github_activity import GithubActivityRepository
+from backend.db.repositories.jira_activity import JiraActivityRepository
 from backend.db.repositories.slack_activity import SlackActivityRepository
 
 __all__ = [
     "EmployeeRepository",
     "GithubActivityRepository",
+    "JiraActivityRepository",
     "SlackActivityRepository",
 ]

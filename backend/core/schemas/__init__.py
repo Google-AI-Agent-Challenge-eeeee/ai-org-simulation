@@ -12,6 +12,7 @@ from backend.core.schemas.enums import (
     PerformanceRating,
 )
 from backend.core.schemas.github_activity import GithubActivity
+from backend.core.schemas.jira_activity import JiraActivity
 from backend.core.schemas.slack_activity import SlackActivity
 
 __all__ = [
@@ -24,6 +25,7 @@ __all__ = [
     "FetchStatus",
     "Gender",
     "GithubActivity",
+    "JiraActivity",
     "JobFamily",
     "JobLevel",
     "PerformanceRating",
