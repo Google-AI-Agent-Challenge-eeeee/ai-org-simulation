@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from backend.core.schemas import Employee as EmployeePydantic
-from backend.db.models import Base, Employee
+from backend.db.models import Employee
 
 
 def _make_employee(**overrides: object) -> Employee:
@@ -71,10 +71,15 @@ def _make_employee(**overrides: object) -> Employee:
 
 @pytest.fixture
 def session() -> Session:
-    """Fresh in-memory SQLite session per test."""
+    """Fresh in-memory SQLite session per test.
+
+    Only ``employees`` is created here — other tables (e.g. ``github_activities``
+    with a Postgres ARRAY column) aren't portable to SQLite and are exercised
+    through the real Postgres via Alembic migrations instead.
+    """
 
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    Employee.__table__.create(engine)
     return Session(engine, expire_on_commit=False)
 
 

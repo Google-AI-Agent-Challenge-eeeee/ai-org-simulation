@@ -105,6 +105,45 @@
 | `jira_account_id` | `str?` | Jira 계정 ID — `datasets/raw/jira/` 데이터와 조인 |
 | `google_calendar_id` | `str?` | Calendar 계정/이메일 — `datasets/raw/calendar/` 데이터와 조인 |
 
+## GitHub 활동 데이터 (`datasets/raw/github/`)
+
+직원 한 명당 **측정 기간(`measured_from` ~ `measured_to`) 한 구간 = 1행**. 같은 직원의 다른 분기는 행이 늘어난다(append-only). HR 데이터와는 `github_id`로 조인한다.
+
+### 식별자 / 측정 구간
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `github_id` | `str` (예: `gh-emp-0008`) | GitHub 핸들 — HR `employees.github_id`와 조인 키 |
+| `measured_from` | `date` (YYYY-MM-DD) | 활동 집계 시작일 (구간의 시작, 포함) |
+| `measured_to` | `date` (YYYY-MM-DD) | 활동 집계 종료일 (구간의 끝, 포함) |
+
+### 활동 메트릭 (집계 구간 = 직전 90일)
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `commit_count_3m` | `int ≥ 0` | 구간 내 작성한 커밋 수 (저자 기준) |
+| `pr_count_3m` | `int ≥ 0` | 구간 내 생성한 Pull Request 수 |
+| `merged_pr_count_3m` | `int ≥ 0` | 그중 머지된 PR 수 |
+| `closed_unmerged_pr_count_3m` | `int ≥ 0` | 그중 머지되지 않고 닫힌 PR 수 |
+| `repository_contribution_count` | `int ≥ 0` | 구간 내 commit/PR을 남긴 고유 repo 수 |
+| `contributed_repositories` | `list[str]` | 활동한 repo 풀네임 목록 (CSV에서는 `;` 구분 문자열) |
+
+### 수집 메타데이터
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `fetched_at` | `datetime` (tz-aware ISO8601) | GitHub API 조회 시각 |
+| `fetch_status` | enum `success`/`failed` | 조회 성공 여부 |
+| `error_message` | `str?` | 실패 시 사유, 성공 시 `None` (CSV 빈 문자열은 `None`으로 정규화) |
+
+### 도메인 어휘 (LLM 매핑용)
+
+- **"활발한 개발자"** → `commit_count_3m`, `pr_count_3m` 상위
+- **"코드 리뷰 통과율 높음"** → `merged_pr_count_3m / pr_count_3m` 비율 높음
+- **"여러 프로젝트 기여"** → `repository_contribution_count` 큰 값
+- **"GitHub 활동 없음"** → 해당 직원의 행이 없거나 모든 카운트가 0
+- **"수집 실패 직원"** → `fetch_status = "failed"` (지표로 쓰면 안 되는 행)
+
 ## 도메인 어휘 가이드
 
 LLM 에이전트가 PRD/요청에서 사용자 표현을 표준 컬럼으로 매핑할 때 참고할 동의어/연관어:

@@ -36,3 +36,11 @@ venv/
 # Runtime / temp
 tmp/
 temp/
+
+# Datasets
+# Rule of thumb:
+#   datasets/raw/         <- COMMIT (SSOT inputs, dummy or real)
+#   datasets/processed/   <- IGNORE (regenerable outputs)
+#   datasets/cache/       <- IGNORE (LLM response cache, embeddings, etc.)
+datasets/processed/
+datasets/cache/

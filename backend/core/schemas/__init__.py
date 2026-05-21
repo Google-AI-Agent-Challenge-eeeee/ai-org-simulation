@@ -4,11 +4,13 @@ from backend.core.schemas.enums import (
     EducationLevel,
     EmploymentStatus,
     EmploymentType,
+    FetchStatus,
     Gender,
     JobFamily,
     JobLevel,
     PerformanceRating,
 )
+from backend.core.schemas.github_activity import GithubActivity
 
 __all__ = [
     "Department",
@@ -16,7 +18,9 @@ __all__ = [
     "Employee",
     "EmploymentStatus",
     "EmploymentType",
+    "FetchStatus",
     "Gender",
+    "GithubActivity",
     "JobFamily",
     "JobLevel",
     "PerformanceRating",
