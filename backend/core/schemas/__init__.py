@@ -1,5 +1,6 @@
 from backend.core.schemas.employee import Employee
 from backend.core.schemas.enums import (
+    CollaborationStyle,
     Department,
     EducationLevel,
     EmploymentStatus,
@@ -11,8 +12,10 @@ from backend.core.schemas.enums import (
     PerformanceRating,
 )
 from backend.core.schemas.github_activity import GithubActivity
+from backend.core.schemas.slack_activity import SlackActivity
 
 __all__ = [
+    "CollaborationStyle",
     "Department",
     "EducationLevel",
     "Employee",
@@ -24,4 +27,5 @@ __all__ = [
     "JobFamily",
     "JobLevel",
     "PerformanceRating",
+    "SlackActivity",
 ]

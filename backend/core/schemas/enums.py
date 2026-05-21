@@ -73,3 +73,16 @@ class FetchStatus(StrEnum):
 
     SUCCESS = "success"
     FAILED = "failed"
+
+
+class CollaborationStyle(StrEnum):
+    """Slack 메시지 패턴 기반 협업 성향 분류 (derived).
+
+    LLM/룰 기반 분류기가 산출하며, 평가용 단독 사용보다는 다른 지표와 결합해서 해석해야 한다.
+    """
+
+    RAPID_RESPONDER = "rapid_responder"
+    FOCUSED_INDIVIDUAL = "focused_individual"
+    CONNECTOR = "connector"
+    REVIEW_HUB = "review_hub"
+    ASYNC_DEEP_WORKER = "async_deep_worker"

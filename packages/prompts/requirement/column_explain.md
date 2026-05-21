@@ -144,6 +144,92 @@
 - **"GitHub 활동 없음"** → 해당 직원의 행이 없거나 모든 카운트가 0
 - **"수집 실패 직원"** → `fetch_status = "failed"` (지표로 쓰면 안 되는 행)
 
+## Slack 활동 데이터 (`datasets/raw/slack/`)
+
+직원 한 명당 **현재 측정 구간 한 줄 = 1행** (PK는 `slack_user_id`). HR 데이터와는 `slack_user_id`로 조인한다. GitHub와 달리 append-only가 아니고 "최신 스냅샷"이며, 미래에 시계열로 바꾸려면 PK를 (`slack_user_id`, `measured_from`)로 확장하면 된다.
+
+대다수 컬럼은 LLM 평가 모델/룰 기반으로 산출되는 **파생 지표**다. 컬럼 설명 옆 `derived`는 "원본 이벤트가 아니라 가공된 점수"라는 의미.
+
+### 식별자 / 측정 구간
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `slack_user_id` | `str` (예: `U00000008`) | Slack 사용자 ID, **PK** — HR `employees.slack_user_id`와 조인 키 |
+| `measured_from` | `date` | 활동 집계 시작일 |
+| `measured_to` | `date` | 활동 집계 종료일 |
+
+### 대화/메시지 활동
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `accessible_conversations` | `int ≥ 0` | 앱이 접근 가능한 채널/DM 수 |
+| `user_conversations` | `list[str]` | 사용자가 속한 채널 ID 목록 (CSV는 `;` 구분) |
+| `conversation_members` | `int ≥ 0` | 사용자가 속한 대화의 멤버 수 요약값 |
+| `message_count` | `int ≥ 0` | 집계 기간 메시지 수 |
+| `message_events` | `int ≥ 0` | 원천 이벤트 수 (현재 더미는 `message_count`와 동일, 실제 수집 시 분리 가능) |
+| `thread_replies` | `int ≥ 0` | 스레드 답글 수 |
+| `mention_count` | `int ≥ 0` | 타인 멘션 횟수 |
+
+### 상호작용 / 협업
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `collaboration_frequency` | `int ≥ 0` | 멘션·답글·공동 스레드 기반 협업 빈도 (derived) |
+| `top_collaborators` | `list[str]` | 가장 자주 협업한 사용자 ID 목록 (CSV는 `;` 구분) |
+| `avg_response_time` | `float` (분) | 평균 응답 시간 (derived) |
+| `communication_balance` | `float` | 질문/응답 비율 — 1.0 부근이면 균형, 낮을수록 일방향 (derived) |
+
+### 시간/리듬
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `active_hours` | `str` (`HH:MM-HH:MM`) | 주 활동 시간대 범위 (단순 문자열, 두 개 구간은 미지원) |
+| `night_activity_ratio` | `float` 0~1 | 야간(22~06시) 메시지 비율 |
+
+### 업무 스타일 / 네트워크 점수 (derived)
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `multitasking_score` | `float` | 여러 채널에서 동시에 활동하는 정도 |
+| `leadership_score` | `float` | 커뮤니케이션 네트워크 중심성 점수 (평가용 직접 사용은 주의) |
+| `dependency_score` | `float` | 특정 사용자에게 의존되는 정도 |
+| `bottleneck_risk` | `float` | 요청 집중·응답 지연 기반 병목 가능성 |
+| `collaboration_style` | enum (아래) | 메시지 패턴 기반 협업 성향 분류 |
+| `autonomy_score` | `float` | 독립적으로 일하는 성향 추정 점수 |
+| `burnout_risk` | `float` | 야간·장시간 활동 기반 번아웃 위험 (민감 지표 — UI 노출 시 careful) |
+| `decision_latency` | `float` (시간) | 논의 시작부터 결정까지 소요 시간 (NLP/룰 기반) |
+
+`collaboration_style` 값:
+
+- `rapid_responder` — 답장이 빠르고 짧은 단편 위주
+- `focused_individual` — 메시지가 적고 깊이 있는 응답
+- `connector` — 멘션·답글 네트워크가 넓음
+- `review_hub` — 리뷰/피드백을 자주 주고받음
+- `async_deep_worker` — 야간·비동기 응답 비중이 높음
+
+### 사용자 / 워크스페이스 컨텍스트
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `slack_user_profile` | `str` | `id=...;name=...;email=...` 형식 inline 프로필. 현 단계는 원문 보존, 필요 시 dict로 파싱 |
+| `slack_users` | `int` | Slack 워크스페이스 전체 사용자 수 (정규화 시 분리 가능) |
+
+### 수집 메타데이터
+
+| 컬럼 | 타입 | 설명 |
+| --- | --- | --- |
+| `fetched_at` | `datetime` (tz-aware) | Slack API 조회 시각 |
+| `fetch_status` | enum `success`/`failed` | 조회 성공 여부 — GitHub과 동일한 `FetchStatus` 재사용 |
+| `error_message` | `str?` | 실패 시 사유, 성공 시 `None` |
+
+### 도메인 어휘 (LLM 매핑용)
+
+- **"커뮤니케이션 허브"** → `leadership_score`, `collaboration_frequency` 상위
+- **"번아웃 위험"** → `burnout_risk` 상위 또는 `night_activity_ratio > 0.2`
+- **"비동기 워커"** → `collaboration_style = "async_deep_worker"`
+- **"빠른 응답자"** → `avg_response_time` 하위 또는 `collaboration_style = "rapid_responder"`
+- **"병목 인물"** → `bottleneck_risk` 상위 + `dependency_score` 상위
+
 ## 도메인 어휘 가이드
 
 LLM 에이전트가 PRD/요청에서 사용자 표현을 표준 컬럼으로 매핑할 때 참고할 동의어/연관어:
