@@ -13,7 +13,14 @@ class SlackActivityRepository:
         self._session = session
 
     def get(self, slack_user_id: str) -> SlackActivity | None:
-        return self._session.get(SlackActivity, slack_user_id)
+        """Lookup by external ``slack_user_id`` (the UNIQUE business key).
+
+        PK is a surrogate ``id``, so we go through ``WHERE slack_user_id = ?``
+        instead of ``Session.get``.
+        """
+
+        stmt = select(SlackActivity).where(SlackActivity.slack_user_id == slack_user_id)
+        return self._session.execute(stmt).scalar_one_or_none()
 
     def list_all(self) -> Sequence[SlackActivity]:
         stmt = select(SlackActivity).order_by(SlackActivity.slack_user_id)

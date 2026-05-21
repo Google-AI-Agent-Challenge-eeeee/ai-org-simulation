@@ -1,9 +1,9 @@
 """``slack_activities`` table — one row per Slack user (current snapshot).
 
 Design notes:
-    - PK is ``slack_user_id`` so refreshing a user's snapshot is a simple
-      upsert (not append). If we later need history, drop the PK and add
-      surrogate id + UNIQUE(slack_user_id, measured_from).
+    - PK는 surrogate ``id`` (외부 시스템 ID에 우리 DB 무결성을 묶지 않기 위함).
+    - ``slack_user_id``는 ``UNIQUE`` — "한 사용자당 한 행" 보장 (current snapshot 의미).
+      나중에 시계열로 가고 싶다면 UNIQUE를 ``(slack_user_id, measured_from)`` 복합으로 바꾸면 됨.
     - HR FK는 일부러 안 검는다 (모든 직원이 Slack 계정 있는 건 아님).
     - List 컬럼들(``user_conversations``, ``top_collaborators``)은 Postgres
       ``TEXT[]``. SQLite는 ARRAY 미지원이므로 단위 테스트는 Postgres에서만 돈다.
@@ -19,6 +19,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,8 +28,11 @@ from backend.db.models.base import Base
 
 class SlackActivity(Base):
     __tablename__ = "slack_activities"
+    __table_args__ = (UniqueConstraint("slack_user_id", name="uq_slack_activity_user"),)
 
-    slack_user_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    slack_user_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
 
     measured_from: Mapped[date] = mapped_column(Date, nullable=False)
     measured_to: Mapped[date] = mapped_column(Date, nullable=False)
