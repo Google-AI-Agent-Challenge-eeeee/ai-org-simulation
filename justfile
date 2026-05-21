@@ -43,6 +43,11 @@ db-revision message:
 db-reset:
     uv run python scripts/dev/db_reset.py
 
+# Wipe + repopulate every raw table from datasets/raw/*/*.csv.
+# Idempotent — running it twice gives the same final state.
+seed:
+    uv run python scripts/dev/seed_all.py
+
 # One-shot bootstrap for a fresh clone:
 # install deps -> start docker -> apply migrations.
 bootstrap:

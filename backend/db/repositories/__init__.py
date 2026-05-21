@@ -7,7 +7,16 @@ Repositories are thin, table-scoped CRUD wrappers. They:
       transaction boundary so we can compose multiple repo calls atomically.
 """
 
+from backend.db.repositories.calendar_activity import CalendarActivityRepository
 from backend.db.repositories.employee import EmployeeRepository
 from backend.db.repositories.github_activity import GithubActivityRepository
+from backend.db.repositories.jira_activity import JiraActivityRepository
+from backend.db.repositories.slack_activity import SlackActivityRepository
 
-__all__ = ["EmployeeRepository", "GithubActivityRepository"]
+__all__ = [
+    "CalendarActivityRepository",
+    "EmployeeRepository",
+    "GithubActivityRepository",
+    "JiraActivityRepository",
+    "SlackActivityRepository",
+]

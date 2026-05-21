@@ -33,10 +33,7 @@ class Employee(Base):
     employment_type: Mapped[str] = mapped_column(String(16), nullable=False)
 
     department: Mapped[str] = mapped_column(String(64), nullable=False)
-    team: Mapped[str] = mapped_column(String(64), nullable=False)
-    job_family: Mapped[str] = mapped_column(String(64), nullable=False)
-    job_title: Mapped[str] = mapped_column(String(64), nullable=False)
-    job_level: Mapped[str] = mapped_column(String(16), nullable=False)
+    job_category_code: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
     manager_id: Mapped[str | None] = mapped_column(
         String(32),
         ForeignKey("employees.employee_id", ondelete="SET NULL"),
@@ -54,7 +51,6 @@ class Employee(Base):
     last_performance_rating: Mapped[str] = mapped_column(String(8), nullable=False)
     performance_score: Mapped[float] = mapped_column(Float, nullable=False)
     kpi_score: Mapped[float] = mapped_column(Float, nullable=False)
-    okr: Mapped[str] = mapped_column(String(255), nullable=False)
     competency_score: Mapped[float] = mapped_column(Float, nullable=False)
     peer_review_score: Mapped[float] = mapped_column(Float, nullable=False)
     manager_review_score: Mapped[float] = mapped_column(Float, nullable=False)
@@ -79,7 +75,7 @@ class Employee(Base):
     github_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     slack_user_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     jira_account_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    google_calendar_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    google_email: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     # Self-referential relationship — handy for traversing manager chains
     # without writing manual joins. ``remote_side`` tells SQLAlchemy that the

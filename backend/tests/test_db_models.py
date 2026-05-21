@@ -32,10 +32,7 @@ def _make_employee(**overrides: object) -> Employee:
         "employment_status": "재직",
         "employment_type": "정규직",
         "department": "개발",
-        "team": "Platform",
-        "job_family": "Software Engineering",
-        "job_title": "Backend Engineer",
-        "job_level": "L4",
+        "job_category_code": "BE",
         "manager_id": None,
         "work_location": "Seoul HQ",
         "education_level": "학사",
@@ -44,7 +41,6 @@ def _make_employee(**overrides: object) -> Employee:
         "last_performance_rating": "B",
         "performance_score": 85.0,
         "kpi_score": 90.0,
-        "okr": "Ship Phase 2",
         "competency_score": 80.0,
         "peer_review_score": 80.0,
         "manager_review_score": 80.0,
@@ -63,7 +59,7 @@ def _make_employee(**overrides: object) -> Employee:
         "github_id": None,
         "slack_user_id": None,
         "jira_account_id": None,
-        "google_calendar_id": None,
+        "google_email": None,
     }
     defaults.update(overrides)
     return Employee(**defaults)
