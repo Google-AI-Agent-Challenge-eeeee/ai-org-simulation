@@ -16,7 +16,7 @@ setup:
 
 # Run FastAPI dev server with auto-reload.
 dev:
-    uv run uvicorn main:app --reload --app-dir backend
+    uv run uvicorn backend.main:app --reload --app-dir .
 
 # Start the local Postgres container in the background.
 db-up:
