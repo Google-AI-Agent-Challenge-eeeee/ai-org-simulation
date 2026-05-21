@@ -1,0 +1,34 @@
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+.pnpm-store/
+.next/
+dist/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Runtime / temp
+tmp/
+temp/
