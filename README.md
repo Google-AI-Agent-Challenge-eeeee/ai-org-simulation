@@ -173,14 +173,18 @@ cd ai-org-simulation
 # 환경 변수 파일 준비
 cp .env.example .env        # PowerShell: copy .env.example .env
 
-# Python 가상환경 + 의존성 자동 설치
-just setup                  # 내부적으로 'uv sync' 실행
-
-# 로컬 Postgres 컨테이너 기동
-just db-up
+# 한 방에 끝내기: 의존성 설치 → Postgres 기동 → 마이그레이션 적용
+just bootstrap
 ```
 
-`just setup`은 루트에 `.venv/`를 만들고 `pyproject.toml`에 정의된 모든 Python 의존성을 설치합니다.
+`just bootstrap`은 다음 순서로 자동 실행됩니다:
+
+1. `uv sync` — 루트에 `.venv/`를 만들고 `pyproject.toml`의 모든 Python 의존성 설치
+2. `docker compose up -d postgres` — 로컬 Postgres 컨테이너 기동
+3. `wait_for_postgres.py` — DB가 연결 가능한 상태가 될 때까지 대기
+4. `alembic upgrade head` — 최신 스키마 마이그레이션 적용
+
+개별 단계로 실행하고 싶다면 `just setup` → `just db-up` → `just db-migrate`.
 
 ### Step 4. IDE 설정
 
@@ -191,14 +195,24 @@ Python 인터프리터는 `.venv/`를 자동 인식합니다. 인식되지 않�
 ### Step 5. 매일 쓰는 명령
 
 ```bash
-just                # 사용 가능한 명령 목록
-just dev            # FastAPI dev 서버 (auto-reload)
-just db-up          # Postgres 컨테이너 시작
-just db-down        # 모든 docker-compose 서비스 정지
-just lint           # ruff 검사 (코드 변경 없음)
-just fmt            # ruff 자동 포맷 + auto-fix
-just test           # pytest 실행
+just                          # 사용 가능한 명령 목록
+just dev                      # FastAPI dev 서버 (auto-reload)
+just db-up                    # Postgres 컨테이너 시작
+just db-down                  # 모든 docker-compose 서비스 정지
+just db-migrate               # 미적용 Alembic 마이그레이션 실행 (upgrade head)
+just db-revision "메시지"     # 모델 변경분으로 새 마이그레이션 자동 생성
+just db-reset                 # 로컬 DB 완전 삭제 후 재생성 (DESTRUCTIVE)
+just lint                     # ruff 검사 (코드 변경 없음)
+just fmt                      # ruff 자동 포맷 + auto-fix
+just test                     # pytest 실행
 ```
+
+#### DB 스키마를 바꿨다면
+
+1. `backend/db/models/*.py`에서 SQLAlchemy 모델 수정
+2. `just db-revision "describe the change"` 실행 → 새 마이그레이션 파일 생성
+3. 생성된 파일을 한 번 훑어보고 (autogenerate가 놓치는 경우 있음) 커밋
+4. 팀원은 풀(pull) 후 `just db-migrate` 한 줄로 동기화
 
 > 모든 명령은 `uv run`을 통해 가상환경에서 실행되므로, 별도로 venv를 activate할 필요가 없습니다.
 
