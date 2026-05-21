@@ -14,6 +14,7 @@ __pycache__/
 *.pyo
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 .venv/
 venv/
 
@@ -24,7 +25,10 @@ venv/
 
 # IDE
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
 
 # Logs
 *.log
