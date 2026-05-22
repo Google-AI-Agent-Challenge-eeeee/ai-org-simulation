@@ -1,6 +1,11 @@
-from fastapi import APIRouter
+"""HTTP API layer.
 
-from backend.api.simulation import router as simulation_router
+Routers live under `backend.api.routes`. `api_router` is the single
+entry-point `backend.main` mounts onto the FastAPI app — adding a new
+domain means appending one `include_router` call in
+`backend/api/routes/__init__.py`, not touching `main.py`.
+"""
 
-api_router = APIRouter()
-api_router.include_router(simulation_router)
+from backend.api.routes import api_router
+
+__all__ = ["api_router"]
