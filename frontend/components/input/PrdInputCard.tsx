@@ -12,6 +12,8 @@ interface PrdInputCardProps {
   inputMode: "text" | "file"
   onModeChange: (mode: "text" | "file") => void
   onFileSelect: (file: File) => void
+  /** 파일 로드 완료 후 "직접 입력" 탭으로 자동 전환 */
+  onFileLoaded?: () => void
 }
 
 const TABS = [
@@ -25,7 +27,14 @@ export function PrdInputCard({
   inputMode,
   onModeChange,
   onFileSelect,
+  onFileLoaded,
 }: PrdInputCardProps) {
+  function handleFileSelect(file: File) {
+    onFileSelect(file)
+    // 파일 읽기는 비동기(FileReader)라 약간 딜레이 후 탭 전환
+    setTimeout(() => onFileLoaded?.(), 150)
+  }
+
   return (
     <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-5">
       <SectionHeader icon={FileText} title="PRD 입력" className="mb-3" />
@@ -43,7 +52,7 @@ export function PrdInputCard({
           className="resize-none bg-zinc-800 border-zinc-600 text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-500"
         />
       ) : (
-        <FileDropzone onFileSelect={onFileSelect} />
+        <FileDropzone onFileSelect={handleFileSelect} />
       )}
     </div>
   )
