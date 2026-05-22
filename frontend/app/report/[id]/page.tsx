@@ -7,6 +7,8 @@ import { TeamSection } from "@/components/report/TeamSection"
 import { MetricsSection } from "@/components/report/MetricsSection"
 import { MeetingSummarySection } from "@/components/report/MeetingSummarySection"
 import { RecommendationSection } from "@/components/report/RecommendationSection"
+import { RequirementsSummarySection } from "@/components/report/RequirementsSummarySection"
+import { PhaseSimulationSection } from "@/components/report/PhaseSimulationSection"
 import { useReport } from "@/hooks/useReport"
 import { fadeDown, fadeUp, staggerContainer } from "@/lib/motion"
 
@@ -42,26 +44,31 @@ export default function ReportPage({ params }: Props) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-zinc-400 text-sm animate-pulse">리포트 불러오는 중...</p>
+      <div className="flex h-screen items-center justify-center bg-[#0f0f13]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+          <p className="text-zinc-400 text-sm animate-pulse">리포트 불러오는 중...</p>
+        </div>
       </div>
     )
   }
 
   if (error || !report) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-[#0f0f13]">
         <p className="text-red-400 text-sm">{error ?? "리포트를 찾을 수 없습니다."}</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#0f0f13]">
       <motion.div initial="hidden" animate="show" variants={fadeDown}>
         <AppHeader
           reportTitle="시뮬레이션 리포트"
           reportCreatedAt={formatDate(report.createdAt)}
+          reportId={`SIM-${sessionId.slice(-6).toUpperCase()}`}
+          projectName={report.selectedTeam?.teamName ?? "Project Alpha"}
           onCopyLink={handleCopyLink}
           onDownloadJson={handleDownloadJson}
         />
@@ -70,13 +77,49 @@ export default function ReportPage({ params }: Props) {
       <motion.main
         initial="hidden"
         animate="show"
-        variants={staggerContainer(0.12, 0.2)}
-        className="flex-1 max-w-3xl w-full mx-auto px-4 py-8 flex flex-col gap-5"
+        variants={staggerContainer(0.1, 0.15)}
+        className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col gap-5"
       >
-        <motion.div variants={fadeUp}><TeamSection team={report.team} /></motion.div>
-        <motion.div variants={fadeUp}><MetricsSection metrics={report.metrics} /></motion.div>
-        <motion.div variants={fadeUp}><MeetingSummarySection data={report.meetingSummary} /></motion.div>
-        <motion.div variants={fadeUp}><RecommendationSection recommendations={report.recommendations} /></motion.div>
+        {/* 요구사항 분석 요약 */}
+        {report.requirementsSummary && (
+          <motion.div variants={fadeUp}>
+            <RequirementsSummarySection data={report.requirementsSummary} />
+          </motion.div>
+        )}
+
+        {/* 수치 평가 */}
+        <motion.div variants={fadeUp}>
+          <MetricsSection metrics={report.metrics} />
+        </motion.div>
+
+        {/* 구성 팀 */}
+        <motion.div variants={fadeUp}>
+          <TeamSection
+            team={report.team}
+            pmPersona={report.pmPersona}
+            selectedTeam={report.selectedTeam}
+          />
+        </motion.div>
+
+        {/* 5단계 시뮬레이션 요약 */}
+        {report.phaseSummaries && report.phaseSummaries.length > 0 && (
+          <motion.div variants={fadeUp}>
+            <PhaseSimulationSection
+              phaseSummaries={report.phaseSummaries}
+              footerNote="PhaseLogCollector → 리포트 생성 완료"
+            />
+          </motion.div>
+        )}
+
+        {/* 권고 사항 */}
+        <motion.div variants={fadeUp}>
+          <RecommendationSection recommendations={report.recommendations} />
+        </motion.div>
+
+        {/* 킥오프 회의 요약 */}
+        <motion.div variants={fadeUp}>
+          <MeetingSummarySection data={report.meetingSummary} />
+        </motion.div>
       </motion.main>
     </div>
   )

@@ -11,7 +11,7 @@ export interface SseEvent<T = unknown> {
   data: T
 }
 
-type SseHandler<T = unknown> = (event: SseEvent<T>) => void
+type SseHandler<T = unknown> = (event: SseEvent<T>) => void | Promise<void>
 
 export async function consumeSse<T = unknown>(
   url: string,
@@ -51,7 +51,8 @@ export async function consumeSse<T = unknown>(
       if (!dataLine) continue
       try {
         const parsed = JSON.parse(dataLine) as T
-        onEvent({ event: eventType, data: parsed })
+        // async 콜백을 await해 각 이벤트 처리 사이에 React가 렌더할 기회를 준다
+        await onEvent({ event: eventType, data: parsed })
       } catch {
         // non-JSON data — skip
       }

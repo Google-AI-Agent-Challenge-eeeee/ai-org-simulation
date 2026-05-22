@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { PersonaMessage } from "./PersonaMessage"
+import { EventMarker } from "./EventMarker"
 import { TypingDots } from "./TypingDots"
 import { useAutoScroll } from "@/hooks/useAutoScroll"
 import type { Message, SessionStage } from "@/lib/types"
@@ -28,7 +29,10 @@ export function MeetingChat({ messages, stage }: MeetingChatProps) {
       <AnimatePresence initial={false}>
         {messages.map((msg) => (
           <motion.div key={msg.id} variants={msgVariant} initial="hidden" animate="show">
-            <PersonaMessage message={msg} />
+            {msg.kind === "event_start" || msg.kind === "event_end"
+              ? <EventMarker message={msg} />
+              : <PersonaMessage message={msg} />
+            }
           </motion.div>
         ))}
       </AnimatePresence>

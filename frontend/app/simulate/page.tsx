@@ -5,7 +5,9 @@ import { motion } from "framer-motion"
 import { Cpu, ArrowRight, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PrdInputCard } from "@/components/input/PrdInputCard"
-import { PmStyleCard } from "@/components/input/PmStyleCard"
+import { PmPersonaCard } from "@/components/input/PmPersonaCard"
+import { PmPriorityCard } from "@/components/input/PmPriorityCard"
+import { BackendStatusStrip } from "@/components/layout/BackendStatusStrip"
 import { useInputForm } from "@/hooks/useInputForm"
 import { fadeDown, fadeUp, staggerContainer } from "@/lib/motion"
 
@@ -13,15 +15,19 @@ export default function SimulatePage() {
   const {
     prd, setPrd,
     inputMode, setInputMode,
+    pmName, setPmName,
     pmPreset, setPmPreset,
-    pmExtra, setPmExtra,
+    pmPersona, setPmPersonaText,
+    pmConstraints, setPmConstraints,
+    pmPriority, setPmPriority,
+    pmPriorityExtra, setPmPriorityExtra,
     loading, error, isValid,
     handleFileSelect,
     handleSubmit,
   } = useInputForm()
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#0f0f13]">
       {/* 헤더 */}
       <motion.header
         initial="hidden" animate="show" variants={fadeDown}
@@ -38,7 +44,7 @@ export default function SimulatePage() {
       </motion.header>
 
       {/* 본문 */}
-      <main className="flex-1 flex flex-col items-center py-10 px-4">
+      <main className="flex-1 flex flex-col items-center py-10 px-4 pb-20">
         <motion.div
           initial="hidden" animate="show"
           variants={staggerContainer(0.1, 0.15)}
@@ -47,7 +53,7 @@ export default function SimulatePage() {
           <motion.div variants={fadeUp} className="text-center">
             <h1 className="text-3xl font-bold text-zinc-100 mb-2">시뮬레이션 입력</h1>
             <p className="text-sm text-zinc-400">
-              조직 구조 최적화를 위한 요구사항과 PRD를 입력하세요.
+              PRD와 PM 페르소나를 입력하면 AI가 팀 조합과 가상 회의를 시뮬레이션합니다.
             </p>
           </motion.div>
 
@@ -63,11 +69,24 @@ export default function SimulatePage() {
           </motion.div>
 
           <motion.div variants={fadeUp}>
-            <PmStyleCard
+            <PmPersonaCard
+              name={pmName}
+              onNameChange={setPmName}
               preset={pmPreset}
               onPresetChange={setPmPreset}
-              extra={pmExtra}
-              onExtraChange={setPmExtra}
+              persona={pmPersona}
+              onPersonaChange={setPmPersonaText}
+              constraints={pmConstraints}
+              onConstraintsChange={setPmConstraints}
+            />
+          </motion.div>
+
+          <motion.div variants={fadeUp}>
+            <PmPriorityCard
+              selected={pmPriority}
+              onChange={setPmPriority}
+              extra={pmPriorityExtra}
+              onExtraChange={setPmPriorityExtra}
             />
           </motion.div>
 
@@ -85,14 +104,19 @@ export default function SimulatePage() {
               size="lg"
               disabled={!isValid || loading}
               onClick={handleSubmit}
-              className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-4 text-base"
+              className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-semibold py-4 text-base"
             >
-              {loading ? "시작 중..." : "시뮬레이션 시작"}
+              {loading ? "분석 시작 중..." : "요구사항 분석 시작"}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </Button>
           </motion.div>
         </motion.div>
       </main>
+
+      {/* 하단 백엔드 로그 */}
+      <div className="fixed bottom-0 left-0 right-0">
+        <BackendStatusStrip logs={[]} isActive={loading} />
+      </div>
     </div>
   )
 }
