@@ -7,7 +7,7 @@ query logic into routes.
 
 from collections.abc import Iterable, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
 from backend.db.models.employee import Employee
@@ -24,9 +24,50 @@ class EmployeeRepository:
         stmt = select(Employee).order_by(Employee.employee_id)
         return self._session.execute(stmt).scalars().all()
 
-    def count(self) -> int:
+    def list_paged(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        department: str | None = None,
+        job_category_code: str | None = None,
+    ) -> Sequence[Employee]:
+        """Page of employees, optionally filtered by department / job category.
+
+        Both filters are exact-match string comparisons (Pydantic enum values
+        round-trip cleanly to the DB's String columns).
+        """
+
+        stmt = self._filtered_select(department, job_category_code)
+        stmt = stmt.order_by(Employee.employee_id).limit(limit).offset(offset)
+        return self._session.execute(stmt).scalars().all()
+
+    def count_filtered(
+        self,
+        *,
+        department: str | None = None,
+        job_category_code: str | None = None,
+    ) -> int:
+        """Total rows matching the same filters as :py:meth:`list_paged`."""
+
+        stmt = self._filtered_select(department, job_category_code)
+        # COUNT(*) over the filtered subquery — cheap and avoids materialising rows.
+        return self._session.execute(select(func.count()).select_from(stmt.subquery())).scalar_one()
+
+    @staticmethod
+    def _filtered_select(
+        department: str | None,
+        job_category_code: str | None,
+    ) -> Select[tuple[Employee]]:
         stmt = select(Employee)
-        return len(self._session.execute(stmt).scalars().all())
+        if department is not None:
+            stmt = stmt.where(Employee.department == department)
+        if job_category_code is not None:
+            stmt = stmt.where(Employee.job_category_code == job_category_code)
+        return stmt
+
+    def count(self) -> int:
+        return self._session.execute(select(func.count()).select_from(Employee)).scalar_one()
 
     def add(self, employee: Employee) -> Employee:
         self._session.add(employee)

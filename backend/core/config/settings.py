@@ -1,6 +1,8 @@
+import json
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from backend.core.constants.enums import Environment, LLMMode
@@ -37,7 +39,31 @@ class Settings(BaseSettings):
 
     llm_mode: LLMMode = LLMMode.STUB
 
-    cors_allow_origins: list[str] = ["*"]
+    cors_allow_origins_raw: str = Field(default='["*"]', alias="CORS_ALLOW_ORIGINS")
+
+    @property
+    def cors_allow_origins(self) -> list[str]:
+        """CORS origins normalized from JSON, comma-separated, or shell-stripped values."""
+
+        value = self.cors_allow_origins_raw.strip()
+        if not value:
+            return ["*"]
+
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            parsed = None
+
+        if isinstance(parsed, list):
+            return [str(origin).strip() for origin in parsed if str(origin).strip()]
+        if isinstance(parsed, str):
+            return [parsed]
+
+        if value == "[*]":
+            return ["*"]
+        if value.startswith("[") and value.endswith("]"):
+            value = value[1:-1]
+        return [origin.strip().strip("\"'") for origin in value.split(",") if origin.strip()]
 
 
 @lru_cache

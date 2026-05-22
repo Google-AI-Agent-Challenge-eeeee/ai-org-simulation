@@ -1,0 +1,32 @@
+{
+  "team_id": "team_002",
+  "risk_tags": [
+    "be_ml_integration_risk",
+    "ml_model_latency_risk",
+    "qa_ai_coverage_gap",
+    "qa_communication_gap",
+    "scope_creep_risk",
+    "fe_streaming_inexperience",
+    "ml_workload_concentration"
+  ],
+  "risk_prior_scores": {
+    "be_ml_integration_risk":       0.72,
+    "ml_model_latency_risk":        0.65,
+    "qa_ai_coverage_gap":           0.61,
+    "qa_communication_gap":         0.43,
+    "scope_creep_risk":             0.55,
+    "fe_streaming_inexperience":    0.48,
+    "ml_workload_concentration":    0.66,
+    "integration_risk":             0.70,
+    "schedule_risk":                0.52,
+    "technical_dependency_risk":    0.64,
+    "workload_concentration":       0.60
+  },
+  "bottleneck_members": ["오하은", "최민준"],
+  "critical_dependencies": [
+    "오하은(ML) ML-BE 인터페이스 schema 확정 → 최민준(BE) 티켓 API 착수 가능",
+    "최민준(BE) WebSocket API 완료 → 김서연(FE) 스트리밍 UI 연동 가능",
+    "오하은(ML) 프롬프트 v1 완료 → 박준혁(QA) AI 품질 검증 기준 수립 가능",
+    "이지훈(PM) AI 기능 범위 확정 → 오하은(ML) 과부하 방지 가능"
+  ]
+}

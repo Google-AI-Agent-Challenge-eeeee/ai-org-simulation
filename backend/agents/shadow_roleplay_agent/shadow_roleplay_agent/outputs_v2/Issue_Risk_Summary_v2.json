@@ -1,0 +1,270 @@
+{
+  "simulation_id": "sim_v2_chatbot",
+  "team_id": "team_002",
+  "confirmed_issues": [
+    {
+      "issue_id": "p8_issue_002",
+      "issue_category": "integration_risk",
+      "pre_simulation_risk": 0.72,
+      "observed_simulation_risk": 0.9333,
+      "final_issue_score": 0.848,
+      "severity": "high",
+      "status": "confirmed",
+      "root_cause": "API schema/DB/환경 의존성이 Integration phase까지 미확정으로 남아 교차 팀 블로킹 발생. 관찰 phase: [Design Phase, Development Phase, Integration Phase, QA / Release Phase].",
+      "affected_roles": [
+        "Backend Developer",
+        "Frontend Developer",
+        "ML Engineer",
+        "PM"
+      ],
+      "suggested_action": "API schema를 Development phase 착수 전 Mock으로 우선 확정. 인터페이스 계약 문서화.",
+      "evidence_refs": [
+        "calendar.focus_time_minutes",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "slack.avg_response_time"
+      ],
+      "observed_in_phases": [
+        "Design Phase",
+        "Development Phase",
+        "Integration Phase",
+        "QA / Release Phase"
+      ],
+      "source_risk_tags": [
+        "be_ml_integration_risk",
+        "calendar.focus_time_minutes",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "qa_communication_gap",
+        "slack.avg_response_time"
+      ],
+      "unresolved_question_ids": []
+    },
+    {
+      "issue_id": "p8_issue_009",
+      "issue_category": "workload_concentration",
+      "pre_simulation_risk": 0.66,
+      "observed_simulation_risk": 0.9333,
+      "final_issue_score": 0.824,
+      "severity": "high",
+      "status": "confirmed",
+      "root_cause": "P0 기능과 과부하 이슈가 특정 역할(Backend Developer)에 집중. 미완료 Jira 이슈 누적. 관찰 phase: [Design Phase, Development Phase, Integration Phase, Kickoff Meeting].",
+      "affected_roles": [
+        "Backend Developer",
+        "ML Engineer",
+        "PM"
+      ],
+      "suggested_action": "[긴급] 작업 재분배 또는 buffer sprint 배정. 해당 역할의 P0/P1 우선순위 재조정.",
+      "evidence_refs": [
+        "calendar.busy_minutes",
+        "jira.overdue_issue_count",
+        "jira.worklog_hours",
+        "slack.avg_response_time"
+      ],
+      "observed_in_phases": [
+        "Design Phase",
+        "Development Phase",
+        "Integration Phase",
+        "Kickoff Meeting"
+      ],
+      "source_risk_tags": [
+        "be_ml_integration_risk",
+        "calendar.busy_minutes",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "jira.worklog_hours",
+        "ml_model_latency_risk",
+        "ml_workload_concentration",
+        "slack.avg_response_time"
+      ],
+      "unresolved_question_ids": [
+        "unres_001",
+        "unres_003"
+      ]
+    }
+  ],
+  "candidate_issues": [
+    {
+      "issue_id": "p8_issue_003",
+      "issue_category": "qa_coverage_gap",
+      "pre_simulation_risk": 0.61,
+      "observed_simulation_risk": 0.3067,
+      "final_issue_score": 0.428,
+      "severity": "low",
+      "status": "candidate",
+      "root_cause": "고위험 기능(결제, 인증)에 대한 e2e/예외 케이스 테스트가 누락. QA 착수 지연 확인. 관찰 phase: [QA / Release Phase].",
+      "affected_roles": [
+        "ML Engineer",
+        "PM",
+        "QA Engineer"
+      ],
+      "suggested_action": "Playwright e2e 시나리오 조기 작성. 결제·인증 플로우 happy/fail path 필수 커버.",
+      "evidence_refs": [
+        "jira.overdue_issue_count",
+        "slack.avg_response_time"
+      ],
+      "observed_in_phases": [
+        "QA / Release Phase"
+      ],
+      "source_risk_tags": [
+        "calendar.focus_time_minutes",
+        "jira.overdue_issue_count",
+        "qa_ai_coverage_gap",
+        "qa_communication_gap",
+        "slack.avg_response_time"
+      ],
+      "unresolved_question_ids": [
+        "unres_004"
+      ]
+    },
+    {
+      "issue_id": "p8_issue_004",
+      "issue_category": "release_blocker",
+      "pre_simulation_risk": 0.0,
+      "observed_simulation_risk": 0.2,
+      "final_issue_score": 0.12,
+      "severity": "high",
+      "status": "candidate",
+      "root_cause": "QA/Release phase 종료 시점에 high severity unresolved issue가 미해소 상태로 존재. 관찰 phase: [QA / Release Phase].",
+      "affected_roles": [
+        "PM",
+        "QA Engineer"
+      ],
+      "suggested_action": "릴리즈 전 must-fix 체크리스트 실행. 미해소 시 릴리즈 일정 연기 또는 feature flag 처리.",
+      "evidence_refs": [
+        "calendar.focus_time_minutes",
+        "slack.avg_response_time"
+      ],
+      "observed_in_phases": [
+        "QA / Release Phase"
+      ],
+      "source_risk_tags": [],
+      "unresolved_question_ids": [
+        "unres_004"
+      ]
+    },
+    {
+      "issue_id": "p8_issue_006",
+      "issue_category": "schedule_risk",
+      "pre_simulation_risk": 0.55,
+      "observed_simulation_risk": 0.16,
+      "final_issue_score": 0.316,
+      "severity": "low",
+      "status": "candidate",
+      "root_cause": "일정 제약, capacity 부족, 미해결 dependency가 복합적으로 관찰되어 마일스톤 달성 가능성이 낮아짐. 관찰 phase: [Development Phase, Kickoff Meeting].",
+      "affected_roles": [
+        "ML Engineer",
+        "PM"
+      ],
+      "suggested_action": "sprint_completion_rate 목표치(≥ 0.7) 미충족 시 scope cut 또는 인원 보강 검토.",
+      "evidence_refs": [
+        "jira.scope_change_count"
+      ],
+      "observed_in_phases": [
+        "Development Phase",
+        "Kickoff Meeting"
+      ],
+      "source_risk_tags": [
+        "jira.scope_change_count",
+        "scope_creep_risk"
+      ],
+      "unresolved_question_ids": []
+    },
+    {
+      "issue_id": "p8_issue_007",
+      "issue_category": "technical_dependency_risk",
+      "pre_simulation_risk": 0.65,
+      "observed_simulation_risk": 0.3333,
+      "final_issue_score": 0.46,
+      "severity": "high",
+      "status": "candidate",
+      "root_cause": "미확보 기술(GCP Cloud Run, Payment SDK 등) 또는 외부 API에 대한 경험 부족으로 일정·품질 위험. 관찰 phase: [Design Phase, Integration Phase].",
+      "affected_roles": [
+        "Backend Developer",
+        "Frontend Developer",
+        "ML Engineer",
+        "PM"
+      ],
+      "suggested_action": "시작 전 기술 spike(PoC) 수행 또는 skill 보유자 추가 투입.",
+      "evidence_refs": [
+        "jira.reopened_issue_count"
+      ],
+      "observed_in_phases": [
+        "Design Phase",
+        "Integration Phase"
+      ],
+      "source_risk_tags": [
+        "fe_streaming_inexperience",
+        "jira.reopened_issue_count"
+      ],
+      "unresolved_question_ids": [
+        "unres_002"
+      ]
+    }
+  ],
+  "invalid_issues": [
+    {
+      "issue_id": "p8_issue_001",
+      "issue_category": "communication_delay",
+      "pre_simulation_risk": 0.43,
+      "observed_simulation_risk": 0.0,
+      "final_issue_score": 0.172,
+      "severity": "low",
+      "status": "invalid",
+      "root_cause": "동일 결정 사항이 여러 phase에서 반복 미해결. 응답 지연으로 의사결정 속도 저하.",
+      "affected_roles": [
+        "PM",
+        "QA Engineer"
+      ],
+      "suggested_action": "QA-BE 간 정기 sync 일정 확보. Slack 응답 SLA(24h 이내) 팀 합의.",
+      "evidence_refs": [],
+      "observed_in_phases": [],
+      "source_risk_tags": [],
+      "unresolved_question_ids": []
+    },
+    {
+      "issue_id": "p8_issue_005",
+      "issue_category": "role_conflict",
+      "pre_simulation_risk": 0.0,
+      "observed_simulation_risk": 0.0,
+      "final_issue_score": 0.0,
+      "severity": "high",
+      "status": "invalid",
+      "root_cause": "동일 기능에 owner가 중복 선언되거나 Agent 간 책임 해석이 불일치함.",
+      "affected_roles": [
+        "PM",
+        "Backend Developer",
+        "Frontend Developer"
+      ],
+      "suggested_action": "Kickoff 또는 Design phase에서 RACI 명확화 및 feature owner 단일화 진행.",
+      "evidence_refs": [],
+      "observed_in_phases": [],
+      "source_risk_tags": [],
+      "unresolved_question_ids": []
+    },
+    {
+      "issue_id": "p8_issue_008",
+      "issue_category": "unclear_ownership",
+      "pre_simulation_risk": 0.0,
+      "observed_simulation_risk": 0.0,
+      "final_issue_score": 0.0,
+      "severity": "medium",
+      "status": "invalid",
+      "root_cause": "action item 또는 feature에 명확한 owner가 지정되지 않아 공백이 발생함.",
+      "affected_roles": [
+        "PM"
+      ],
+      "suggested_action": "모든 action_item에 owner_role을 명시하고 PM이 트래킹 보드에 반영.",
+      "evidence_refs": [],
+      "observed_in_phases": [],
+      "source_risk_tags": [],
+      "unresolved_question_ids": []
+    }
+  ],
+  "total_confirmed": 2,
+  "total_candidate": 4,
+  "total_invalid": 3,
+  "high_count": 4,
+  "medium_count": 0,
+  "low_count": 2
+}

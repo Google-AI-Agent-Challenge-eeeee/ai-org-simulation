@@ -1,0 +1,179 @@
+{
+  "simulation_id": "sim_final_test",
+  "team_id": "team_001",
+  "project_name": "결제 및 사용자 관리 플랫폼 v1.0",
+  "simulation_verdict": "needs_rebalancing",
+  "overall_project_fit": 0.7699,
+  "score_note": "[결제 및 사용자 관리 플랫폼 v1.0] simulation overall_project_fit = 0.770. 이 팀 조합은 역할·workload·ownership 재조정 후 진행을 권장한다. 착수 전 필수 해결 카테고리: integration_risk, schedule_risk.",
+  "score_breakdown": [
+    {
+      "dimension": "schedule_stability",
+      "raw_score": 0.629,
+      "weighted_score": 0.1258,
+      "weight": 0.2,
+      "status": "warning"
+    },
+    {
+      "dimension": "role_clarity",
+      "raw_score": 0.9407,
+      "weighted_score": 0.1411,
+      "weight": 0.15,
+      "status": "good"
+    },
+    {
+      "dimension": "technical_risk_control",
+      "raw_score": 0.9287,
+      "weighted_score": 0.1393,
+      "weight": 0.15,
+      "status": "good"
+    },
+    {
+      "dimension": "integration_readiness",
+      "raw_score": 0.5329,
+      "weighted_score": 0.0799,
+      "weight": 0.15,
+      "status": "critical"
+    },
+    {
+      "dimension": "collaboration_quality",
+      "raw_score": 0.94,
+      "weighted_score": 0.141,
+      "weight": 0.15,
+      "status": "good"
+    },
+    {
+      "dimension": "qa_release_readiness",
+      "raw_score": 0.7205,
+      "weighted_score": 0.0721,
+      "weight": 0.1,
+      "status": "warning"
+    },
+    {
+      "dimension": "workload_balance",
+      "raw_score": 0.707,
+      "weighted_score": 0.0707,
+      "weight": 0.1,
+      "status": "warning"
+    }
+  ],
+  "top_risks": [
+    {
+      "rank": 1,
+      "issue_category": "schedule_risk",
+      "severity": "high",
+      "status": "confirmed",
+      "observed_in_phases": [
+        "Design Phase",
+        "Development Phase",
+        "Integration Phase",
+        "Kickoff Meeting",
+        "QA / Release Phase"
+      ],
+      "suggested_action": "sprint_completion_rate 목표치(≥ 0.7) 미충족 시 scope cut 또는 인원 보강 검토.",
+      "evidence_refs": [
+        "calendar.focus_time_minutes",
+        "capacity_signal=medium_risk",
+        "devops_gcp_experience_gap",
+        "fe_be_api_dependency",
+        "fe_scope_instability"
+      ]
+    },
+    {
+      "rank": 2,
+      "issue_category": "integration_risk",
+      "severity": "high",
+      "status": "confirmed",
+      "observed_in_phases": [
+        "Design Phase",
+        "Integration Phase",
+        "QA / Release Phase"
+      ],
+      "suggested_action": "API schema를 Development phase 착수 전 Mock으로 우선 확정. 인터페이스 계약 문서화.",
+      "evidence_refs": [
+        "capacity_signal=medium_risk",
+        "communication_signal=medium_delay",
+        "devops_gcp_experience_gap",
+        "fe_be_api_dependency",
+        "github.contributed_repositories"
+      ]
+    },
+    {
+      "rank": 3,
+      "issue_category": "workload_concentration",
+      "severity": "medium",
+      "status": "confirmed",
+      "observed_in_phases": [
+        "Design Phase",
+        "Development Phase",
+        "Integration Phase",
+        "Kickoff Meeting"
+      ],
+      "suggested_action": "작업 재분배 또는 buffer sprint 배정. 해당 역할의 P0/P1 우선순위 재조정.",
+      "evidence_refs": [
+        "backend_workload_concentration",
+        "capacity_signal=high_risk",
+        "fe_be_api_dependency",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count"
+      ]
+    },
+    {
+      "rank": 4,
+      "issue_category": "release_blocker",
+      "severity": "high",
+      "status": "candidate",
+      "observed_in_phases": [
+        "QA / Release Phase"
+      ],
+      "suggested_action": "릴리즈 전 must-fix 체크리스트 실행. 미해소 시 릴리즈 일정 연기 또는 feature flag 처리.",
+      "evidence_refs": [
+        "qa_coverage_gap"
+      ]
+    }
+  ],
+  "must_fix_before_start": [
+    {
+      "issue_category": "integration_risk",
+      "severity": "high",
+      "suggested_action": "API schema를 Development phase 착수 전 Mock으로 우선 확정. 인터페이스 계약 문서화.",
+      "affected_roles": [
+        "Backend Developer"
+      ]
+    },
+    {
+      "issue_category": "schedule_risk",
+      "severity": "high",
+      "suggested_action": "sprint_completion_rate 목표치(≥ 0.7) 미충족 시 scope cut 또는 인원 보강 검토.",
+      "affected_roles": [
+        "PM",
+        "Backend Developer"
+      ]
+    },
+    {
+      "issue_category": "workload_concentration",
+      "severity": "medium",
+      "suggested_action": "작업 재분배 또는 buffer sprint 배정. 해당 역할의 P0/P1 우선순위 재조정.",
+      "affected_roles": [
+        "Backend Developer"
+      ]
+    }
+  ],
+  "evidence_summary": {
+    "total_evidence_refs": 22,
+    "total_confirmed_issues": 3,
+    "total_candidate_issues": 3,
+    "total_unresolved_turns": 1,
+    "phases_with_high_risk": [
+      "Design Phase",
+      "Development Phase",
+      "Integration Phase"
+    ]
+  },
+  "phase_stability_summary": {
+    "Kickoff Meeting": 0.68,
+    "Design Phase": 0.53,
+    "Development Phase": 0.52,
+    "Integration Phase": 0.039,
+    "QA / Release Phase": 0.61
+  }
+}

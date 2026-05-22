@@ -6,7 +6,7 @@
 
 from collections.abc import Iterable, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
 from backend.db.models.calendar_activity import CalendarActivity
@@ -41,9 +41,36 @@ class CalendarActivityRepository:
         )
         return self._session.execute(stmt).scalars().all()
 
-    def count(self) -> int:
+    def list_paged(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        google_email: str | None = None,
+    ) -> Sequence[CalendarActivity]:
+        stmt = self._filtered_select(google_email)
+        stmt = (
+            stmt.order_by(CalendarActivity.google_email, CalendarActivity.calendar_id)
+            .limit(limit)
+            .offset(offset)
+        )
+        return self._session.execute(stmt).scalars().all()
+
+    def count_filtered(self, *, google_email: str | None = None) -> int:
+        stmt = self._filtered_select(google_email)
+        return self._session.execute(select(func.count()).select_from(stmt.subquery())).scalar_one()
+
+    @staticmethod
+    def _filtered_select(google_email: str | None) -> Select[tuple[CalendarActivity]]:
         stmt = select(CalendarActivity)
-        return len(self._session.execute(stmt).scalars().all())
+        if google_email is not None:
+            stmt = stmt.where(CalendarActivity.google_email == google_email)
+        return stmt
+
+    def count(self) -> int:
+        return self._session.execute(
+            select(func.count()).select_from(CalendarActivity)
+        ).scalar_one()
 
     def add(self, activity: CalendarActivity) -> CalendarActivity:
         self._session.add(activity)

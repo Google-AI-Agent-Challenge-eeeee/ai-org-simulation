@@ -1,0 +1,103 @@
+{
+  "simulation_id": "sim_v2_chatbot",
+  "team_id": "team_002",
+  "dimensions": [
+    {
+      "dimension": "schedule_stability",
+      "weight": 0.2,
+      "raw_score": 0.871,
+      "weighted_score": 0.1742,
+      "deducted_by": [
+        "p8_issue_006"
+      ],
+      "penalty_detail": [
+        "schedule_risk(candidate/low): -0.06"
+      ],
+      "phase_signal": "phase_stability_avg=0.480 → score 0.940→0.871"
+    },
+    {
+      "dimension": "role_clarity",
+      "weight": 0.15,
+      "raw_score": 0.9045,
+      "weighted_score": 0.1357,
+      "deducted_by": [],
+      "penalty_detail": [],
+      "phase_signal": "phase_stability_avg=0.363 → score 1.000→0.905"
+    },
+    {
+      "dimension": "technical_risk_control",
+      "weight": 0.15,
+      "raw_score": 0.7117,
+      "weighted_score": 0.1068,
+      "deducted_by": [
+        "p8_issue_007"
+      ],
+      "penalty_detail": [
+        "technical_dependency_risk(candidate/high): -0.2"
+      ],
+      "phase_signal": "phase_stability_avg=0.211 → score 0.800→0.712"
+    },
+    {
+      "dimension": "integration_readiness",
+      "weight": 0.15,
+      "raw_score": 0.5975,
+      "weighted_score": 0.0896,
+      "deducted_by": [
+        "p8_issue_002"
+      ],
+      "penalty_detail": [
+        "integration_risk(confirmed/high): -0.38"
+      ],
+      "phase_signal": "phase_stability_avg=0.470 → score 0.620→0.598"
+    },
+    {
+      "dimension": "collaboration_quality",
+      "weight": 0.15,
+      "raw_score": 1.0,
+      "weighted_score": 0.15,
+      "deducted_by": [],
+      "penalty_detail": [],
+      "phase_signal": ""
+    },
+    {
+      "dimension": "qa_release_readiness",
+      "weight": 0.1,
+      "raw_score": 0.6905,
+      "weighted_score": 0.0691,
+      "deducted_by": [
+        "p8_issue_003",
+        "p8_issue_004"
+      ],
+      "penalty_detail": [
+        "qa_coverage_gap(candidate/low): -0.06",
+        "release_blocker(candidate/high): -0.2"
+      ],
+      "phase_signal": "phase_stability_avg=0.410 → score 0.740→0.691"
+    },
+    {
+      "dimension": "workload_balance",
+      "weight": 0.1,
+      "raw_score": 0.5533,
+      "weighted_score": 0.0553,
+      "deducted_by": [
+        "p8_issue_009"
+      ],
+      "penalty_detail": [
+        "workload_concentration(confirmed/high): -0.38"
+      ],
+      "phase_signal": "phase_stability_avg=0.175 → score 0.620→0.553"
+    }
+  ],
+  "overall_project_fit": 0.7807,
+  "verdict": "needs_rebalancing",
+  "top_risk_dimensions": [
+    "workload_balance",
+    "integration_readiness",
+    "qa_release_readiness"
+  ],
+  "must_fix_categories": [
+    "integration_risk",
+    "workload_concentration"
+  ],
+  "score_note": "[AI 고객 서비스 챗봇 플랫폼 v1.0] simulation overall_project_fit = 0.781. 이 팀 조합은 역할·workload·ownership 재조정 후 진행을 권장한다. 착수 전 필수 해결 카테고리: integration_risk, workload_concentration."
+}

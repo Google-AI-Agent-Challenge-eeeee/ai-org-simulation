@@ -1,0 +1,483 @@
+{
+  "simulation_id": "sim_full_check",
+  "project_context": {
+    "project_id": "project_001",
+    "project_name": "결제 및 사용자 관리 플랫폼 v1.0",
+    "project_summary": "이메일 기반 인증, 결제 API 연동, 메인 대시보드를 포함하는 14일 스프린트 MVP. 외부 결제 API(PG사) 의존성이 높고 GCP Cloud Run 배포가 필수다.",
+    "required_roles": [
+      "PM",
+      "Backend Developer",
+      "Frontend Developer",
+      "QA Engineer",
+      "DevOps Engineer"
+    ],
+    "required_skills": [
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "React",
+      "TypeScript",
+      "Payment API",
+      "GCP Cloud Run",
+      "Docker",
+      "Pytest",
+      "CI/CD"
+    ],
+    "features": [
+      {
+        "feature_id": "feat_001",
+        "feature_name": "이메일 로그인 / 회원가입",
+        "priority": "P0",
+        "assigned_role": "Backend Developer",
+        "tech_requirements": [
+          "JWT",
+          "PostgreSQL",
+          "bcrypt"
+        ],
+        "dependencies": [],
+        "estimated_days": 3,
+        "risk_notes": "인증 플로우 미확정 시 FE 연동 블로킹"
+      },
+      {
+        "feature_id": "feat_002",
+        "feature_name": "결제 API 연동",
+        "priority": "P0",
+        "assigned_role": "Backend Developer",
+        "tech_requirements": [
+          "Payment API SDK",
+          "Webhook",
+          "PostgreSQL"
+        ],
+        "dependencies": [
+          "feat_001"
+        ],
+        "estimated_days": 4,
+        "risk_notes": "외부 PG사 sandbox 응답 지연 가능성. schema 미확정 시 FE 블로킹"
+      },
+      {
+        "feature_id": "feat_003",
+        "feature_name": "메인 대시보드 UI",
+        "priority": "P0",
+        "assigned_role": "Frontend Developer",
+        "tech_requirements": [
+          "React",
+          "TypeScript",
+          "REST API"
+        ],
+        "dependencies": [
+          "feat_001",
+          "feat_002"
+        ],
+        "estimated_days": 4,
+        "risk_notes": "BE API 문서 지연 시 목업 병행 필요"
+      },
+      {
+        "feature_id": "feat_004",
+        "feature_name": "GCP Cloud Run 배포 환경 구성",
+        "priority": "P0",
+        "assigned_role": "DevOps Engineer",
+        "tech_requirements": [
+          "Docker",
+          "GCP Cloud Run",
+          "GitHub Actions"
+        ],
+        "dependencies": [],
+        "estimated_days": 2,
+        "risk_notes": "Cloud Run IAM 설정 지연 시 배포 블로킹"
+      },
+      {
+        "feature_id": "feat_005",
+        "feature_name": "E2E 테스트 및 QA 계획",
+        "priority": "P1",
+        "assigned_role": "QA Engineer",
+        "tech_requirements": [
+          "Pytest",
+          "Playwright"
+        ],
+        "dependencies": [
+          "feat_001",
+          "feat_002",
+          "feat_003"
+        ],
+        "estimated_days": 3,
+        "risk_notes": "결제 실패/예외 케이스 누락 시 릴리즈 blocker 가능"
+      },
+      {
+        "feature_id": "feat_006",
+        "feature_name": "소셜 로그인 (OAuth)",
+        "priority": "P2",
+        "assigned_role": "Backend Developer",
+        "tech_requirements": [
+          "OAuth 2.0",
+          "Google OAuth"
+        ],
+        "dependencies": [
+          "feat_001"
+        ],
+        "estimated_days": 3,
+        "risk_notes": "1차 스프린트 범위 외 — 2차로 이관 예정"
+      }
+    ],
+    "timeline": {
+      "total_sprint_days": 14,
+      "milestones": [
+        {
+          "name": "DB 스키마 확정",
+          "due_day": 2,
+          "owner_role": "Backend Developer"
+        },
+        {
+          "name": "디자인 시안 리뷰",
+          "due_day": 3,
+          "owner_role": "Frontend Developer"
+        },
+        {
+          "name": "BE API 완료",
+          "due_day": 7,
+          "owner_role": "Backend Developer"
+        },
+        {
+          "name": "FE 연동 완료",
+          "due_day": 10,
+          "owner_role": "Frontend Developer"
+        },
+        {
+          "name": "QA 완료",
+          "due_day": 13,
+          "owner_role": "QA Engineer"
+        },
+        {
+          "name": "릴리즈",
+          "due_day": 14,
+          "owner_role": "PM"
+        }
+      ]
+    },
+    "constraints": [
+      "외부 결제 API(PG사) 의존 — sandbox 환경 사전 확보 필요",
+      "GCP Cloud Run 배포 필수 — IAM 권한 사전 설정 필요",
+      "소셜 로그인은 1차 스프린트 범위 제외"
+    ],
+    "risk_flags": [
+      "payment_api_integration_risk",
+      "tight_schedule",
+      "external_api_dependency",
+      "qa_coverage_gap_risk"
+    ]
+  },
+  "selected_team": {
+    "team_id": "team_001",
+    "team_rank": 1,
+    "team_fit_score": 84.6,
+    "members": [
+      {
+        "employee_id": "E20260014",
+        "employee_name": "권원솔",
+        "assigned_role": "PM"
+      },
+      {
+        "employee_id": "E20260037",
+        "employee_name": "안우빈",
+        "assigned_role": "Backend Developer"
+      },
+      {
+        "employee_id": "E20260038",
+        "employee_name": "심예린",
+        "assigned_role": "Frontend Developer"
+      },
+      {
+        "employee_id": "E20260087",
+        "employee_name": "송다원",
+        "assigned_role": "QA Engineer"
+      },
+      {
+        "employee_id": "E20260040",
+        "employee_name": "박라경",
+        "assigned_role": "DevOps Engineer"
+      }
+    ],
+    "role_coverage_score": 0.9,
+    "skill_coverage_score": 0.83,
+    "availability_score": 0.71,
+    "team_risk_flags": [
+      "backend_workload_concentration",
+      "pm_low_sprint_velocity",
+      "fe_scope_instability",
+      "payment_api_integration_risk"
+    ]
+  },
+  "member_snapshots": [
+    {
+      "employee_id": "E20260014",
+      "employee_name": "권원솔",
+      "assigned_role": "PM",
+      "matched_skills": [
+        "프로젝트 기획",
+        "Payment Service 도메인 이해",
+        "FE 리뷰"
+      ],
+      "missing_skills": [
+        "기술 아키텍처 의사결정",
+        "GCP Cloud Run"
+      ],
+      "capacity_signal": "low_risk",
+      "communication_signal": "high_delay",
+      "delivery_signal": "unstable",
+      "collaboration_signal": "rapid_responder",
+      "risk_tags": [
+        "pm_low_sprint_velocity"
+      ],
+      "evidence_refs": [
+        "jira.sprint_completion_rate",
+        "jira.worklog_hours",
+        "slack.avg_response_time",
+        "hr.overtime_hours_12m"
+      ]
+    },
+    {
+      "employee_id": "E20260037",
+      "employee_name": "안우빈",
+      "assigned_role": "Backend Developer",
+      "matched_skills": [
+        "JWT 인증 (auth-service)",
+        "플랫폼 인프라 이해 (platform-infra)",
+        "API 연동 (web-frontend)"
+      ],
+      "missing_skills": [
+        "Payment API SDK",
+        "PostgreSQL 운영",
+        "GCP Cloud Run"
+      ],
+      "capacity_signal": "high_risk",
+      "communication_signal": "medium_delay",
+      "delivery_signal": "stable",
+      "collaboration_signal": "review_hub",
+      "risk_tags": [
+        "backend_workload_concentration",
+        "payment_api_integration_risk"
+      ],
+      "evidence_refs": [
+        "jira.overdue_issue_count",
+        "jira.worklog_hours",
+        "jira.scope_change_count",
+        "calendar.busy_minutes",
+        "hr.overtime_hours_12m",
+        "github.pr_count_3m"
+      ]
+    },
+    {
+      "employee_id": "E20260038",
+      "employee_name": "심예린",
+      "assigned_role": "Frontend Developer",
+      "matched_skills": [
+        "REST API 연동 (api-server)",
+        "인증 UI 연동 (auth-service)",
+        "디자인 시스템 (design-system)"
+      ],
+      "missing_skills": [
+        "Payment UI 경험",
+        "Playwright E2E"
+      ],
+      "capacity_signal": "medium_risk",
+      "communication_signal": "medium_delay",
+      "delivery_signal": "variable",
+      "collaboration_signal": "focused_individual",
+      "risk_tags": [
+        "fe_scope_instability",
+        "fe_be_api_dependency"
+      ],
+      "evidence_refs": [
+        "jira.scope_change_count",
+        "jira.reopened_issue_count",
+        "jira.avg_cycle_time",
+        "calendar.busy_minutes",
+        "slack.avg_response_time"
+      ]
+    },
+    {
+      "employee_id": "E20260087",
+      "employee_name": "송다원",
+      "assigned_role": "QA Engineer",
+      "matched_skills": [
+        "Pytest 자동화 (qa-automation)",
+        "릴리즈 프로세스 (release-tools)",
+        "API 테스팅 (api-server)"
+      ],
+      "missing_skills": [
+        "Playwright E2E",
+        "Payment 도메인 테스트 케이스"
+      ],
+      "capacity_signal": "low_risk",
+      "communication_signal": "medium_delay",
+      "delivery_signal": "stable",
+      "collaboration_signal": "review_hub",
+      "risk_tags": [
+        "qa_communication_gap"
+      ],
+      "evidence_refs": [
+        "slack.message_count",
+        "calendar.focus_time_minutes",
+        "jira.overdue_issue_count",
+        "jira.reopened_issue_count"
+      ]
+    },
+    {
+      "employee_id": "E20260040",
+      "employee_name": "박라경",
+      "assigned_role": "DevOps Engineer",
+      "matched_skills": [
+        "CI/CD 구성 (platform-infra)",
+        "다중 레포 운영 경험 (7개 기여)",
+        "인프라 설계"
+      ],
+      "missing_skills": [
+        "GCP Cloud Run 실운영 경험"
+      ],
+      "capacity_signal": "medium_risk",
+      "communication_signal": "medium_delay",
+      "delivery_signal": "stable",
+      "collaboration_signal": "connector",
+      "risk_tags": [
+        "devops_gcp_experience_gap"
+      ],
+      "evidence_refs": [
+        "calendar.busy_minutes",
+        "jira.sprint_completion_rate",
+        "github.repository_contribution_count",
+        "github.contributed_repositories"
+      ]
+    }
+  ],
+  "team_risk_summary": {
+    "team_id": "team_001",
+    "risk_tags": [
+      "backend_workload_concentration",
+      "pm_low_sprint_velocity",
+      "fe_scope_instability",
+      "fe_be_api_dependency",
+      "payment_api_integration_risk",
+      "devops_gcp_experience_gap",
+      "qa_communication_gap",
+      "qa_coverage_gap"
+    ],
+    "risk_prior_scores": {
+      "backend_workload_concentration": 0.68,
+      "pm_low_sprint_velocity": 0.71,
+      "fe_scope_instability": 0.62,
+      "fe_be_api_dependency": 0.59,
+      "payment_api_integration_risk": 0.55,
+      "devops_gcp_experience_gap": 0.4,
+      "qa_communication_gap": 0.38,
+      "qa_coverage_gap": 0.44,
+      "schedule_risk": 0.47,
+      "integration_risk": 0.58
+    },
+    "bottleneck_members": [
+      "안우빈"
+    ],
+    "critical_dependencies": [
+      "안우빈(BE) Payment API schema 확정 → 심예린(FE) 결제 UI 연동 착수 가능",
+      "안우빈(BE) 인증 API 완료 → 심예린(FE) 로그인 UI 연동 가능",
+      "박라경(DevOps) Cloud Run 환경 구성 → 전체 배포 파이프라인 선행 필요",
+      "권원솔(PM) sprint_completion_rate 0.291 → 일정 관리 리스크 팀 전체 영향"
+    ]
+  },
+  "evidence_metadata": [
+    {
+      "evidence_id": "ev_001",
+      "employee_name": "안우빈",
+      "risk_tag": "backend_workload_concentration",
+      "source_column": "jira.overdue_issue_count",
+      "signal_value": "6건",
+      "interpretation": "미완료 이슈 6건. QA(2건), DevOps(0건) 대비 3배 수준. BE 역할 업무 집중 우려"
+    },
+    {
+      "evidence_id": "ev_002",
+      "employee_name": "안우빈",
+      "risk_tag": "backend_workload_concentration",
+      "source_column": "jira.worklog_hours",
+      "signal_value": "150.3시간 (최근 3개월)",
+      "interpretation": "팀 내 최고 worklog. 팀 평균(122.8시간) 대비 22% 초과. 추가 업무 흡수 여력 제한"
+    },
+    {
+      "evidence_id": "ev_003",
+      "employee_name": "안우빈",
+      "risk_tag": "payment_api_integration_risk",
+      "source_column": "jira.scope_change_count",
+      "signal_value": "5회 (최근 3개월)",
+      "interpretation": "외부 API 스펙 변경으로 인한 scope change 5회. 결제 API 연동 단계에서 반복 리스크 우려"
+    },
+    {
+      "evidence_id": "ev_004",
+      "employee_name": "권원솔",
+      "risk_tag": "pm_low_sprint_velocity",
+      "source_column": "jira.sprint_completion_rate",
+      "signal_value": "0.291 (최근 3개월)",
+      "interpretation": "스프린트 완료율 29.1%. 팀 평균(0.70) 대비 현저히 낮음. 일정 관리 및 팀 속도 리스크"
+    },
+    {
+      "evidence_id": "ev_005",
+      "employee_name": "권원솔",
+      "risk_tag": "pm_low_sprint_velocity",
+      "source_column": "slack.avg_response_time",
+      "signal_value": "91.1분",
+      "interpretation": "슬랙 평균 응답 시간 91.1분. 팀 내 최고. 의사결정 지연 및 블로킹 이슈 장기화 우려"
+    },
+    {
+      "evidence_id": "ev_006",
+      "employee_name": "심예린",
+      "risk_tag": "fe_scope_instability",
+      "source_column": "jira.scope_change_count",
+      "signal_value": "10회 (최근 3개월)",
+      "interpretation": "scope change 10회. 팀 평균(4.6회) 대비 2.2배. FE 요구사항 변동 반복 패턴"
+    },
+    {
+      "evidence_id": "ev_007",
+      "employee_name": "심예린",
+      "risk_tag": "fe_scope_instability",
+      "source_column": "jira.reopened_issue_count",
+      "signal_value": "3건 (최근 3개월)",
+      "interpretation": "재오픈 이슈 3건. QA(1건) 대비 높음. 초기 완성도 부족 또는 요구사항 변경에 따른 재작업 패턴"
+    },
+    {
+      "evidence_id": "ev_008",
+      "employee_name": "심예린",
+      "risk_tag": "fe_be_api_dependency",
+      "source_column": "jira.avg_cycle_time",
+      "signal_value": "8.4일",
+      "interpretation": "이슈 평균 사이클 타임 8.4일. 팀 내 최고. BE API 대기로 인한 FE 블로킹 패턴 반복 가능성"
+    },
+    {
+      "evidence_id": "ev_009",
+      "employee_name": "송다원",
+      "risk_tag": "qa_communication_gap",
+      "source_column": "slack.message_count",
+      "signal_value": "85건 (최근 3개월)",
+      "interpretation": "슬랙 메시지 85건. 팀 평균(172건) 대비 49% 수준. QA 단계 이슈 커뮤니케이션 지연 우려"
+    },
+    {
+      "evidence_id": "ev_010",
+      "employee_name": "송다원",
+      "risk_tag": "qa_communication_gap",
+      "source_column": "calendar.focus_time_minutes",
+      "signal_value": "515분 (최근 3개월)",
+      "interpretation": "집중 작업 시간 515분. 팀 평균(1171분) 대비 44% 수준. QA 심층 검토 시간 부족 우려"
+    },
+    {
+      "evidence_id": "ev_011",
+      "employee_name": "송다원",
+      "risk_tag": "qa_coverage_gap",
+      "source_column": "jira.overdue_issue_count",
+      "signal_value": "2건 (최근 3개월)",
+      "interpretation": "QA 미완료 이슈 2건. Playwright E2E 스킬 부재와 결합 시 결제 예외 케이스 미검증 위험"
+    },
+    {
+      "evidence_id": "ev_013",
+      "employee_name": "박라경",
+      "risk_tag": "devops_gcp_experience_gap",
+      "source_column": "github.contributed_repositories",
+      "signal_value": "platform-infra 기여 확인 / GCP Cloud Run 전용 레포 없음",
+      "interpretation": "company/platform-infra 기여로 인프라 역량 확인. GCP Cloud Run 전용 경험은 확인 불가. 초기 구성 학습 비용 예상"
+    }
+  ]
+}

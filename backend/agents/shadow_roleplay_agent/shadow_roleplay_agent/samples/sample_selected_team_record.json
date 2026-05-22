@@ -1,0 +1,41 @@
+{
+  "team_id": "team_001",
+  "team_rank": 1,
+  "team_fit_score": 84.6,
+  "members": [
+    {
+      "employee_id": "E20260014",
+      "employee_name": "권원솔",
+      "assigned_role": "PM"
+    },
+    {
+      "employee_id": "E20260037",
+      "employee_name": "안우빈",
+      "assigned_role": "Backend Developer"
+    },
+    {
+      "employee_id": "E20260038",
+      "employee_name": "심예린",
+      "assigned_role": "Frontend Developer"
+    },
+    {
+      "employee_id": "E20260087",
+      "employee_name": "송다원",
+      "assigned_role": "QA Engineer"
+    },
+    {
+      "employee_id": "E20260040",
+      "employee_name": "박라경",
+      "assigned_role": "DevOps Engineer"
+    }
+  ],
+  "role_coverage_score": 0.90,
+  "skill_coverage_score": 0.83,
+  "availability_score": 0.71,
+  "team_risk_flags": [
+    "backend_workload_concentration",
+    "pm_low_sprint_velocity",
+    "fe_scope_instability",
+    "payment_api_integration_risk"
+  ]
+}

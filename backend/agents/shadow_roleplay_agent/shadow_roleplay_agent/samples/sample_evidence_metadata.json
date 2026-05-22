@@ -1,0 +1,98 @@
+[
+  {
+    "evidence_id": "ev_001",
+    "employee_name": "안우빈",
+    "risk_tag": "backend_workload_concentration",
+    "source_column": "jira.overdue_issue_count",
+    "signal_value": "6건",
+    "interpretation": "미완료 이슈 6건. QA(2건), DevOps(0건) 대비 3배 수준. BE 역할 업무 집중 우려"
+  },
+  {
+    "evidence_id": "ev_002",
+    "employee_name": "안우빈",
+    "risk_tag": "backend_workload_concentration",
+    "source_column": "jira.worklog_hours",
+    "signal_value": "150.3시간 (최근 3개월)",
+    "interpretation": "팀 내 최고 worklog. 팀 평균(122.8시간) 대비 22% 초과. 추가 업무 흡수 여력 제한"
+  },
+  {
+    "evidence_id": "ev_003",
+    "employee_name": "안우빈",
+    "risk_tag": "payment_api_integration_risk",
+    "source_column": "jira.scope_change_count",
+    "signal_value": "5회 (최근 3개월)",
+    "interpretation": "외부 API 스펙 변경으로 인한 scope change 5회. 결제 API 연동 단계에서 반복 리스크 우려"
+  },
+  {
+    "evidence_id": "ev_004",
+    "employee_name": "권원솔",
+    "risk_tag": "pm_low_sprint_velocity",
+    "source_column": "jira.sprint_completion_rate",
+    "signal_value": "0.291 (최근 3개월)",
+    "interpretation": "스프린트 완료율 29.1%. 팀 평균(0.70) 대비 현저히 낮음. 일정 관리 및 팀 속도 리스크"
+  },
+  {
+    "evidence_id": "ev_005",
+    "employee_name": "권원솔",
+    "risk_tag": "pm_low_sprint_velocity",
+    "source_column": "slack.avg_response_time",
+    "signal_value": "91.1분",
+    "interpretation": "슬랙 평균 응답 시간 91.1분. 팀 내 최고. 의사결정 지연 및 블로킹 이슈 장기화 우려"
+  },
+  {
+    "evidence_id": "ev_006",
+    "employee_name": "심예린",
+    "risk_tag": "fe_scope_instability",
+    "source_column": "jira.scope_change_count",
+    "signal_value": "10회 (최근 3개월)",
+    "interpretation": "scope change 10회. 팀 평균(4.6회) 대비 2.2배. FE 요구사항 변동 반복 패턴"
+  },
+  {
+    "evidence_id": "ev_007",
+    "employee_name": "심예린",
+    "risk_tag": "fe_scope_instability",
+    "source_column": "jira.reopened_issue_count",
+    "signal_value": "3건 (최근 3개월)",
+    "interpretation": "재오픈 이슈 3건. QA(1건) 대비 높음. 초기 완성도 부족 또는 요구사항 변경에 따른 재작업 패턴"
+  },
+  {
+    "evidence_id": "ev_008",
+    "employee_name": "심예린",
+    "risk_tag": "fe_be_api_dependency",
+    "source_column": "jira.avg_cycle_time",
+    "signal_value": "8.4일",
+    "interpretation": "이슈 평균 사이클 타임 8.4일. 팀 내 최고. BE API 대기로 인한 FE 블로킹 패턴 반복 가능성"
+  },
+  {
+    "evidence_id": "ev_009",
+    "employee_name": "송다원",
+    "risk_tag": "qa_communication_gap",
+    "source_column": "slack.message_count",
+    "signal_value": "85건 (최근 3개월)",
+    "interpretation": "슬랙 메시지 85건. 팀 평균(172건) 대비 49% 수준. QA 단계 이슈 커뮤니케이션 지연 우려"
+  },
+  {
+    "evidence_id": "ev_010",
+    "employee_name": "송다원",
+    "risk_tag": "qa_communication_gap",
+    "source_column": "calendar.focus_time_minutes",
+    "signal_value": "515분 (최근 3개월)",
+    "interpretation": "집중 작업 시간 515분. 팀 평균(1171분) 대비 44% 수준. QA 심층 검토 시간 부족 우려"
+  },
+  {
+    "evidence_id": "ev_011",
+    "employee_name": "송다원",
+    "risk_tag": "qa_coverage_gap",
+    "source_column": "jira.overdue_issue_count",
+    "signal_value": "2건 (최근 3개월)",
+    "interpretation": "QA 미완료 이슈 2건. Playwright E2E 스킬 부재와 결합 시 결제 예외 케이스 미검증 위험"
+  },
+  {
+    "evidence_id": "ev_013",
+    "employee_name": "박라경",
+    "risk_tag": "devops_gcp_experience_gap",
+    "source_column": "github.contributed_repositories",
+    "signal_value": "platform-infra 기여 확인 / GCP Cloud Run 전용 레포 없음",
+    "interpretation": "company/platform-infra 기여로 인프라 역량 확인. GCP Cloud Run 전용 경험은 확인 불가. 초기 구성 학습 비용 예상"
+  }
+]

@@ -1,0 +1,95 @@
+[
+  {
+    "employee_id": "E20260014",
+    "employee_name": "권원솔",
+    "assigned_role": "PM",
+    "matched_skills": ["프로젝트 기획", "Payment Service 도메인 이해", "FE 리뷰"],
+    "missing_skills": ["기술 아키텍처 의사결정", "GCP Cloud Run"],
+    "capacity_signal": "low_risk",
+    "communication_signal": "high_delay",
+    "delivery_signal": "unstable",
+    "collaboration_signal": "rapid_responder",
+    "risk_tags": ["pm_low_sprint_velocity"],
+    "evidence_refs": [
+      "jira.sprint_completion_rate",
+      "jira.worklog_hours",
+      "slack.avg_response_time",
+      "hr.overtime_hours_12m"
+    ]
+  },
+  {
+    "employee_id": "E20260037",
+    "employee_name": "안우빈",
+    "assigned_role": "Backend Developer",
+    "matched_skills": ["JWT 인증 (auth-service)", "플랫폼 인프라 이해 (platform-infra)", "API 연동 (web-frontend)"],
+    "missing_skills": ["Payment API SDK", "PostgreSQL 운영", "GCP Cloud Run"],
+    "capacity_signal": "high_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "stable",
+    "collaboration_signal": "review_hub",
+    "risk_tags": ["backend_workload_concentration", "payment_api_integration_risk"],
+    "evidence_refs": [
+      "jira.overdue_issue_count",
+      "jira.worklog_hours",
+      "jira.scope_change_count",
+      "calendar.busy_minutes",
+      "hr.overtime_hours_12m",
+      "github.pr_count_3m"
+    ]
+  },
+  {
+    "employee_id": "E20260038",
+    "employee_name": "심예린",
+    "assigned_role": "Frontend Developer",
+    "matched_skills": ["REST API 연동 (api-server)", "인증 UI 연동 (auth-service)", "디자인 시스템 (design-system)"],
+    "missing_skills": ["Payment UI 경험", "Playwright E2E"],
+    "capacity_signal": "medium_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "variable",
+    "collaboration_signal": "focused_individual",
+    "risk_tags": ["fe_scope_instability", "fe_be_api_dependency"],
+    "evidence_refs": [
+      "jira.scope_change_count",
+      "jira.reopened_issue_count",
+      "jira.avg_cycle_time",
+      "calendar.busy_minutes",
+      "slack.avg_response_time"
+    ]
+  },
+  {
+    "employee_id": "E20260087",
+    "employee_name": "송다원",
+    "assigned_role": "QA Engineer",
+    "matched_skills": ["Pytest 자동화 (qa-automation)", "릴리즈 프로세스 (release-tools)", "API 테스팅 (api-server)"],
+    "missing_skills": ["Playwright E2E", "Payment 도메인 테스트 케이스"],
+    "capacity_signal": "low_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "stable",
+    "collaboration_signal": "review_hub",
+    "risk_tags": ["qa_communication_gap"],
+    "evidence_refs": [
+      "slack.message_count",
+      "calendar.focus_time_minutes",
+      "jira.overdue_issue_count",
+      "jira.reopened_issue_count"
+    ]
+  },
+  {
+    "employee_id": "E20260040",
+    "employee_name": "박라경",
+    "assigned_role": "DevOps Engineer",
+    "matched_skills": ["CI/CD 구성 (platform-infra)", "다중 레포 운영 경험 (7개 기여)", "인프라 설계"],
+    "missing_skills": ["GCP Cloud Run 실운영 경험"],
+    "capacity_signal": "medium_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "stable",
+    "collaboration_signal": "connector",
+    "risk_tags": ["devops_gcp_experience_gap"],
+    "evidence_refs": [
+      "calendar.busy_minutes",
+      "jira.sprint_completion_rate",
+      "github.repository_contribution_count",
+      "github.contributed_repositories"
+    ]
+  }
+]
