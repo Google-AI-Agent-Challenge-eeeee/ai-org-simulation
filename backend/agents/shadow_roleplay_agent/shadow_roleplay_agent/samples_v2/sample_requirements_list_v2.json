@@ -1,0 +1,109 @@
+{
+  "project_id": "project_002",
+  "project_name": "AI 고객 서비스 챗봇 플랫폼 v1.0",
+  "project_summary": "LLM 기반 고객 문의 자동 응답 및 티켓 분류 시스템. OpenAI GPT API 연동, 실시간 스트리밍 응답, 티켓 대시보드를 포함하는 18일 스프린트 MVP. ML 모델 응답 품질 검증과 BE-ML 연동 인터페이스가 핵심 리스크.",
+  "required_roles": [
+    "PM",
+    "Backend Developer",
+    "Frontend Developer",
+    "QA Engineer",
+    "ML Engineer"
+  ],
+  "required_skills": [
+    "Python",
+    "FastAPI",
+    "PostgreSQL",
+    "React",
+    "TypeScript",
+    "OpenAI API",
+    "LangChain",
+    "WebSocket",
+    "Pytest",
+    "Docker"
+  ],
+  "features": [
+    {
+      "feature_id": "feat_001",
+      "feature_name": "LLM 챗봇 응답 엔진",
+      "priority": "P0",
+      "assigned_role": "ML Engineer",
+      "tech_requirements": ["OpenAI GPT API", "LangChain", "Prompt Engineering"],
+      "dependencies": [],
+      "estimated_days": 5,
+      "risk_notes": "GPT API 응답 품질 편차 큼. 프롬프트 반복 개선 필요. 응답 지연 시 UX 영향 직결"
+    },
+    {
+      "feature_id": "feat_002",
+      "feature_name": "티켓 분류 및 라우팅 API",
+      "priority": "P0",
+      "assigned_role": "Backend Developer",
+      "tech_requirements": ["FastAPI", "PostgreSQL", "ML API 연동"],
+      "dependencies": ["feat_001"],
+      "estimated_days": 4,
+      "risk_notes": "ML 엔진 응답 스키마 미확정 시 BE API 설계 지연. 연동 인터페이스 선확정 필요"
+    },
+    {
+      "feature_id": "feat_003",
+      "feature_name": "실시간 챗봇 UI (스트리밍)",
+      "priority": "P0",
+      "assigned_role": "Frontend Developer",
+      "tech_requirements": ["React", "TypeScript", "WebSocket", "SSE"],
+      "dependencies": ["feat_001", "feat_002"],
+      "estimated_days": 4,
+      "risk_notes": "스트리밍 연동 경험 부재 시 UX 불안정. BE WebSocket API 완료 대기 필요"
+    },
+    {
+      "feature_id": "feat_004",
+      "feature_name": "티켓 관리 대시보드",
+      "priority": "P1",
+      "assigned_role": "Frontend Developer",
+      "tech_requirements": ["React", "REST API", "Chart.js"],
+      "dependencies": ["feat_002"],
+      "estimated_days": 3,
+      "risk_notes": "BE API 스펙 확정 전 목업 병행 가능. P0 이후 착수"
+    },
+    {
+      "feature_id": "feat_005",
+      "feature_name": "AI 응답 품질 검증 및 E2E 테스트",
+      "priority": "P0",
+      "assigned_role": "QA Engineer",
+      "tech_requirements": ["Pytest", "LLM 응답 평가 기준", "Playwright"],
+      "dependencies": ["feat_001", "feat_002", "feat_003"],
+      "estimated_days": 4,
+      "risk_notes": "AI 응답 비결정적 특성으로 기존 E2E 테스트 방식 적용 어려움. 품질 기준 사전 정의 필수"
+    },
+    {
+      "feature_id": "feat_006",
+      "feature_name": "사용자 인증 및 권한 관리",
+      "priority": "P1",
+      "assigned_role": "Backend Developer",
+      "tech_requirements": ["JWT", "PostgreSQL", "RBAC"],
+      "dependencies": [],
+      "estimated_days": 2,
+      "risk_notes": "표준 인증 패턴 적용. P0 기능 병행 개발 가능"
+    }
+  ],
+  "timeline": {
+    "total_sprint_days": 18,
+    "milestones": [
+      { "name": "ML-BE 연동 인터페이스 확정", "due_day": 3, "owner_role": "ML Engineer" },
+      { "name": "프롬프트 v1 완료", "due_day": 5, "owner_role": "ML Engineer" },
+      { "name": "BE API 완료", "due_day": 9, "owner_role": "Backend Developer" },
+      { "name": "FE 연동 완료", "due_day": 13, "owner_role": "Frontend Developer" },
+      { "name": "AI 품질 검증 완료", "due_day": 16, "owner_role": "QA Engineer" },
+      { "name": "릴리즈", "due_day": 18, "owner_role": "PM" }
+    ]
+  },
+  "constraints": [
+    "OpenAI API 비용 예산 한정 — 프롬프트 토큰 최적화 필수",
+    "LLM 응답 비결정성으로 기존 QA 자동화 기준 미적용",
+    "ML-BE 인터페이스 계약 3일차 이전 확정 필수"
+  ],
+  "risk_flags": [
+    "ml_model_latency_risk",
+    "be_ml_integration_risk",
+    "qa_ai_coverage_gap",
+    "role_skill_mismatch",
+    "scope_creep_risk"
+  ]
+}

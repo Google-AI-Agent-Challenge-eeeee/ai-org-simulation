@@ -1,0 +1,98 @@
+[
+  {
+    "evidence_id": "ev_v2_001",
+    "employee_name": "오하은",
+    "risk_tag": "ml_workload_concentration",
+    "source_column": "jira.worklog_hours",
+    "signal_value": "162.5시간 (최근 3개월)",
+    "interpretation": "팀 내 최고 worklog. 팀 평균(118.4시간) 대비 37% 초과. ML 엔진 단독 담당으로 추가 요청 흡수 여력 부족"
+  },
+  {
+    "evidence_id": "ev_v2_002",
+    "employee_name": "오하은",
+    "risk_tag": "ml_model_latency_risk",
+    "source_column": "jira.overdue_issue_count",
+    "signal_value": "5건 (최근 3개월)",
+    "interpretation": "ML 태스크 미완료 이슈 5건. 프롬프트 반복 개선 및 API 응답 지연 디버깅에 예상 외 시간 소요 패턴"
+  },
+  {
+    "evidence_id": "ev_v2_003",
+    "employee_name": "오하은",
+    "risk_tag": "be_ml_integration_risk",
+    "source_column": "slack.avg_response_time",
+    "signal_value": "78.3분",
+    "interpretation": "슬랙 평균 응답 78.3분. ML-BE 인터페이스 협의 지연 가능성. 최민준(BE) 대기 시간 발생 우려"
+  },
+  {
+    "evidence_id": "ev_v2_004",
+    "employee_name": "최민준",
+    "risk_tag": "be_ml_integration_risk",
+    "source_column": "jira.avg_cycle_time",
+    "signal_value": "9.1일",
+    "interpretation": "이슈 평균 사이클 타임 9.1일. ML API 스키마 대기로 인한 BE 블로킹 패턴. 팀 평균(6.2일) 대비 47% 초과"
+  },
+  {
+    "evidence_id": "ev_v2_005",
+    "employee_name": "최민준",
+    "risk_tag": "be_ml_integration_risk",
+    "source_column": "jira.overdue_issue_count",
+    "signal_value": "4건 (최근 3개월)",
+    "interpretation": "BE 미완료 이슈 4건. ML 연동 의존 이슈가 전체의 75% 차지. 외부 의존성에 의한 블로킹 구조"
+  },
+  {
+    "evidence_id": "ev_v2_006",
+    "employee_name": "박준혁",
+    "risk_tag": "qa_ai_coverage_gap",
+    "source_column": "jira.overdue_issue_count",
+    "signal_value": "3건 (최근 3개월)",
+    "interpretation": "QA 미완료 이슈 3건. AI 응답 비결정성 대응 경험 없음. 품질 검증 기준 미수립 시 릴리즈 blocker 가능"
+  },
+  {
+    "evidence_id": "ev_v2_007",
+    "employee_name": "박준혁",
+    "risk_tag": "qa_communication_gap",
+    "source_column": "slack.avg_response_time",
+    "signal_value": "104.7분",
+    "interpretation": "슬랙 응답 시간 104.7분. 팀 내 최고. QA-ML-BE 간 버그 협의 지연으로 이슈 수정 사이클 길어질 우려"
+  },
+  {
+    "evidence_id": "ev_v2_008",
+    "employee_name": "박준혁",
+    "risk_tag": "qa_communication_gap",
+    "source_column": "calendar.focus_time_minutes",
+    "signal_value": "440분 (최근 3개월)",
+    "interpretation": "집중 작업 시간 440분. 팀 평균(1050분) 대비 42% 수준. AI 품질 검증 케이스 작성에 충분한 시간 확보 어려움"
+  },
+  {
+    "evidence_id": "ev_v2_009",
+    "employee_name": "김서연",
+    "risk_tag": "fe_streaming_inexperience",
+    "source_column": "jira.reopened_issue_count",
+    "signal_value": "4건 (최근 3개월)",
+    "interpretation": "재오픈 이슈 4건. 실시간 스트리밍 UI 구현 경험 부족으로 초기 구현 후 수정 반복 패턴 예상"
+  },
+  {
+    "evidence_id": "ev_v2_010",
+    "employee_name": "김서연",
+    "risk_tag": "be_ml_integration_risk",
+    "source_column": "jira.avg_cycle_time",
+    "signal_value": "7.8일",
+    "interpretation": "FE 이슈 평균 사이클 타임 7.8일. BE WebSocket API 완료 대기로 인한 FE 병행 작업 블로킹 반복 가능성"
+  },
+  {
+    "evidence_id": "ev_v2_011",
+    "employee_name": "이지훈",
+    "risk_tag": "scope_creep_risk",
+    "source_column": "jira.scope_change_count",
+    "signal_value": "8회 (최근 3개월)",
+    "interpretation": "scope change 8회. AI 기능 가능성에 대한 요구사항 추가 반복. ML 엔지니어 과부하로 연결될 위험"
+  },
+  {
+    "evidence_id": "ev_v2_012",
+    "employee_name": "오하은",
+    "risk_tag": "ml_workload_concentration",
+    "source_column": "calendar.busy_minutes",
+    "signal_value": "2840분 (최근 3개월)",
+    "interpretation": "캘린더 바쁜 시간 2840분. 팀 평균(1620분) 대비 75% 초과. ML 단독 담당 + scope 추가 요청 집중"
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "team_id": "team_001",
+  "risk_tags": [
+    "backend_workload_concentration",
+    "pm_low_sprint_velocity",
+    "fe_scope_instability",
+    "fe_be_api_dependency",
+    "payment_api_integration_risk",
+    "devops_gcp_experience_gap",
+    "qa_communication_gap",
+    "qa_coverage_gap"
+  ],
+  "risk_prior_scores": {
+    "backend_workload_concentration": 0.68,
+    "pm_low_sprint_velocity": 0.71,
+    "fe_scope_instability": 0.62,
+    "fe_be_api_dependency": 0.59,
+    "payment_api_integration_risk": 0.55,
+    "devops_gcp_experience_gap": 0.40,
+    "qa_communication_gap": 0.38,
+    "qa_coverage_gap": 0.44,
+    "schedule_risk": 0.47,
+    "integration_risk": 0.58
+  },
+  "bottleneck_members": ["안우빈"],
+  "critical_dependencies": [
+    "안우빈(BE) Payment API schema 확정 → 심예린(FE) 결제 UI 연동 착수 가능",
+    "안우빈(BE) 인증 API 완료 → 심예린(FE) 로그인 UI 연동 가능",
+    "박라경(DevOps) Cloud Run 환경 구성 → 전체 배포 파이프라인 선행 필요",
+    "권원솔(PM) sprint_completion_rate 0.291 → 일정 관리 리스크 팀 전체 영향"
+  ]
+}
