@@ -205,7 +205,9 @@ just db-reset                 # 로컬 DB 완전 삭제 후 재생성 (DESTRUCTI
 just seed                     # datasets/raw/*.csv → DB 적재 (TRUNCATE 후 재삽입, 멱등)
 just lint                     # ruff 검사 (코드 변경 없음)
 just fmt                      # ruff 자동 포맷 + auto-fix
-just test                     # pytest 실행
+just test                     # pytest unit only (DB 불필요, 빠름)
+just test-integration         # API 통합 테스트 (just db-up && just seed 선행 필요)
+just test-all                 # unit + integration 전부
 ```
 
 #### DB 스키마를 바꿨다면
@@ -228,7 +230,42 @@ CSV → Pydantic 검증 → ORM insert 순서라 스키마 drift가 있으면 �
 `just dev` 실행 후 브라우저에서 다음 두 URL을 열어 확인:
 
 - `http://localhost:8000/health` → `{"status":"ok"}`
-- `http://localhost:8000/docs` → Swagger UI
+- `http://localhost:8000/docs` → Swagger UI (모든 엔드포인트를 클릭만으로 호출 가능)
+
+#### 현재 노출된 API (Phase 3 — read-only)
+
+모두 GET. 응답은 Pydantic 스키마와 동일한 모양이고, list 계열은 `Paginated[T]`(`total/limit/offset/items`)로 감싸져 있습니다.
+
+| Method & Path | 설명 | 주요 쿼리 파라미터 |
+| --- | --- | --- |
+| `GET /health` | 헬스 체크 | — |
+| `GET /employees` | 직원 목록 (페이지네이션) | `limit`, `offset`, `department`, `job_category_code` |
+| `GET /employees/{employee_id}` | 직원 1명 상세 | — |
+| `GET /employees/{employee_id}/profile` | **HR + GitHub + Slack + Jira + Calendar 합본** | — |
+| `GET /github/activities` | GitHub 활동 행 (한 사람당 여러 측정 기간) | `limit`, `offset`, `github_id` |
+| `GET /slack/activities` | Slack 활동 행 (사람당 1행) | `limit`, `offset`, `slack_user_id` |
+| `GET /jira/activities` | Jira 활동 행 (사람당 1행) | `limit`, `offset`, `jira_account_id` |
+| `GET /calendar/activities` | Calendar 활동 행 (사람당 여러 캘린더 가능) | `limit`, `offset`, `google_email` |
+
+빠른 확인 예시:
+
+```bash
+curl http://localhost:8000/employees?limit=3
+curl http://localhost:8000/employees/E20260001/profile
+curl "http://localhost:8000/github/activities?github_id=gh-emp-0001"
+```
+
+> 별도 클라이언트 없이 `/docs`에서 `Try it out` → `Execute`만으로 모든 응답을 확인할 수 있습니다.
+
+#### 테스트 레이어링
+
+| 명령 | 무엇 | 언제 |
+| --- | --- | --- |
+| `just test` | unit only (SQLite + Pydantic 검증) | 매 커밋 전 (Postgres 없어도 OK) |
+| `just test-integration` | API 통합 — 실 Postgres + 시드된 데이터 | 라우터/DB 모델 변경 후, PR 올리기 전 |
+| `just test-all` | unit + integration 모두 | 큰 PR 마무리 시 |
+
+`@pytest.mark.integration`이 붙은 테스트만 통합 카테고리. CI는 PR 시점에 통합 테스트도 자동으로 돕니다.
 
 ### Step 7. 풀(pull) 후 의존성이 바뀌었을 때
 

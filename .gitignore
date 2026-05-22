@@ -36,6 +36,8 @@ venv/
 # Runtime / temp
 tmp/
 temp/
+# Commit message scratch files (PowerShell heredoc workaround).
+.git-commit-msg.tmp
 
 # Datasets
 # Rule of thumb:

@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from backend.api import api_router
 from backend.core.config import get_settings
 from backend.core.logger import get_logger, setup_logger
 
@@ -52,3 +53,6 @@ def health() -> dict[str, str]:
         "env": settings.env.value,
         "llm_mode": settings.llm_mode.value,
     }
+
+
+app.include_router(api_router)
