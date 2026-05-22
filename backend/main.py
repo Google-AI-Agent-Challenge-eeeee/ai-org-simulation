@@ -55,3 +55,6 @@ def health() -> dict[str, str]:
         "env": settings.env.value,
         "llm_mode": settings.llm_mode.value,
     }
+
+
+app.include_router(api_router)

@@ -66,6 +66,15 @@ fmt:
     uv run ruff format .
     uv run ruff check --fix .
 
-# Run the test suite.
+# Run the unit test suite (default — fast, no Postgres needed).
 test:
+    uv run pytest -m "not integration"
+
+# Run integration tests against the seeded local Postgres.
+# Requires ``just db-up && just seed`` first.
+test-integration:
+    uv run pytest -m integration
+
+# Run *everything* (unit + integration). Useful before pushing a PR.
+test-all:
     uv run pytest

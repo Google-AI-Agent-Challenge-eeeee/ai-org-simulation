@@ -51,6 +51,20 @@ ignore = [
     "E501", # line too long (handled by formatter)
 ]
 
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI 표준 패턴: `param: T = Query(...)`, `db: Session = Depends(...)` 같이
+# 함수 호출을 기본값으로 두는 것이 의도된 API. B008이 이걸 잡지 않도록 화이트리스트.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Form",
+    "fastapi.File",
+]
+
 [tool.ruff.lint.isort]
 known-first-party = ["backend", "scripts"]
 
@@ -64,3 +78,9 @@ minversion = "8.0"
 testpaths = ["backend/tests"]
 pythonpath = ["."]
 addopts = "-ra -q"
+# Marker filtering is done in ``justfile`` recipes (``just test`` excludes
+# integration, ``just test-integration`` includes only it). Keep this file
+# free of marker defaults so plain ``pytest`` runs everything.
+markers = [
+    "integration: requires a running Postgres seeded by ``just seed``.",
+]
