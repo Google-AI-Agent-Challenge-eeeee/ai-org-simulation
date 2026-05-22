@@ -1,0 +1,1573 @@
+{
+  "_meta": {
+    "name": "requirements_agent_rulebase",
+    "phase": "file_create_phase_1",
+    "status": "mvp_reference_expanded",
+    "version": "0.2.0",
+    "purpose": "Map MVP web/app PRD expressions and aliases to standard taxonomy features.",
+    "source_materials": [
+      "../../requirements_agent_민성초기세팅/Final_Requirements_Agent_implementation_plan.md",
+      "../../requirements_agent_민성초기세팅/requirements_agent_docs/requirements_agent_rules.md",
+      "../../requirements_agent_민성초기세팅/requirements_agent_docs/requirements_agent_guardrails.md"
+    ],
+    "guardrails": [
+      "Do not force weak alias matches.",
+      "Route unmatched or ambiguous expressions to unknown_requirements.",
+      "Keep project-specific mappings separate from global rulebase entries.",
+      "Do not mutate taxonomy.json from rulebase matching results."
+    ]
+  },
+  "matching_policy": {
+    "case_sensitive": false,
+    "match_modes": [
+      "exact",
+      "contains",
+      "normalized_contains"
+    ],
+    "minimum_confidence_for_auto_match": 0.75,
+    "below_threshold_action": "unknown_requirements",
+    "conflict_action": "manual_review_required",
+    "auto_extend_taxonomy": false
+  },
+  "aliases": {
+    "로그인": {
+      "feature_key": "authentication_account",
+      "confidence": 0.95
+    },
+    "회원가입": {
+      "feature_key": "authentication_account",
+      "confidence": 0.95
+    },
+    "계정": {
+      "feature_key": "authentication_account",
+      "confidence": 0.85
+    },
+    "소셜 로그인": {
+      "feature_key": "authentication_account",
+      "confidence": 0.95
+    },
+    "OAuth": {
+      "feature_key": "authentication_account",
+      "confidence": 0.9
+    },
+    "JWT": {
+      "feature_key": "authentication_account",
+      "confidence": 0.9
+    },
+    "권한": {
+      "feature_key": "authentication_account",
+      "confidence": 0.78
+    },
+    "알림": {
+      "feature_key": "notification_center",
+      "confidence": 0.95
+    },
+    "알림 센터": {
+      "feature_key": "notification_center",
+      "confidence": 0.98
+    },
+    "푸시": {
+      "feature_key": "notification_center",
+      "confidence": 0.92
+    },
+    "푸시 알림": {
+      "feature_key": "notification_center",
+      "confidence": 0.97
+    },
+    "인앱 알림": {
+      "feature_key": "notification_center",
+      "confidence": 0.97
+    },
+    "읽음 처리": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.96
+    },
+    "notification": {
+      "feature_key": "notification_center",
+      "confidence": 0.92
+    },
+    "push notification": {
+      "feature_key": "notification_center",
+      "confidence": 0.97
+    },
+    "검색": {
+      "feature_key": "search_filtering",
+      "confidence": 0.95
+    },
+    "필터": {
+      "feature_key": "search_filtering",
+      "confidence": 0.92
+    },
+    "정렬": {
+      "feature_key": "search_filtering",
+      "confidence": 0.82
+    },
+    "키워드 검색": {
+      "feature_key": "search_filtering",
+      "confidence": 0.97
+    },
+    "조건 검색": {
+      "feature_key": "search_filtering",
+      "confidence": 0.95
+    },
+    "search": {
+      "feature_key": "search_filtering",
+      "confidence": 0.94
+    },
+    "filter": {
+      "feature_key": "search_filtering",
+      "confidence": 0.92
+    },
+    "대시보드": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.95
+    },
+    "통계": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.88
+    },
+    "지표": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.86
+    },
+    "차트": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.88
+    },
+    "리포트": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.78
+    },
+    "analytics": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.94
+    },
+    "dashboard": {
+      "feature_key": "dashboard_analytics",
+      "confidence": 0.95
+    },
+    "관리자": {
+      "feature_key": "admin_console_content_ops",
+      "confidence": 0.86
+    },
+    "어드민": {
+      "feature_key": "admin_console_content_ops",
+      "confidence": 0.9
+    },
+    "백오피스": {
+      "feature_key": "admin_console_content_ops",
+      "confidence": 0.94
+    },
+    "콘텐츠 관리": {
+      "feature_key": "admin_console_content_ops",
+      "confidence": 0.92
+    },
+    "CRUD": {
+      "feature_key": "admin_console_content_ops",
+      "confidence": 0.82
+    },
+    "admin": {
+      "feature_key": "admin_console_content_ops",
+      "confidence": 0.9
+    },
+    "결제": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.97
+    },
+    "주문": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.86
+    },
+    "체크아웃": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.95
+    },
+    "PG": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.95
+    },
+    "카카오페이": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.96
+    },
+    "토스페이": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.96
+    },
+    "신용카드": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.9
+    },
+    "환불": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.9
+    },
+    "payment": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.96
+    },
+    "checkout": {
+      "feature_key": "payment_checkout",
+      "confidence": 0.95
+    },
+    "외부 API": {
+      "feature_key": "external_api_integration",
+      "confidence": 0.95
+    },
+    "API 연동": {
+      "feature_key": "external_api_integration",
+      "confidence": 0.94
+    },
+    "서드파티": {
+      "feature_key": "external_api_integration",
+      "confidence": 0.9
+    },
+    "웹훅": {
+      "feature_key": "external_api_integration",
+      "confidence": 0.94
+    },
+    "Webhook": {
+      "feature_key": "external_api_integration",
+      "confidence": 0.94
+    },
+    "연동": {
+      "feature_key": "external_api_integration",
+      "confidence": 0.76
+    },
+    "파일 업로드": {
+      "feature_key": "file_upload_media",
+      "confidence": 0.97
+    },
+    "첨부파일": {
+      "feature_key": "file_upload_media",
+      "confidence": 0.93
+    },
+    "이미지 업로드": {
+      "feature_key": "file_upload_media",
+      "confidence": 0.96
+    },
+    "미디어": {
+      "feature_key": "file_upload_media",
+      "confidence": 0.82
+    },
+    "업로드": {
+      "feature_key": "file_upload_media",
+      "confidence": 0.86
+    },
+    "file upload": {
+      "feature_key": "file_upload_media",
+      "confidence": 0.97
+    },
+    "모바일": {
+      "feature_key": "mobile_app_experience",
+      "confidence": 0.86
+    },
+    "앱": {
+      "feature_key": "mobile_app_experience",
+      "confidence": 0.76
+    },
+    "안드로이드": {
+      "feature_key": "mobile_app_experience",
+      "confidence": 0.96
+    },
+    "iOS": {
+      "feature_key": "mobile_app_experience",
+      "confidence": 0.96
+    },
+    "네이티브 앱": {
+      "feature_key": "mobile_app_experience",
+      "confidence": 0.96
+    },
+    "mobile app": {
+      "feature_key": "mobile_app_experience",
+      "confidence": 0.94
+    },
+    "디자인 시스템": {
+      "feature_key": "design_system_ui",
+      "confidence": 0.97
+    },
+    "UI 컴포넌트": {
+      "feature_key": "design_system_ui",
+      "confidence": 0.94
+    },
+    "반응형": {
+      "feature_key": "design_system_ui",
+      "confidence": 0.86
+    },
+    "접근성": {
+      "feature_key": "design_system_ui",
+      "confidence": 0.9
+    },
+    "컴포넌트": {
+      "feature_key": "design_system_ui",
+      "confidence": 0.82
+    },
+    "design system": {
+      "feature_key": "design_system_ui",
+      "confidence": 0.97
+    },
+    "배포": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.82
+    },
+    "모니터링": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.94
+    },
+    "로그": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.82
+    },
+    "알림 모니터링": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.78
+    },
+    "CI/CD": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.94
+    },
+    "인프라": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.94
+    },
+    "observability": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.94
+    },
+    "개인정보": {
+      "feature_key": "security_compliance",
+      "confidence": 0.95
+    },
+    "보안": {
+      "feature_key": "security_compliance",
+      "confidence": 0.94
+    },
+    "접근 제어": {
+      "feature_key": "security_compliance",
+      "confidence": 0.94
+    },
+    "감사 로그": {
+      "feature_key": "security_compliance",
+      "confidence": 0.9
+    },
+    "컴플라이언스": {
+      "feature_key": "security_compliance",
+      "confidence": 0.9
+    },
+    "privacy": {
+      "feature_key": "security_compliance",
+      "confidence": 0.95
+    },
+    "security": {
+      "feature_key": "security_compliance",
+      "confidence": 0.94
+    },
+    "카테고리별 수신 설정": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.98
+    },
+    "수신 설정": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.92
+    },
+    "notification_settings": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.98
+    },
+    "notification preferences": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.97
+    },
+    "카테고리 설정 화면": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.94
+    },
+    "모두 읽음": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "일괄 읽음": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.97
+    },
+    "읽음 처리 API": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "읽음 처리 PATCH": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "뱃지": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.9
+    },
+    "badge": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.9
+    },
+    "read/unread": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.95
+    },
+    "unread": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.82
+    },
+    "푸시 발송 서비스 연동": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.98
+    },
+    "푸시 발송 서비스": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.95
+    },
+    "푸시 서비스": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.93
+    },
+    "FCM/APNs": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.98
+    },
+    "FCM": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.94
+    },
+    "APNs": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.94
+    },
+    "push sending": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.95
+    },
+    "push delivery": {
+      "feature_key": "notification_delivery_integration",
+      "confidence": 0.95
+    },
+    "딥링크": {
+      "feature_key": "notification_deeplink_navigation",
+      "confidence": 0.98
+    },
+    "deeplink": {
+      "feature_key": "notification_deeplink_navigation",
+      "confidence": 0.98
+    },
+    "deep link": {
+      "feature_key": "notification_deeplink_navigation",
+      "confidence": 0.98
+    },
+    "대상 화면": {
+      "feature_key": "notification_deeplink_navigation",
+      "confidence": 0.88
+    },
+    "알림 이력": {
+      "feature_key": "notification_history_retention",
+      "confidence": 0.94
+    },
+    "30일간 저장": {
+      "feature_key": "notification_history_retention",
+      "confidence": 0.96
+    },
+    "자동 삭제": {
+      "feature_key": "notification_history_retention",
+      "confidence": 0.92
+    },
+    "retention": {
+      "feature_key": "notification_history_retention",
+      "confidence": 0.92
+    },
+    "Firebase Analytics": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.98
+    },
+    "이벤트 스키마": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.95
+    },
+    "event schema": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.95
+    },
+    "메트릭": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.9
+    },
+    "open rate": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.9
+    },
+    "DAU": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.86
+    },
+    "단계적 롤아웃": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.98
+    },
+    "롤아웃": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.94
+    },
+    "하위 호환": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.95
+    },
+    "업데이트 유도": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.92
+    },
+    "앱스토어 업데이트": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.92
+    },
+    "가드레일": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.82
+    },
+    "비동기 큐": {
+      "feature_key": "async_queue_processing",
+      "confidence": 0.98
+    },
+    "Kafka": {
+      "feature_key": "async_queue_processing",
+      "confidence": 0.95
+    },
+    "Write DB 분리": {
+      "feature_key": "async_queue_processing",
+      "confidence": 0.94
+    },
+    "오류 상태": {
+      "feature_key": "error_empty_state_handling",
+      "confidence": 0.95
+    },
+    "새로고침 CTA": {
+      "feature_key": "error_empty_state_handling",
+      "confidence": 0.94
+    },
+    "빈 상태": {
+      "feature_key": "error_empty_state_handling",
+      "confidence": 0.92
+    },
+    "empty state": {
+      "feature_key": "error_empty_state_handling",
+      "confidence": 0.92
+    },
+    "error state": {
+      "feature_key": "error_empty_state_handling",
+      "confidence": 0.92
+    },
+    "HRIS": {
+      "feature_key": "hris_integration",
+      "confidence": 0.94
+    },
+    "BambooHR": {
+      "feature_key": "hris_integration",
+      "confidence": 0.96
+    },
+    "HRIS Webhook": {
+      "feature_key": "hris_integration",
+      "confidence": 0.98
+    },
+    "HRIS 연동": {
+      "feature_key": "hris_integration",
+      "confidence": 0.98
+    },
+    "입사확정": {
+      "feature_key": "hris_integration",
+      "confidence": 0.92
+    },
+    "계정 프로비저닝": {
+      "feature_key": "account_provisioning",
+      "confidence": 0.98
+    },
+    "자동 프로비저닝": {
+      "feature_key": "account_provisioning",
+      "confidence": 0.98
+    },
+    "계정 자동 생성": {
+      "feature_key": "account_provisioning",
+      "confidence": 0.96
+    },
+    "권한 자동": {
+      "feature_key": "account_provisioning",
+      "confidence": 0.92
+    },
+    "임시 비밀번호": {
+      "feature_key": "account_provisioning",
+      "confidence": 0.9
+    },
+    "온보딩 체크리스트": {
+      "feature_key": "onboarding_checklist_tracking",
+      "confidence": 0.98
+    },
+    "체크리스트": {
+      "feature_key": "onboarding_checklist_tracking",
+      "confidence": 0.88
+    },
+    "온보딩 태스크": {
+      "feature_key": "onboarding_checklist_tracking",
+      "confidence": 0.94
+    },
+    "진행 추적": {
+      "feature_key": "onboarding_checklist_tracking",
+      "confidence": 0.9
+    },
+    "온보딩 워크플로우": {
+      "feature_key": "workflow_automation",
+      "confidence": 0.98
+    },
+    "워크플로우 엔진": {
+      "feature_key": "workflow_automation",
+      "confidence": 0.95
+    },
+    "Temporal": {
+      "feature_key": "workflow_automation",
+      "confidence": 0.96
+    },
+    "LMS": {
+      "feature_key": "lms_training_integration",
+      "confidence": 0.98
+    },
+    "xAPI": {
+      "feature_key": "lms_training_integration",
+      "confidence": 0.96
+    },
+    "교육 자동 배정": {
+      "feature_key": "lms_training_integration",
+      "confidence": 0.98
+    },
+    "교육 이수": {
+      "feature_key": "lms_training_integration",
+      "confidence": 0.94
+    },
+    "역할별 툴 목록": {
+      "feature_key": "admin_role_template_management",
+      "confidence": 0.96
+    },
+    "role_templates": {
+      "feature_key": "admin_role_template_management",
+      "confidence": 0.96
+    },
+    "HR 어드민": {
+      "feature_key": "admin_role_template_management",
+      "confidence": 0.96
+    },
+    "체크리스트 관리": {
+      "feature_key": "admin_role_template_management",
+      "confidence": 0.94
+    },
+    "팀장 대시보드": {
+      "feature_key": "onboarding_dashboard",
+      "confidence": 0.98
+    },
+    "온보딩 현황 대시보드": {
+      "feature_key": "onboarding_dashboard",
+      "confidence": 0.98
+    },
+    "완료율": {
+      "feature_key": "onboarding_dashboard",
+      "confidence": 0.84
+    },
+    "Mark All as Read": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "marking as read": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.96
+    },
+    "marking as read in bulk": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "API for marking as read": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "PATCH API for marking as read": {
+      "feature_key": "notification_read_state",
+      "confidence": 0.98
+    },
+    "API for category-specific reception settings": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.98
+    },
+    "UI for category-specific reception settings": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.98
+    },
+    "category-specific reception settings": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.96
+    },
+    "Category settings screen": {
+      "feature_key": "notification_preferences",
+      "confidence": 0.96
+    },
+    "Masking sensitive information": {
+      "feature_key": "security_compliance",
+      "confidence": 0.96
+    },
+    "Metric: p95 response time": {
+      "feature_key": "product_analytics_instrumentation",
+      "confidence": 0.9
+    },
+    "p95 response time": {
+      "feature_key": "infrastructure_observability",
+      "confidence": 0.9
+    },
+    "In-app update inducement banner": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.94
+    },
+    "Maintain backward compatible API": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.96
+    },
+    "Phased rollout": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.96
+    },
+    "Guardrail": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.88
+    },
+    "Activation or enablement feature": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.82
+    },
+    "App Store update notes creation": {
+      "feature_key": "release_rollout_management",
+      "confidence": 0.94
+    },
+    "Add asynchronous queue": {
+      "feature_key": "async_queue_processing",
+      "confidence": 0.98
+    }
+  },
+  "constraint_aliases": {
+    "빠르게": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.72,
+      "action": "low_confidence_items"
+    },
+    "빠른 출시": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "MVP": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.76,
+      "action": "map_constraint"
+    },
+    "short timeline": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "deadline": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "launch date": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "ship in": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "week": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "weeks": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.8,
+      "action": "map_constraint"
+    },
+    "런칭일 고정": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "예산": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "비용": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "budget": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "cost": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "USD": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "KRW": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "won": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "고가용성": {
+      "constraint_key": "high_reliability",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "장애": {
+      "constraint_key": "high_reliability",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "무중단": {
+      "constraint_key": "high_reliability",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "reliability": {
+      "constraint_key": "high_reliability",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "high availability": {
+      "constraint_key": "high_reliability",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "mission critical": {
+      "constraint_key": "high_reliability",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "p95": {
+      "constraint_key": "performance_target",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "응답시간": {
+      "constraint_key": "performance_target",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "오류율": {
+      "constraint_key": "performance_target",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "완료율": {
+      "constraint_key": "performance_target",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "열람율": {
+      "constraint_key": "performance_target",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "성공율": {
+      "constraint_key": "performance_target",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "failure rate": {
+      "constraint_key": "performance_target",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "Target": {
+      "constraint_key": "performance_target",
+      "confidence": 0.8,
+      "action": "map_constraint"
+    },
+    "Baseline": {
+      "constraint_key": "performance_target",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "SLA": {
+      "constraint_key": "availability_target",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "가용성": {
+      "constraint_key": "availability_target",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "99.9%": {
+      "constraint_key": "availability_target",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "99.5%": {
+      "constraint_key": "availability_target",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "개인정보": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "마스킹": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "타인 알림": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "RBAC": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.95,
+      "action": "map_constraint"
+    },
+    "권한 최소화": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "감사 로그": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "컴플라이언스": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "30일간 저장": {
+      "constraint_key": "retention_data_policy",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "30일 경과": {
+      "constraint_key": "retention_data_policy",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "자동 삭제": {
+      "constraint_key": "retention_data_policy",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "보관": {
+      "constraint_key": "retention_data_policy",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "단계적 롤아웃": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "파일럿": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "롤백": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "릴리즈": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "런칭": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "Figma": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "Tech Spec": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "Roadmap": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "API 토큰": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "정책 확정": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.84,
+      "action": "map_constraint"
+    },
+    "Pending": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "Confirmed": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.76,
+      "action": "map_constraint"
+    },
+    "Out of Scope": {
+      "constraint_key": "scope_exclusion",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "Non-Goals": {
+      "constraint_key": "scope_exclusion",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "비목표": {
+      "constraint_key": "scope_exclusion",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "별도 프로젝트": {
+      "constraint_key": "scope_exclusion",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "Phase 2": {
+      "constraint_key": "scope_exclusion",
+      "confidence": 0.84,
+      "action": "map_constraint"
+    },
+    "Phase 3": {
+      "constraint_key": "scope_exclusion",
+      "confidence": 0.84,
+      "action": "map_constraint"
+    },
+    "Priority: Must": {
+      "constraint_key": "priority_requirement",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "Priority: Should": {
+      "constraint_key": "priority_requirement",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "Must": {
+      "constraint_key": "priority_requirement",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "Should": {
+      "constraint_key": "priority_requirement",
+      "confidence": 0.76,
+      "action": "map_constraint"
+    },
+    "기간": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "주": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.76,
+      "action": "map_constraint"
+    },
+    "원": {
+      "constraint_key": "budget_limited",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "notification open rate": {
+      "constraint_key": "performance_target",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "CS inquiries": {
+      "constraint_key": "performance_target",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "missed major events": {
+      "constraint_key": "performance_target",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    ">= 35%": {
+      "constraint_key": "performance_target",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "50,000": {
+      "constraint_key": "performance_target",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "peak": {
+      "constraint_key": "performance_target",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "OS push-only": {
+      "constraint_key": "business_rule_constraint",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "benchmark": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "Notification history for 30 days": {
+      "constraint_key": "retention_data_policy",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "30 days": {
+      "constraint_key": "retention_data_policy",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "logged in": {
+      "constraint_key": "security_privacy_requirement",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "undeclinable": {
+      "constraint_key": "business_rule_constraint",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "수신 거부 불가": {
+      "constraint_key": "business_rule_constraint",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "mandatory": {
+      "constraint_key": "business_rule_constraint",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "native guidelines": {
+      "constraint_key": "platform_guideline_constraint",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "iOS native guidelines": {
+      "constraint_key": "platform_guideline_constraint",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "Android native guidelines": {
+      "constraint_key": "platform_guideline_constraint",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "Feature flag": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "Internal testers": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    },
+    "10% to 100%": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "No breaking changes": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "Breaking change 없음": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "conservative default": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.84,
+      "action": "map_constraint"
+    },
+    "rollback plan": {
+      "constraint_key": "rollout_release_constraint",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "CS Team training": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.84,
+      "action": "map_constraint"
+    },
+    "sign-off": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.88,
+      "action": "map_constraint"
+    },
+    "Decision required": {
+      "constraint_key": "open_question",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "Open Question": {
+      "constraint_key": "open_question",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "Legal review": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.9,
+      "action": "map_constraint"
+    },
+    "벤치마크": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "경쟁사 벤치마크": {
+      "constraint_key": "external_dependency",
+      "confidence": 0.86,
+      "action": "map_constraint"
+    }
+  },
+  "ambiguous_aliases": {
+    "관리": {
+      "candidate_feature_keys": [
+        "admin_console_content_ops",
+        "authentication_account"
+      ],
+      "action": "manual_review_required",
+      "reason": "Could mean admin operations, user management, permission management, or content management depending on evidence."
+    },
+    "알림": {
+      "candidate_feature_keys": [
+        "notification_center",
+        "infrastructure_observability"
+      ],
+      "action": "prefer_feature_when_user_facing",
+      "reason": "User-facing notification maps to notification_center; operational alerting maps to infrastructure_observability."
+    },
+    "앱": {
+      "candidate_feature_keys": [
+        "mobile_app_experience",
+        "design_system_ui"
+      ],
+      "action": "manual_review_required",
+      "reason": "App can mean mobile app, web app, or product surface."
+    },
+    "사용자": {
+      "candidate_feature_keys": [
+        "mobile_app_experience",
+        "onboarding_checklist_tracking",
+        "notification_center"
+      ],
+      "action": "manual_review_required",
+      "reason": "User/persona wording alone is too broad; map only when feature evidence is explicit."
+    },
+    "가드레일": {
+      "candidate_feature_keys": [
+        "release_rollout_management",
+        "security_compliance",
+        "infrastructure_observability"
+      ],
+      "action": "manual_review_required",
+      "reason": "Guardrail can mean rollout, security, or operational guardrail depending on evidence."
+    }
+  },
+  "unknown_requirement_template": {
+    "text": "",
+    "source_evidence": "",
+    "reason": "No confident taxonomy or rulebase match.",
+    "status": "manual_review_required"
+  },
+  "role_aliases": {
+    "PM": {
+      "role_name": "Product Manager",
+      "confidence": 0.92
+    },
+    "PM 이지은": {
+      "role_name": "Product Manager",
+      "confidence": 0.94
+    },
+    "Product Manager": {
+      "role_name": "Product Manager",
+      "confidence": 0.98
+    },
+    "Head of Product": {
+      "role_name": "Product Lead",
+      "confidence": 0.96
+    },
+    "Frontend Lead": {
+      "role_name": "Frontend Lead",
+      "confidence": 0.98
+    },
+    "Backend Lead": {
+      "role_name": "Backend Lead",
+      "confidence": 0.98
+    },
+    "Mobile Lead": {
+      "role_name": "Mobile Lead",
+      "confidence": 0.98
+    },
+    "Data Engineering": {
+      "role_name": "Data Engineer",
+      "confidence": 0.96
+    },
+    "Data": {
+      "role_name": "Data Engineer",
+      "confidence": 0.82
+    },
+    "Backend Developer": {
+      "role_name": "Backend Engineer",
+      "confidence": 0.98
+    },
+    "Backend": {
+      "role_name": "Backend Engineer",
+      "confidence": 0.88
+    },
+    "BE": {
+      "role_name": "Backend Engineer",
+      "confidence": 0.9
+    },
+    "Frontend": {
+      "role_name": "Web Frontend Engineer",
+      "confidence": 0.88
+    },
+    "WEB": {
+      "role_name": "Web Frontend Engineer",
+      "confidence": 0.9
+    },
+    "Mobile Developer": {
+      "role_name": "Mobile Engineer",
+      "confidence": 0.98
+    },
+    "iOS": {
+      "role_name": "Mobile Engineer",
+      "confidence": 0.92
+    },
+    "Android": {
+      "role_name": "Mobile Engineer",
+      "confidence": 0.92
+    },
+    "Designer": {
+      "role_name": "Product Designer",
+      "confidence": 0.92
+    },
+    "Design Lead": {
+      "role_name": "Product Designer",
+      "confidence": 0.94
+    },
+    "DS": {
+      "role_name": "Product Designer",
+      "confidence": 0.86
+    },
+    "QA": {
+      "role_name": "QA Engineer",
+      "confidence": 0.96
+    },
+    "Legal": {
+      "role_name": "Legal/Compliance Specialist",
+      "confidence": 0.94
+    },
+    "Legal/Privacy": {
+      "role_name": "Legal/Compliance Specialist",
+      "confidence": 0.98
+    },
+    "CS": {
+      "role_name": "Customer Support Specialist",
+      "confidence": 0.9
+    },
+    "CS 팀": {
+      "role_name": "Customer Support Specialist",
+      "confidence": 0.94
+    },
+    "HR": {
+      "role_name": "HR Operations Specialist",
+      "confidence": 0.9
+    },
+    "HR IT": {
+      "role_name": "IT Administrator",
+      "confidence": 0.92
+    },
+    "IT": {
+      "role_name": "IT Administrator",
+      "confidence": 0.86
+    },
+    "Eng": {
+      "role_name": "Engineering Lead",
+      "confidence": 0.82
+    },
+    "Project Manager": {
+      "role_name": "Product Manager",
+      "confidence": 0.98
+    },
+    "Internal Marketer": {
+      "role_name": "Marketing Stakeholder",
+      "confidence": 0.94
+    },
+    "내부 마케터": {
+      "role_name": "Marketing Stakeholder",
+      "confidence": 0.94
+    }
+  },
+  "skill_aliases": {
+    "Firebase Analytics integration": {
+      "skill_name": "Firebase Analytics",
+      "confidence": 0.98
+    },
+    "Firebase event schema definition": {
+      "skill_name": "Event Schema Design",
+      "confidence": 0.98
+    },
+    "이벤트 스키마": {
+      "skill_name": "Event Schema Design",
+      "confidence": 0.94
+    },
+    "APM": {
+      "skill_name": "Monitoring",
+      "confidence": 0.9
+    },
+    "Push sending log management": {
+      "skill_name": "Delivery Logging",
+      "confidence": 0.96
+    },
+    "딥링크": {
+      "skill_name": "Deep Linking",
+      "confidence": 0.98
+    },
+    "FCM/APNs": {
+      "skill_name": "FCM/APNs",
+      "confidence": 0.98
+    },
+    "FCM/APNs 발송": {
+      "skill_name": "Push Delivery",
+      "confidence": 0.96
+    },
+    "데이터 모델": {
+      "skill_name": "Data Modeling",
+      "confidence": 0.94
+    },
+    "API 변경": {
+      "skill_name": "API Change Management",
+      "confidence": 0.9
+    },
+    "비동기 큐": {
+      "skill_name": "Queue Processing",
+      "confidence": 0.96
+    },
+    "비동기 큐 (Kafka) 처리": {
+      "skill_name": "Kafka",
+      "confidence": 0.98
+    },
+    "Write DB 분리": {
+      "skill_name": "Database Write Separation",
+      "confidence": 0.96
+    },
+    "Figma": {
+      "skill_name": "Figma",
+      "confidence": 0.92
+    },
+    "Unit 테스트": {
+      "skill_name": "Unit Testing",
+      "confidence": 0.96
+    },
+    "버그픽스": {
+      "skill_name": "Bug Fixing",
+      "confidence": 0.9
+    },
+    "하위 호환 API 유지": {
+      "skill_name": "Backward Compatibility",
+      "confidence": 0.96
+    },
+    "문서화": {
+      "skill_name": "Documentation",
+      "confidence": 0.92
+    },
+    "교육": {
+      "skill_name": "Training Enablement",
+      "confidence": 0.88
+    },
+    "마스킹 정책": {
+      "skill_name": "Masking Policy",
+      "confidence": 0.96
+    },
+    "NFR 임계값 조정": {
+      "skill_name": "NFR Threshold Definition",
+      "confidence": 0.96
+    },
+    "HRIS Integration": {
+      "skill_name": "HRIS Integration",
+      "confidence": 0.98
+    },
+    "Account Provisioning": {
+      "skill_name": "Account Provisioning",
+      "confidence": 0.98
+    },
+    "xAPI": {
+      "skill_name": "xAPI",
+      "confidence": 0.96
+    },
+    "Temporal": {
+      "skill_name": "Temporal",
+      "confidence": 0.96
+    },
+    "API development/modification": {
+      "skill_name": "API Change Management",
+      "confidence": 0.94
+    },
+    "Write DB separation": {
+      "skill_name": "Database Write Separation",
+      "confidence": 0.96
+    },
+    "Backward compatible API maintenance": {
+      "skill_name": "Backward Compatibility",
+      "confidence": 0.96
+    },
+    "Training": {
+      "skill_name": "Training Enablement",
+      "confidence": 0.9
+    },
+    "Asynchronous queue implementation": {
+      "skill_name": "Queue Processing",
+      "confidence": 0.96
+    },
+    "Non-Functional Requirements (NFR) threshold adjustment": {
+      "skill_name": "NFR Threshold Definition",
+      "confidence": 0.96
+    }
+  }
+}

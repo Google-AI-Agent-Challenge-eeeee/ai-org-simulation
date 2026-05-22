@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     google_application_credentials: str | None = None
     vertex_location: str = "asia-northeast3"
     vertex_model: str = "gemini-2.5-pro"
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-pro"
     firestore_emulator_host: str | None = None
 
     llm_mode: LLMMode = LLMMode.STUB

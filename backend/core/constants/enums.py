@@ -8,10 +8,11 @@ class Environment(StrEnum):
 
 
 class LLMMode(StrEnum):
-    """How agents call LLMs. Use STUB during early phases, VERTEX in Phase 7+."""
+    """How agents call LLMs. Use STUB for local wiring checks."""
 
     STUB = "stub"
     VERTEX = "vertex"
+    GEMINI_API = "gemini_api"
 
 
 class Role(StrEnum):

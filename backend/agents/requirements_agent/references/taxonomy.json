@@ -1,0 +1,1538 @@
+{
+  "_meta": {
+    "name": "requirements_agent_taxonomy",
+    "phase": "file_create_phase_1",
+    "status": "mvp_reference_expanded",
+    "version": "0.2.0",
+    "purpose": "Define standard MVP web/app features and their required roles, skills, risks, and employee-column weighting hints.",
+    "source_materials": [
+      "../../requirements_agent_민성초기세팅/Final_Requirements_Agent_implementation_plan.md",
+      "../../requirements_agent_민성초기세팅/requirements_agent_docs/requirements_agent_rules.md",
+      "../../requirements_agent_민성초기세팅/requirements_agent_docs/requirements_agent_io_schema.md"
+    ],
+    "guardrails": [
+      "Do not auto-add unknown requirements to taxonomy.",
+      "Only map requirements to features with explicit taxonomy or rulebase support.",
+      "Keep role, skill, and risk names stable for downstream scoring.",
+      "Preserve source evidence for every extracted requirement before final confirmation."
+    ]
+  },
+  "matching_policy": {
+    "default_match_status": "unknown_requirements",
+    "minimum_alias_confidence": 0.75,
+    "minimum_taxonomy_confidence": 0.8,
+    "weak_match_action": "manual_review_required",
+    "unknown_requirement_action": "send_to_human_confirm",
+    "auto_extend_taxonomy": false
+  },
+  "standard_roles": {
+    "Product Designer": {
+      "job_category_codes": [
+        "DS"
+      ],
+      "description": "Product UX, UI, design system, interaction and visual design."
+    },
+    "Web Frontend Engineer": {
+      "job_category_codes": [
+        "WEB"
+      ],
+      "description": "Browser-based application UI, state management, accessibility, and frontend integration."
+    },
+    "Backend Engineer": {
+      "job_category_codes": [
+        "BE"
+      ],
+      "description": "API, database, business logic, auth, integration, and server-side reliability."
+    },
+    "Mobile Engineer": {
+      "job_category_codes": [
+        "Android",
+        "iOS",
+        "Mobile"
+      ],
+      "description": "Native or cross-platform mobile application implementation."
+    },
+    "Infrastructure Engineer": {
+      "job_category_codes": [
+        "Infra"
+      ],
+      "description": "Deployment, observability, CI/CD, cloud infrastructure, and operational reliability."
+    },
+    "QA Engineer": {
+      "job_category_codes": [
+        "QA"
+      ],
+      "description": "Quality strategy, test planning, regression prevention, and release verification."
+    },
+    "Product Manager": {
+      "job_category_codes": [],
+      "description": "Product requirements ownership, prioritization, launch coordination, and stakeholder alignment."
+    },
+    "Product Lead": {
+      "job_category_codes": [],
+      "description": "Product approval, roadmap direction, and cross-functional decision ownership."
+    },
+    "Frontend Lead": {
+      "job_category_codes": [
+        "WEB"
+      ],
+      "description": "Frontend architecture and delivery leadership for web product surfaces."
+    },
+    "Backend Lead": {
+      "job_category_codes": [
+        "BE"
+      ],
+      "description": "Backend architecture and delivery leadership for APIs, data, integrations, and reliability."
+    },
+    "Mobile Lead": {
+      "job_category_codes": [
+        "Mobile",
+        "iOS",
+        "Android"
+      ],
+      "description": "Mobile delivery leadership across native platforms, release readiness, and platform constraints."
+    },
+    "Data Engineer": {
+      "job_category_codes": [
+        "BE"
+      ],
+      "description": "Analytics instrumentation, event schema, data pipeline, and measurement implementation."
+    },
+    "HR Operations Specialist": {
+      "job_category_codes": [],
+      "description": "HR workflow operations, onboarding policy, HRIS process ownership, and employee lifecycle coordination."
+    },
+    "IT Administrator": {
+      "job_category_codes": [
+        "Infra"
+      ],
+      "description": "Internal tool administration, account provisioning, access setup, and operational support."
+    },
+    "Legal/Compliance Specialist": {
+      "job_category_codes": [],
+      "description": "Privacy, legal review, compliance policy, and regulated data handling approval."
+    },
+    "Customer Support Specialist": {
+      "job_category_codes": [],
+      "description": "Support operations, FAQ readiness, customer issue tagging, and launch support enablement."
+    },
+    "Engineering Lead": {
+      "job_category_codes": [
+        "BE",
+        "WEB",
+        "Mobile",
+        "Infra"
+      ],
+      "description": "Engineering coordination, technical review, release readiness, and trade-off decisions."
+    },
+    "Marketing Stakeholder": {
+      "job_category_codes": [],
+      "description": "Internal marketing or growth stakeholder who owns campaign and messaging requirements but may not be staffed from engineering employee pools."
+    }
+  },
+  "features": {
+    "authentication_account": {
+      "standard_name": "인증/계정",
+      "category": "core_platform",
+      "description": "Login, signup, session, account recovery, user identity, and permission basics.",
+      "requirement_types": [
+        "feature",
+        "security",
+        "backend",
+        "frontend"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "QA Engineer",
+        "Infrastructure Engineer"
+      ],
+      "skills": [
+        "Authentication",
+        "Authorization",
+        "Session Management",
+        "JWT",
+        "OAuth",
+        "API Design",
+        "Secure Storage",
+        "Form Validation",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Account takeover risk",
+        "Session expiration edge cases",
+        "Permission bypass",
+        "Auth state mismatch across clients"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "certifications_count",
+        "merged_pr_count_3m",
+        "reopened_issue_count",
+        "ownership_score"
+      ]
+    },
+    "notification_center": {
+      "standard_name": "알림 센터",
+      "category": "engagement",
+      "description": "In-app notifications, push notifications, read/unread state, notification preferences, and delivery workflow.",
+      "requirement_types": [
+        "feature",
+        "realtime",
+        "frontend",
+        "backend",
+        "mobile"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Push Notification",
+        "In-app Notification",
+        "Event-driven Architecture",
+        "User Preference Management",
+        "Realtime Sync",
+        "API Integration",
+        "State Management"
+      ],
+      "risks": [
+        "Notification fatigue",
+        "Delivery delay",
+        "Duplicate notifications",
+        "Read state synchronization bugs",
+        "Mobile permission handling issues"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "avg_cycle_time",
+        "reopened_issue_count",
+        "collaboration_frequency",
+        "avg_response_time"
+      ]
+    },
+    "search_filtering": {
+      "standard_name": "검색/필터",
+      "category": "core_productivity",
+      "description": "Keyword search, filtering, sorting, query result UX, and search performance.",
+      "requirement_types": [
+        "feature",
+        "frontend",
+        "backend",
+        "performance"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Search Query Design",
+        "Filtering UX",
+        "Pagination",
+        "Indexing",
+        "API Design",
+        "Performance Testing"
+      ],
+      "risks": [
+        "Slow query performance",
+        "Incorrect filter combinations",
+        "Pagination inconsistency",
+        "Poor empty-state UX"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "repository_contribution_count"
+      ]
+    },
+    "dashboard_analytics": {
+      "standard_name": "대시보드/분석",
+      "category": "analytics",
+      "description": "Metric dashboards, charts, summaries, data aggregation, and insight views.",
+      "requirement_types": [
+        "feature",
+        "data",
+        "frontend",
+        "backend"
+      ],
+      "roles": [
+        "Product Designer",
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Data Aggregation",
+        "Dashboard UX",
+        "Chart Visualization",
+        "Metric Definition",
+        "API Design",
+        "Data Validation"
+      ],
+      "risks": [
+        "Metric definition ambiguity",
+        "Slow dashboard loading",
+        "Data freshness mismatch",
+        "Misleading visualization"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "performance_score",
+        "competency_score",
+        "repository_contribution_count",
+        "task_breakdown_count",
+        "estimation_accuracy",
+        "focus_time_minutes"
+      ]
+    },
+    "admin_console_content_ops": {
+      "standard_name": "관리자/콘텐츠 운영",
+      "category": "operations",
+      "description": "Admin console, CRUD management, moderation, operational controls, and internal backoffice workflows.",
+      "requirement_types": [
+        "feature",
+        "operations",
+        "frontend",
+        "backend"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "QA Engineer",
+        "Product Designer"
+      ],
+      "skills": [
+        "CRUD",
+        "Admin UX",
+        "Role-based Access Control",
+        "Audit Trail",
+        "Bulk Operation",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Accidental destructive operation",
+        "Permission misconfiguration",
+        "Operational workflow mismatch",
+        "Insufficient auditability"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "ownership_score",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "comment_count",
+        "manager_review_score"
+      ]
+    },
+    "payment_checkout": {
+      "standard_name": "주문/결제",
+      "category": "commerce",
+      "description": "Checkout, payment provider integration, order state, refunds, receipts, and payment QA.",
+      "requirement_types": [
+        "feature",
+        "external_api",
+        "security",
+        "backend",
+        "qa"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "QA Engineer",
+        "Infrastructure Engineer"
+      ],
+      "skills": [
+        "Payment API",
+        "External API Integration",
+        "Transaction State Management",
+        "Security",
+        "Database",
+        "Error Handling",
+        "End-to-end Testing"
+      ],
+      "risks": [
+        "Payment provider delay",
+        "Duplicate charge",
+        "Refund state mismatch",
+        "Security and compliance issues",
+        "Incomplete payment failure handling"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "certifications_count",
+        "competency_score",
+        "merged_pr_count_3m",
+        "closed_unmerged_pr_count_3m",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "bottleneck_risk"
+      ]
+    },
+    "external_api_integration": {
+      "standard_name": "외부 API 연동",
+      "category": "integration",
+      "description": "Third-party API integration, webhook handling, retry, rate limits, and failure recovery.",
+      "requirement_types": [
+        "feature",
+        "external_api",
+        "backend",
+        "infra"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "External API Integration",
+        "Webhook",
+        "Retry Strategy",
+        "Rate Limit Handling",
+        "Observability",
+        "Contract Testing",
+        "API Change Management",
+        "Documentation"
+      ],
+      "risks": [
+        "External API outage",
+        "Rate limit breach",
+        "Webhook delivery failure",
+        "Schema drift from provider",
+        "Insufficient retry or idempotency"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "repository_contribution_count",
+        "merged_pr_count_3m",
+        "priority_mix",
+        "avg_cycle_time",
+        "estimation_accuracy",
+        "event_update_count"
+      ]
+    },
+    "file_upload_media": {
+      "standard_name": "파일 업로드/미디어",
+      "category": "content",
+      "description": "File upload, attachment handling, image/media processing, storage, validation, and download flows.",
+      "requirement_types": [
+        "feature",
+        "storage",
+        "frontend",
+        "backend",
+        "infra"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "File Upload",
+        "Object Storage",
+        "Media Validation",
+        "Content Security",
+        "Progress UI",
+        "Error Handling"
+      ],
+      "risks": [
+        "Large file performance issue",
+        "Unsafe file type",
+        "Upload retry failure",
+        "Storage cost increase",
+        "Broken download permission"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "commit_count_3m",
+        "merged_pr_count_3m",
+        "avg_cycle_time",
+        "reopened_issue_count"
+      ]
+    },
+    "mobile_app_experience": {
+      "standard_name": "모바일 앱 경험",
+      "category": "mobile",
+      "description": "Native or mobile-first user experience, mobile navigation, OS permission, push, and responsive behavior.",
+      "requirement_types": [
+        "feature",
+        "mobile",
+        "frontend",
+        "ux"
+      ],
+      "roles": [
+        "Mobile Engineer",
+        "Product Designer",
+        "QA Engineer",
+        "Backend Engineer"
+      ],
+      "skills": [
+        "Mobile UI",
+        "Android",
+        "iOS",
+        "Push Permission",
+        "Responsive Design",
+        "Device Testing",
+        "Offline State Handling"
+      ],
+      "risks": [
+        "OS permission edge cases",
+        "Device-specific UI bugs",
+        "App store review delay",
+        "Offline or background sync issue"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "peer_review_score",
+        "competency_score",
+        "reopened_issue_count",
+        "sprint_completion_rate",
+        "focus_time_minutes"
+      ]
+    },
+    "design_system_ui": {
+      "standard_name": "디자인 시스템/UI",
+      "category": "experience",
+      "description": "Design system, reusable UI components, accessibility, visual consistency, and interaction polish.",
+      "requirement_types": [
+        "feature",
+        "ux",
+        "frontend",
+        "design"
+      ],
+      "roles": [
+        "Product Designer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Design System",
+        "Component Architecture",
+        "Accessibility",
+        "Responsive UI",
+        "Interaction Design",
+        "Visual QA",
+        "Figma"
+      ],
+      "risks": [
+        "Inconsistent component behavior",
+        "Accessibility gaps",
+        "Design-to-code mismatch",
+        "Regression in shared UI"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "peer_review_score",
+        "competency_score",
+        "repository_contribution_count",
+        "reopened_issue_count",
+        "collaboration_frequency"
+      ]
+    },
+    "infrastructure_observability": {
+      "standard_name": "인프라/운영 관측성",
+      "category": "operations",
+      "description": "Deployment, CI/CD, monitoring, logging, alerting, reliability, and operational readiness.",
+      "requirement_types": [
+        "infra",
+        "non_functional",
+        "reliability",
+        "operations"
+      ],
+      "roles": [
+        "Infrastructure Engineer",
+        "Backend Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "CI/CD",
+        "Cloud Infrastructure",
+        "Monitoring",
+        "Logging",
+        "Alerting",
+        "Incident Response",
+        "Performance Testing",
+        "NFR Threshold Definition",
+        "Bug Fixing",
+        "Unit Testing"
+      ],
+      "risks": [
+        "Deployment instability",
+        "Missing observability",
+        "Slow incident detection",
+        "Environment drift",
+        "Scalability bottleneck"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "repository_contribution_count",
+        "merged_pr_count_3m",
+        "priority_mix",
+        "overdue_issue_count",
+        "bottleneck_risk",
+        "event_update_count"
+      ]
+    },
+    "security_compliance": {
+      "standard_name": "보안/개인정보",
+      "category": "risk_control",
+      "description": "Security requirements, privacy-sensitive data handling, access controls, auditability, and compliance readiness.",
+      "requirement_types": [
+        "security",
+        "privacy",
+        "non_functional",
+        "risk"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Security",
+        "Privacy",
+        "Access Control",
+        "Audit Trail",
+        "Data Protection",
+        "Threat Modeling",
+        "Compliance Testing",
+        "Masking Policy"
+      ],
+      "risks": [
+        "Sensitive data exposure",
+        "Insufficient access control",
+        "Audit evidence missing",
+        "Compliance gap",
+        "Security regression"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "certifications_count",
+        "disciplinary_actions_12m",
+        "competency_score",
+        "reopened_issue_count",
+        "closed_unmerged_pr_count_3m",
+        "ownership_score"
+      ]
+    },
+    "notification_preferences": {
+      "standard_name": "알림 수신 설정",
+      "category": "engagement",
+      "description": "Category-level notification opt-in/out preferences, preference UI, settings API, and user-controlled notification routing.",
+      "requirement_types": [
+        "feature",
+        "frontend",
+        "backend",
+        "mobile",
+        "settings"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Mobile Engineer",
+        "Web Frontend Engineer",
+        "Product Designer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "User Preference Management",
+        "Settings UX",
+        "API Design",
+        "State Management",
+        "Mobile UI",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Preference state mismatch",
+        "Incorrect category routing",
+        "Transactional notification opt-out bug",
+        "Settings sync delay"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "repository_contribution_count",
+        "reopened_issue_count"
+      ]
+    },
+    "notification_read_state": {
+      "standard_name": "알림 읽음 상태/배지",
+      "category": "engagement",
+      "description": "Read/unread state, mark-as-read, mark-all-read, unread badge count, and state synchronization.",
+      "requirement_types": [
+        "feature",
+        "state",
+        "frontend",
+        "backend",
+        "mobile"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Mobile Engineer",
+        "Web Frontend Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Read State Management",
+        "Badge Count Logic",
+        "API Design",
+        "State Synchronization",
+        "Concurrency Handling",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Read state synchronization bugs",
+        "Badge count mismatch",
+        "Bulk update race condition",
+        "Stale unread state"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "repository_contribution_count",
+        "reopened_issue_count"
+      ]
+    },
+    "notification_delivery_integration": {
+      "standard_name": "푸시 발송 서비스 연동",
+      "category": "integration",
+      "description": "FCM/APNs push delivery integration, category routing, delivery failure handling, and push service logs.",
+      "requirement_types": [
+        "feature",
+        "external_api",
+        "backend",
+        "mobile",
+        "reliability"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Mobile Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "FCM/APNs",
+        "Push Delivery",
+        "External API Integration",
+        "Retry Strategy",
+        "Delivery Logging",
+        "Rate Limit Handling",
+        "Contract Testing"
+      ],
+      "risks": [
+        "Push provider outage",
+        "Delivery delay",
+        "Rate limit breach",
+        "Incorrect notification category routing",
+        "Missing delivery logs"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
+    "notification_deeplink_navigation": {
+      "standard_name": "알림 딥링크 이동",
+      "category": "engagement",
+      "description": "Navigation from a notification item to the correct destination screen through deep links or routing metadata.",
+      "requirement_types": [
+        "feature",
+        "mobile",
+        "frontend",
+        "navigation"
+      ],
+      "roles": [
+        "Mobile Engineer",
+        "Web Frontend Engineer",
+        "Backend Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Deep Linking",
+        "Navigation Routing",
+        "Mobile UI",
+        "State Management",
+        "Integration Testing"
+      ],
+      "risks": [
+        "Broken deep link",
+        "Wrong target screen navigation",
+        "Missing routing metadata",
+        "Cross-platform navigation mismatch"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "repository_contribution_count",
+        "reopened_issue_count"
+      ]
+    },
+    "notification_history_retention": {
+      "standard_name": "알림 이력 보관/삭제",
+      "category": "data_lifecycle",
+      "description": "Notification history storage, retention period, cleanup batch, and expired notification handling.",
+      "requirement_types": [
+        "feature",
+        "backend",
+        "data",
+        "privacy",
+        "operations"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Data Modeling",
+        "Retention Policy",
+        "Batch Processing",
+        "Database",
+        "Privacy",
+        "Observability"
+      ],
+      "risks": [
+        "Expired data retention",
+        "Data cleanup failure",
+        "Storage growth",
+        "Incorrect history visibility"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
+    "product_analytics_instrumentation": {
+      "standard_name": "제품 분석 이벤트 계측",
+      "category": "analytics",
+      "description": "Product analytics events, Firebase Analytics integration, metric schema, and success metric tracking.",
+      "requirement_types": [
+        "feature",
+        "data",
+        "analytics",
+        "backend",
+        "frontend",
+        "mobile"
+      ],
+      "roles": [
+        "Data Engineer",
+        "Backend Engineer",
+        "Mobile Engineer",
+        "Web Frontend Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Firebase Analytics",
+        "Event Schema Design",
+        "Metric Definition",
+        "Data Validation",
+        "Dashboard UX",
+        "Logging"
+      ],
+      "risks": [
+        "Metric definition ambiguity",
+        "Event schema drift",
+        "Data freshness mismatch",
+        "Missing analytics event",
+        "Misleading success metric"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "collaboration_frequency",
+        "avg_response_time",
+        "comment_count",
+        "avg_comment_response_time",
+        "event_update_count",
+        "manager_review_score"
+      ]
+    },
+    "release_rollout_management": {
+      "standard_name": "릴리즈/롤아웃 관리",
+      "category": "operations",
+      "description": "Staged rollout, backward compatibility, app update guidance, rollout guardrails, and rollback readiness.",
+      "requirement_types": [
+        "operations",
+        "release",
+        "risk",
+        "mobile",
+        "non_functional"
+      ],
+      "roles": [
+        "Engineering Lead",
+        "Backend Engineer",
+        "Mobile Engineer",
+        "QA Engineer",
+        "Product Manager"
+      ],
+      "skills": [
+        "Release Management",
+        "Backward Compatibility",
+        "Rollout Planning",
+        "Rollback Planning",
+        "App Store Release Notes",
+        "Monitoring",
+        "Documentation",
+        "Bug Fixing",
+        "Unit Testing"
+      ],
+      "risks": [
+        "Rollback failure",
+        "Backward compatibility break",
+        "User update lag",
+        "Release regression",
+        "Guardrail miss"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
+    "async_queue_processing": {
+      "standard_name": "비동기 큐 처리",
+      "category": "architecture",
+      "description": "Asynchronous queue processing, Kafka-style event handling, worker retries, and write-load separation.",
+      "requirement_types": [
+        "backend",
+        "infra",
+        "performance",
+        "reliability"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Kafka",
+        "Asynchronous Processing",
+        "Queue Processing",
+        "Retry Strategy",
+        "Database Write Separation",
+        "Observability"
+      ],
+      "risks": [
+        "Queue backlog",
+        "Duplicate processing",
+        "Message loss",
+        "Worker retry storm",
+        "Data consistency issue"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
+    "error_empty_state_handling": {
+      "standard_name": "오류/빈 상태 처리",
+      "category": "experience",
+      "description": "Error states, empty states, refresh CTA, user-facing fallback messages, and edge-case UX.",
+      "requirement_types": [
+        "feature",
+        "frontend",
+        "mobile",
+        "ux",
+        "qa"
+      ],
+      "roles": [
+        "Product Designer",
+        "Mobile Engineer",
+        "Web Frontend Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Error Handling",
+        "Empty State UX",
+        "Interaction Design",
+        "Accessibility",
+        "Visual QA",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Poor recovery UX",
+        "Unclear error state",
+        "Accessibility gaps",
+        "Unverified edge state"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "repository_contribution_count",
+        "reopened_issue_count"
+      ]
+    },
+    "hris_integration": {
+      "standard_name": "HRIS 연동",
+      "category": "integration",
+      "description": "HRIS/BambooHR webhook integration, hiring status event ingestion, polling fallback, and HR system contract handling.",
+      "requirement_types": [
+        "feature",
+        "external_api",
+        "backend",
+        "workflow"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer",
+        "HR Operations Specialist"
+      ],
+      "skills": [
+        "Webhook",
+        "External API Integration",
+        "Contract Testing",
+        "Retry Strategy",
+        "Idempotency",
+        "HRIS Integration"
+      ],
+      "risks": [
+        "Webhook delivery failure",
+        "HRIS schema drift",
+        "Duplicate event processing",
+        "Missing onboarding trigger"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
+    "account_provisioning": {
+      "standard_name": "계정/권한 자동 프로비저닝",
+      "category": "identity_access",
+      "description": "Automatic tool account creation, permission assignment, temporary credential delivery, and provisioning status tracking.",
+      "requirement_types": [
+        "feature",
+        "security",
+        "external_api",
+        "backend",
+        "operations"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "IT Administrator",
+        "QA Engineer",
+        "Legal/Compliance Specialist"
+      ],
+      "skills": [
+        "Account Provisioning",
+        "Authorization",
+        "RBAC",
+        "External API Integration",
+        "Audit Trail",
+        "Secure Credential Delivery"
+      ],
+      "risks": [
+        "Incorrect permission assignment",
+        "Provisioning failure",
+        "Temporary password exposure",
+        "Insufficient access control"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "certifications_count",
+        "competency_score",
+        "reopened_issue_count",
+        "disciplinary_actions_12m",
+        "ownership_score"
+      ]
+    },
+    "onboarding_checklist_tracking": {
+      "standard_name": "온보딩 체크리스트/진행 추적",
+      "category": "workflow",
+      "description": "Role-based onboarding checklist generation, task completion tracking, delayed-task badge, and progress visibility.",
+      "requirement_types": [
+        "feature",
+        "frontend",
+        "backend",
+        "workflow",
+        "dashboard"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Product Designer",
+        "QA Engineer",
+        "HR Operations Specialist"
+      ],
+      "skills": [
+        "Checklist UX",
+        "Workflow State Management",
+        "Task Tracking",
+        "Dashboard UX",
+        "State Management",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Task state mismatch",
+        "Incomplete checklist generation",
+        "Delayed item not surfaced",
+        "Poor onboarding visibility"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "repository_contribution_count",
+        "reopened_issue_count"
+      ]
+    },
+    "workflow_automation": {
+      "standard_name": "워크플로우 자동화",
+      "category": "workflow",
+      "description": "Long-running workflow orchestration, retry, state tracking, Temporal-style durable workflow execution, and fallback processing.",
+      "requirement_types": [
+        "backend",
+        "infra",
+        "reliability",
+        "workflow"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer",
+        "Engineering Lead"
+      ],
+      "skills": [
+        "Workflow Orchestration",
+        "Temporal",
+        "Retry Strategy",
+        "State Machine",
+        "Idempotency",
+        "Observability"
+      ],
+      "risks": [
+        "Workflow stuck state",
+        "Retry storm",
+        "Partial provisioning failure",
+        "State recovery issue"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
+    "lms_training_integration": {
+      "standard_name": "LMS 교육 연동",
+      "category": "integration",
+      "description": "LMS/xAPI integration, role-based training assignment, training completion event ingestion, and checklist update.",
+      "requirement_types": [
+        "feature",
+        "external_api",
+        "workflow",
+        "backend"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "HR Operations Specialist",
+        "QA Engineer"
+      ],
+      "skills": [
+        "LMS Integration",
+        "xAPI",
+        "External API Integration",
+        "Event Handling",
+        "Training Assignment",
+        "Contract Testing",
+        "Training Enablement"
+      ],
+      "risks": [
+        "Training assignment failure",
+        "Completion event mismatch",
+        "LMS API schema drift",
+        "Delayed checklist update"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "collaboration_frequency",
+        "avg_response_time",
+        "comment_count",
+        "avg_comment_response_time",
+        "event_update_count",
+        "manager_review_score"
+      ]
+    },
+    "admin_role_template_management": {
+      "standard_name": "역할 템플릿/어드민 관리",
+      "category": "operations",
+      "description": "Admin management of role templates, required tool lists, onboarding checklist templates, and operational configuration.",
+      "requirement_types": [
+        "feature",
+        "admin",
+        "frontend",
+        "backend",
+        "operations"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Product Designer",
+        "QA Engineer",
+        "HR Operations Specialist"
+      ],
+      "skills": [
+        "Admin UX",
+        "CRUD",
+        "Role Template Management",
+        "Audit Trail",
+        "Form Validation",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Incorrect template configuration",
+        "Accidental destructive operation",
+        "Permission misconfiguration",
+        "Operational workflow mismatch"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "performance_score",
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "repository_contribution_count",
+        "reopened_issue_count"
+      ]
+    },
+    "onboarding_dashboard": {
+      "standard_name": "온보딩 현황 대시보드",
+      "category": "analytics",
+      "description": "Manager dashboard for onboarding status, checklist completion rate, delayed items, and team-level progress visibility.",
+      "requirement_types": [
+        "feature",
+        "dashboard",
+        "frontend",
+        "backend",
+        "data"
+      ],
+      "roles": [
+        "Product Designer",
+        "Web Frontend Engineer",
+        "Backend Engineer",
+        "QA Engineer",
+        "HR Operations Specialist"
+      ],
+      "skills": [
+        "Dashboard UX",
+        "Data Aggregation",
+        "Chart Visualization",
+        "Metric Definition",
+        "API Design",
+        "Data Validation"
+      ],
+      "risks": [
+        "Progress metric mismatch",
+        "Delayed item not visible",
+        "Slow dashboard loading",
+        "Data freshness mismatch"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "collaboration_frequency",
+        "avg_response_time",
+        "comment_count",
+        "avg_comment_response_time",
+        "event_update_count",
+        "manager_review_score"
+      ]
+    }
+  },
+  "constraint_profiles": {
+    "short_timeline": {
+      "standard_name": "짧은 일정",
+      "description": "Schedule pressure, urgent release, fixed launch date, or hard deadline.",
+      "weight_hints": [
+        "available_proxy",
+        "avg_cycle_time",
+        "sprint_completion_rate",
+        "overdue_issue_count",
+        "busy_minutes",
+        "focus_time_minutes",
+        "no_meeting_block_count"
+      ],
+      "risks": [
+        "Delivery delay",
+        "Scope trade-off required",
+        "Burnout risk"
+      ]
+    },
+    "budget_limited": {
+      "standard_name": "예산 제약",
+      "description": "Budget cap, cost sensitivity, or staffing cost constraint.",
+      "weight_hints": [
+        "base_salary_krw",
+        "bonus_krw",
+        "team_size"
+      ],
+      "risks": [
+        "Scope reduction",
+        "Senior capacity constraint",
+        "Cost-quality trade-off"
+      ]
+    },
+    "high_reliability": {
+      "standard_name": "고신뢰성",
+      "description": "High availability, low error tolerance, mission-critical workflow, or operational reliability need.",
+      "weight_hints": [
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "estimation_accuracy",
+        "ownership_score",
+        "bottleneck_risk"
+      ],
+      "risks": [
+        "Operational incident",
+        "Quality regression",
+        "Bottleneck during release"
+      ]
+    },
+    "performance_target": {
+      "standard_name": "성능/성과 목표",
+      "description": "Quantified product, system, business, or operational target such as p95, completion rate, error rate, or success metric.",
+      "weight_hints": [
+        "competency_score",
+        "avg_cycle_time",
+        "completed_issue_count",
+        "reopened_issue_count",
+        "estimation_accuracy",
+        "ownership_score"
+      ],
+      "risks": [
+        "Metric miss",
+        "Performance regression",
+        "Unclear measurement definition"
+      ]
+    },
+    "availability_target": {
+      "standard_name": "가용성/SLA 목표",
+      "description": "Availability, SLA, uptime, operational reliability, or service continuity target.",
+      "weight_hints": [
+        "reopened_issue_count",
+        "overdue_issue_count",
+        "ownership_score",
+        "bottleneck_risk",
+        "event_update_count"
+      ],
+      "risks": [
+        "Operational incident",
+        "SLA miss",
+        "Insufficient monitoring"
+      ]
+    },
+    "security_privacy_requirement": {
+      "standard_name": "보안/개인정보 제약",
+      "description": "Security, privacy, access control, compliance, masking, audit, or restricted-data handling requirement.",
+      "weight_hints": [
+        "job_category_code",
+        "certifications_count",
+        "competency_score",
+        "reopened_issue_count",
+        "disciplinary_actions_12m",
+        "ownership_score"
+      ],
+      "risks": [
+        "Sensitive data exposure",
+        "Incorrect access grant",
+        "Audit evidence missing",
+        "Compliance gap"
+      ]
+    },
+    "retention_data_policy": {
+      "standard_name": "데이터 보관/삭제 정책",
+      "description": "Retention period, automatic deletion, history storage, data lifecycle, or privacy-driven cleanup requirement.",
+      "weight_hints": [
+        "competency_score",
+        "repository_contribution_count",
+        "avg_cycle_time",
+        "reopened_issue_count",
+        "ownership_score"
+      ],
+      "risks": [
+        "Expired data retained",
+        "Cleanup job failure",
+        "Incorrect data visibility"
+      ]
+    },
+    "rollout_release_constraint": {
+      "standard_name": "릴리즈/롤아웃 제약",
+      "description": "Staged rollout, launch checklist, rollback, release notes, pilot, or rollout guardrail requirement.",
+      "weight_hints": [
+        "avg_cycle_time",
+        "sprint_completion_rate",
+        "overdue_issue_count",
+        "ownership_score",
+        "event_update_count",
+        "focus_time_minutes"
+      ],
+      "risks": [
+        "Release regression",
+        "Rollback failure",
+        "Delayed rollout"
+      ]
+    },
+    "external_dependency": {
+      "standard_name": "외부 의존성/준비물",
+      "description": "External API token, third-party spec, legal approval, design artifact, roadmap dependency, or stakeholder-owned prerequisite.",
+      "weight_hints": [
+        "collaboration_frequency",
+        "avg_response_time",
+        "external_meeting_ratio",
+        "comment_count",
+        "event_update_count"
+      ],
+      "risks": [
+        "Dependency delay",
+        "Stakeholder approval missing",
+        "External contract drift"
+      ]
+    },
+    "scope_exclusion": {
+      "standard_name": "범위 제외/비목표",
+      "description": "Non-goal, out-of-scope item, deferred phase, or explicit scope exclusion.",
+      "weight_hints": [
+        "scope_change_count",
+        "task_breakdown_count",
+        "estimation_accuracy",
+        "comment_count"
+      ],
+      "risks": [
+        "Scope creep",
+        "Misaligned stakeholder expectation",
+        "Phase boundary ambiguity"
+      ]
+    },
+    "priority_requirement": {
+      "standard_name": "우선순위 제약",
+      "description": "Must/Should priority, release criticality, or implementation priority marker from PRD stories and requirements.",
+      "weight_hints": [
+        "priority_mix",
+        "completed_issue_count",
+        "avg_cycle_time",
+        "sprint_completion_rate"
+      ],
+      "risks": [
+        "Priority mismatch",
+        "Critical scope delayed"
+      ]
+    },
+    "business_rule_constraint": {
+      "standard_name": "업무 규칙 제약",
+      "description": "Business-rule requirement such as mandatory categories, opt-out limitations, preconditions, or default behavior.",
+      "weight_hints": [
+        "competency_score",
+        "reopened_issue_count",
+        "completed_issue_count",
+        "ownership_score",
+        "manager_review_score"
+      ],
+      "risks": [
+        "Incorrect business rule implementation",
+        "Policy mismatch",
+        "Regression in edge-case behavior"
+      ]
+    },
+    "platform_guideline_constraint": {
+      "standard_name": "플랫폼 가이드라인 제약",
+      "description": "Mobile platform, app store, native guideline, accessibility, or platform-specific interaction requirement.",
+      "weight_hints": [
+        "job_category_code",
+        "peer_review_score",
+        "competency_score",
+        "reopened_issue_count",
+        "sprint_completion_rate"
+      ],
+      "risks": [
+        "Platform-specific UI bug",
+        "App review delay",
+        "Native guideline mismatch"
+      ]
+    },
+    "open_question": {
+      "standard_name": "미결정 사항",
+      "description": "Open question, decision needed, unresolved policy, or pending cross-functional decision from the PRD.",
+      "weight_hints": [
+        "collaboration_frequency",
+        "avg_response_time",
+        "comment_count",
+        "external_meeting_ratio",
+        "event_update_count"
+      ],
+      "risks": [
+        "Decision delay",
+        "Ambiguous requirement",
+        "Late scope change"
+      ]
+    }
+  }
+}

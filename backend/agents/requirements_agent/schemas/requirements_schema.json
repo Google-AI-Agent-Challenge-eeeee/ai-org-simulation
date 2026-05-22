@@ -1,0 +1,792 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-org-simulation.local/schemas/requirements_agent/requirements_schema.json",
+  "title": "Requirements_List",
+  "description": "Final Requirements Agent output consumed by employee fit scoring, team ranking, Shadow RolePlay, and reporting.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_name",
+    "project_goal",
+    "required_features",
+    "required_roles",
+    "required_skills",
+    "duration_weeks",
+    "budget",
+    "constraints",
+    "risk_factors",
+    "selected_employee_columns",
+    "column_weights",
+    "column_priority_order",
+    "weighting_reason",
+    "unknown_requirements",
+    "missing_extractions",
+    "missing_fields",
+    "low_confidence_items",
+    "coverage_check"
+  ],
+  "properties": {
+    "_meta": {
+      "$ref": "#/$defs/meta"
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Project name extracted from PRD or PM requirements. Empty string is allowed when missing_fields records project_name."
+    },
+    "project_goal": {
+      "type": "string",
+      "description": "Project goal used as the main context for team fit scoring and Shadow RolePlay kickoff."
+    },
+    "required_features": {
+      "type": "array",
+      "description": "Confirmed standard feature requirements. Unknown or unconfirmed items must not be promoted here.",
+      "items": {
+        "$ref": "#/$defs/feature_requirement"
+      },
+      "uniqueItems": true
+    },
+    "required_roles": {
+      "type": "array",
+      "description": "Roles required by confirmed features and constraints.",
+      "items": {
+        "$ref": "#/$defs/role_requirement"
+      },
+      "uniqueItems": true
+    },
+    "required_skills": {
+      "type": "array",
+      "description": "Skills required by confirmed features and constraints.",
+      "items": {
+        "$ref": "#/$defs/skill_requirement"
+      },
+      "uniqueItems": true
+    },
+    "duration_weeks": {
+      "description": "Expected project duration. Use null when absent, numeric value when explicit, or a range object when PRD gives a range.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        {
+          "$ref": "#/$defs/duration_range"
+        }
+      ]
+    },
+    "budget": {
+      "description": "Budget constraint. Use null when absent, a numeric amount when explicit, or a range object when PRD gives a range.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "$ref": "#/$defs/budget_range"
+        }
+      ]
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Confirmed project constraints such as schedule, budget, security, compliance, operational, platform, or stakeholder constraints.",
+      "items": {
+        "$ref": "#/$defs/constraint_requirement"
+      }
+    },
+    "risk_factors": {
+      "type": "array",
+      "description": "Risk factors derived from confirmed requirements and taxonomy. Used by Shadow RolePlay scenario generation.",
+      "items": {
+        "$ref": "#/$defs/risk_factor"
+      }
+    },
+    "selected_employee_columns": {
+      "type": "array",
+      "description": "Employee DB and activity columns selected as comparison criteria for this project.",
+      "items": {
+        "$ref": "#/$defs/selected_employee_column"
+      },
+      "uniqueItems": true
+    },
+    "column_weights": {
+      "type": "object",
+      "description": "Final column weights after Human Confirm. Keys should follow source.column, such as employee.job_category_code.",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "column_priority_order": {
+      "type": "array",
+      "description": "Column keys ordered from most important to least important for explanation and scoring.",
+      "items": {
+        "$ref": "#/$defs/column_key"
+      }
+    },
+    "weighting_reason": {
+      "type": "object",
+      "description": "Human-readable reason for each final column weight. Keys should match column_weights keys.",
+      "additionalProperties": {
+        "$ref": "#/$defs/weight_reason"
+      }
+    },
+    "unknown_requirements": {
+      "type": "array",
+      "description": "Requirements found in PRD but not confidently mapped to taxonomy or rulebase.",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    },
+    "missing_extractions": {
+      "type": "array",
+      "description": "Validator-detected requirements that were present in evidence but missing from extraction or mapping.",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    },
+    "missing_fields": {
+      "type": "array",
+      "description": "Required or useful project fields not found in PRD/PM requirements.",
+      "items": {
+        "$ref": "#/$defs/missing_field"
+      }
+    },
+    "low_confidence_items": {
+      "type": "array",
+      "description": "Extracted or mapped items that require Human Confirm because confidence is low or evidence is ambiguous.",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    },
+    "coverage_check": {
+      "$ref": "#/$defs/coverage_check"
+    },
+    "invalid_items": {
+      "type": "array",
+      "description": "Optional audit list of items rejected or held back because they lack source evidence or contradict PRD.",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    },
+    "source_trace": {
+      "type": "array",
+      "description": "Optional global evidence trace used to audit final output.",
+      "items": {
+        "$ref": "#/$defs/source_evidence"
+      }
+    }
+  },
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requirements_list_id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "pipeline_version": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "needs_human_confirm",
+            "completed",
+            "failed"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "taxonomy_version": {
+          "type": "string"
+        },
+        "rulebase_version": {
+          "type": "string"
+        },
+        "column_rules_version": {
+          "type": "string"
+        }
+      }
+    },
+    "source_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "text"
+      ],
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "document_type": {
+          "type": "string",
+          "enum": [
+            "prd",
+            "pm_requirements",
+            "manual_input",
+            "reference"
+          ]
+        },
+        "section_id": {
+          "type": "string"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "chunk_id": {
+          "type": "string"
+        },
+        "source_range": {
+          "$ref": "#/$defs/source_range"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "start_char": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "end_char": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "start_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "end_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "feature_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feature_key",
+        "standard_name",
+        "source_evidence",
+        "confidence",
+        "status"
+      ],
+      "properties": {
+        "feature_key": {
+          "type": "string"
+        },
+        "standard_name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "raw_texts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requirement_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "status": {
+          "$ref": "#/$defs/final_item_status"
+        }
+      }
+    },
+    "role_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "source_feature_keys",
+        "reason"
+      ],
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "job_category_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "skill_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill",
+        "source_feature_keys",
+        "reason"
+      ],
+      "properties": {
+        "skill": {
+          "type": "string"
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "constraint_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraint_key",
+        "text",
+        "source_evidence",
+        "confidence",
+        "status"
+      ],
+      "properties": {
+        "constraint_key": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "constraint_type": {
+          "type": "string",
+          "enum": [
+            "schedule",
+            "budget",
+            "security",
+            "privacy",
+            "technical",
+            "platform",
+            "operation",
+            "stakeholder",
+            "other"
+          ]
+        },
+        "source_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "status": {
+          "$ref": "#/$defs/final_item_status"
+        }
+      }
+    },
+    "risk_factor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_key",
+        "text",
+        "source_feature_keys",
+        "severity",
+        "reason"
+      ],
+      "properties": {
+        "risk_key": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "selected_employee_column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "name",
+        "column_key",
+        "rule_key",
+        "reason",
+        "selection_stage"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "column_key": {
+          "$ref": "#/$defs/column_key"
+        },
+        "rule_key": {
+          "type": "string"
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_constraint_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        },
+        "selection_stage": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "final"
+          ]
+        },
+        "restricted": {
+          "type": "boolean",
+          "default": false
+        },
+        "requires_human_confirm": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "weight_reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weight",
+        "reason"
+      ],
+      "properties": {
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_constraint_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "review_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "reason",
+        "status"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item_type": {
+          "type": "string",
+          "enum": [
+            "feature",
+            "role",
+            "skill",
+            "constraint",
+            "risk",
+            "field",
+            "column",
+            "other"
+          ]
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "manual_review_required",
+            "needs_user_input",
+            "removed",
+            "accepted",
+            "rejected"
+          ]
+        },
+        "suggested_mapping": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "missing_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "reason",
+        "severity"
+      ],
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "blocking"
+          ]
+        },
+        "suggested_question": {
+          "type": "string"
+        }
+      }
+    },
+    "coverage_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overall_status",
+        "sections"
+      ],
+      "properties": {
+        "overall_status": {
+          "type": "string",
+          "enum": [
+            "covered",
+            "partial",
+            "missing"
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/section_coverage"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "section_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "section_title",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "covered",
+            "partial",
+            "missing"
+          ]
+        },
+        "mapped_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "duration_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_weeks",
+        "max_weeks"
+      ],
+      "properties": {
+        "min_weeks": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "max_weeks": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "budget_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "min_amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "default": "KRW"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "column_key": {
+      "type": "string",
+      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*\\.[a-zA-Z_][a-zA-Z0-9_]*$"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "final_item_status": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "human_confirmed",
+        "system_confirmed"
+      ]
+    }
+  }
+}

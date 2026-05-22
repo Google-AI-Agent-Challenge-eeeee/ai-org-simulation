@@ -1,0 +1,561 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-org-simulation.local/schemas/requirements_agent/mapped_requirements_schema.json",
+  "title": "Mapped_Requirements",
+  "description": "Intermediate output produced by taxonomy/rulebase matching before column selection, validation, and Human Confirm.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "_meta",
+    "mapped_features",
+    "required_roles",
+    "required_skills",
+    "constraints",
+    "risk_factors",
+    "unknown_requirements",
+    "conflict_items"
+  ],
+  "properties": {
+    "_meta": {
+      "$ref": "#/$defs/meta"
+    },
+    "mapped_features": {
+      "type": "array",
+      "description": "Raw feature candidates mapped to taxonomy features.",
+      "items": {
+        "$ref": "#/$defs/mapped_feature"
+      }
+    },
+    "required_roles": {
+      "type": "array",
+      "description": "Roles expanded from mapped taxonomy features.",
+      "items": {
+        "$ref": "#/$defs/taxonomy_expansion_item"
+      }
+    },
+    "required_skills": {
+      "type": "array",
+      "description": "Skills expanded from mapped taxonomy features.",
+      "items": {
+        "$ref": "#/$defs/taxonomy_expansion_item"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Mapped constraints from PRD/PM requirements.",
+      "items": {
+        "$ref": "#/$defs/mapped_constraint"
+      }
+    },
+    "risk_factors": {
+      "type": "array",
+      "description": "Risk factors expanded from taxonomy or extracted from PRD.",
+      "items": {
+        "$ref": "#/$defs/mapped_risk"
+      }
+    },
+    "unknown_requirements": {
+      "type": "array",
+      "description": "Requirements that could not be confidently mapped. These must not mutate taxonomy automatically.",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    },
+    "conflict_items": {
+      "type": "array",
+      "description": "Taxonomy/rulebase conflicts or ambiguous mappings for Human Confirm.",
+      "items": {
+        "$ref": "#/$defs/conflict_item"
+      }
+    },
+    "low_confidence_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    },
+    "mapping_stats": {
+      "$ref": "#/$defs/mapping_stats"
+    },
+    "source_trace": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_evidence"
+      }
+    }
+  },
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapped_requirements_id",
+        "pipeline_phase",
+        "status",
+        "taxonomy_version",
+        "rulebase_version"
+      ],
+      "properties": {
+        "mapped_requirements_id": {
+          "type": "string"
+        },
+        "draft_id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "pipeline_phase": {
+          "type": "string",
+          "const": "taxonomy_matching"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "needs_human_confirm",
+            "completed",
+            "failed"
+          ]
+        },
+        "taxonomy_version": {
+          "type": "string"
+        },
+        "rulebase_version": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "mapped_feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "feature_key",
+        "standard_name",
+        "match_method",
+        "confidence",
+        "source_evidence",
+        "status"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "feature_key": {
+          "type": "string"
+        },
+        "standard_name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "raw_text": {
+          "type": "string"
+        },
+        "matched_alias": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "match_method": {
+          "type": "string",
+          "enum": [
+            "alias_exact",
+            "alias_contains",
+            "taxonomy_exact",
+            "manual_project_mapping",
+            "human_confirmed"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "source_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weight_hints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "mapped",
+            "low_confidence",
+            "manual_review_required",
+            "human_confirmed"
+          ]
+        }
+      }
+    },
+    "taxonomy_expansion_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "source_feature_keys",
+        "reason"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "job_category_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "mapped_constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraint_key",
+        "text",
+        "confidence",
+        "source_evidence",
+        "status"
+      ],
+      "properties": {
+        "constraint_key": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "constraint_type": {
+          "type": "string",
+          "enum": [
+            "schedule",
+            "budget",
+            "security",
+            "privacy",
+            "technical",
+            "platform",
+            "operation",
+            "stakeholder",
+            "other"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "source_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "mapped",
+            "low_confidence",
+            "manual_review_required",
+            "human_confirmed"
+          ]
+        }
+      }
+    },
+    "mapped_risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_key",
+        "text",
+        "source_type",
+        "reason"
+      ],
+      "properties": {
+        "risk_key": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "taxonomy",
+            "extracted",
+            "validator",
+            "human_confirmed"
+          ]
+        },
+        "source_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "review_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "reason",
+        "status"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item_type": {
+          "type": "string",
+          "enum": [
+            "feature",
+            "role",
+            "skill",
+            "constraint",
+            "risk",
+            "field",
+            "other"
+          ]
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "manual_review_required",
+            "needs_user_input",
+            "accepted",
+            "rejected"
+          ]
+        },
+        "suggested_mapping": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "conflict_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "reason",
+        "status"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "candidate_feature_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "candidate_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "source_evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "manual_review_required",
+            "resolved"
+          ]
+        }
+      }
+    },
+    "source_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "text"
+      ],
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "section_id": {
+          "type": "string"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "chunk_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_range": {
+          "$ref": "#/$defs/source_range"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "start_char": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "end_char": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "start_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "end_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "mapping_stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mapped_feature_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conflict_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_confidence_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

@@ -1,0 +1,687 @@
+{
+  "_meta": {
+    "name": "requirements_agent_employee_column_rules",
+    "phase": "file_create_phase_1",
+    "status": "mvp_reference_expanded",
+    "version": "0.2.0",
+    "purpose": "Define employee DB column candidates by requirement type for draft selection and final weighting.",
+    "source_materials": [
+      "../../requirements_agent_민성초기세팅/column_explain/column_explain.md",
+      "../../requirements_agent_민성초기세팅/DB_DataSet/hr/employee_dummy_100.csv",
+      "../../requirements_agent_민성초기세팅/DB_DataSet/github/github_activity_dummy_100.csv",
+      "../../requirements_agent_민성초기세팅/DB_DataSet/slack/slack_activity_dummy_100.csv",
+      "../../requirements_agent_민성초기세팅/DB_DataSet/jira/jira_activity_dummy_100.csv",
+      "../../requirements_agent_민성초기세팅/DB_DataSet/calendar/google_calendar_activity_dummy_100.csv",
+      "../../../../datasets/raw/hr/employee_dummy_100.csv",
+      "../../../../datasets/raw/github/github_activity_dummy_100.csv",
+      "../../../../datasets/raw/slack/slack_activity_dummy_100.csv",
+      "../../../../datasets/raw/jira/jira_activity_dummy_100.csv",
+      "../../../../datasets/raw/calendar/google_calendar_activity_dummy_100.csv"
+    ],
+    "guardrails": [
+      "Requirements Agent selects comparison criteria only; it does not evaluate individual employees.",
+      "Do not use sensitive or bias-prone personal columns as matching criteria.",
+      "Column selection remains draft until Human Confirm is complete.",
+      "Use only columns that exist in the current CSV/model layer unless explicitly marked as unavailable."
+    ]
+  },
+  "column_sources": {
+    "employee": {
+      "join_key": "employee_id",
+      "safe_default_columns": [
+        "employment_status",
+        "employment_type",
+        "department",
+        "job_category_code",
+        "manager_id",
+        "work_location",
+        "tenure_years",
+        "performance_score",
+        "kpi_score",
+        "competency_score",
+        "peer_review_score",
+        "manager_review_score",
+        "engagement_score",
+        "absence_days_12m",
+        "overtime_hours_12m",
+        "training_hours_12m",
+        "certifications_count",
+        "disciplinary_actions_12m",
+        "remote_work_days_12m",
+        "turnover_risk_score",
+        "github_id",
+        "slack_user_id",
+        "jira_account_id",
+        "google_email"
+      ],
+      "restricted_columns": [
+        "base_salary_krw",
+        "bonus_krw"
+      ],
+      "excluded_by_default_columns": [
+        "employee_name",
+        "gender",
+        "birth_date",
+        "age",
+        "education_level",
+        "self_review_score",
+        "promotion_eligible",
+        "promotion_recommended",
+        "last_promotion_date"
+      ]
+    },
+    "github_activity": {
+      "join_key": "github_id",
+      "safe_default_columns": [
+        "commit_count_3m",
+        "pr_count_3m",
+        "merged_pr_count_3m",
+        "closed_unmerged_pr_count_3m",
+        "repository_contribution_count",
+        "contributed_repositories",
+        "fetch_status"
+      ],
+      "excluded_by_default_columns": [
+        "error_message",
+        "fetched_at"
+      ]
+    },
+    "slack_activity": {
+      "join_key": "slack_user_id",
+      "safe_default_columns": [
+        "message_count",
+        "thread_replies",
+        "mention_count",
+        "collaboration_frequency",
+        "avg_response_time",
+        "communication_balance",
+        "night_activity_ratio",
+        "multitasking_score",
+        "leadership_score",
+        "dependency_score",
+        "bottleneck_risk",
+        "collaboration_style",
+        "autonomy_score",
+        "burnout_risk",
+        "decision_latency",
+        "fetch_status"
+      ],
+      "restricted_columns": [
+        "slack_user_profile",
+        "top_collaborators",
+        "user_conversations"
+      ],
+      "excluded_by_default_columns": [
+        "error_message",
+        "fetched_at"
+      ]
+    },
+    "jira_activity": {
+      "join_key": "jira_account_id",
+      "safe_default_columns": [
+        "assigned_issue_count",
+        "reported_issue_count",
+        "completed_issue_count",
+        "issue_type_mix",
+        "priority_mix",
+        "avg_cycle_time",
+        "overdue_issue_count",
+        "estimation_accuracy",
+        "worklog_hours",
+        "comment_count",
+        "avg_comment_response_time",
+        "collaboration_touchpoints",
+        "status_transition_count",
+        "avg_time_in_status",
+        "reopened_issue_count",
+        "scope_change_count",
+        "task_breakdown_count",
+        "sprint_completion_rate",
+        "context_switching_score",
+        "autonomy_score",
+        "ownership_score",
+        "bottleneck_risk",
+        "fetch_status"
+      ],
+      "restricted_columns": [
+        "sprint_participation"
+      ],
+      "excluded_by_default_columns": [
+        "error_message",
+        "fetched_at"
+      ]
+    },
+    "calendar_activity": {
+      "join_key": "google_email",
+      "safe_default_columns": [
+        "event_count",
+        "meeting_count",
+        "total_meeting_minutes",
+        "avg_meeting_duration_minutes",
+        "early_late_meeting_ratio",
+        "weekend_meeting_ratio",
+        "focus_time_count",
+        "focus_time_minutes",
+        "fragmented_calendar_score",
+        "no_meeting_block_count",
+        "organizer_event_count",
+        "attendee_event_count",
+        "organizer_ratio",
+        "attendee_count_avg",
+        "large_meeting_ratio",
+        "external_meeting_ratio",
+        "no_response_ratio",
+        "recurring_event_count",
+        "recurring_meeting_ratio",
+        "busy_minutes",
+        "working_location_count",
+        "working_location_mix",
+        "event_update_count",
+        "meeting_provider_mix",
+        "fetch_status"
+      ],
+      "excluded_by_default_columns": [
+        "calendar_id",
+        "error_message",
+        "fetched_at"
+      ]
+    }
+  },
+  "not_available_columns": [
+    {
+      "column": "skill_stack",
+      "reason": "Mentioned in planning examples but not present in current HR schema or raw CSV."
+    },
+    {
+      "column": "skill_score_json",
+      "reason": "Mentioned in planning examples but not present in current HR schema or raw CSV."
+    },
+    {
+      "column": "available_hours_per_week",
+      "reason": "Not present; use Calendar busy/focus/no-meeting columns as availability proxies."
+    },
+    {
+      "column": "current_allocation_rate",
+      "reason": "Not present; use Calendar and Jira load proxies until allocation data exists."
+    },
+    {
+      "column": "monthly_cost_rate",
+      "reason": "Not present; HR salary columns are restricted cost proxies."
+    }
+  ],
+  "requirement_type_rules": {
+    "role_match": {
+      "description": "Select employees whose job category and employment status match required roles.",
+      "default_weight": 0.18,
+      "columns": [
+        {
+          "source": "employee",
+          "name": "job_category_code",
+          "reason": "Primary role matching field."
+        },
+        {
+          "source": "employee",
+          "name": "department",
+          "reason": "High-level organization grouping."
+        },
+        {
+          "source": "employee",
+          "name": "employment_status",
+          "reason": "Only active or available employment states should be considered."
+        },
+        {
+          "source": "employee",
+          "name": "employment_type",
+          "reason": "Contract or intern status can affect staffing assumptions."
+        },
+        {
+          "source": "employee",
+          "name": "tenure_years",
+          "reason": "Seniority proxy when the schema has no explicit level field."
+        }
+      ]
+    },
+    "technical_execution": {
+      "description": "Estimate ability to execute implementation-heavy requirements.",
+      "default_weight": 0.16,
+      "columns": [
+        {
+          "source": "employee",
+          "name": "competency_score",
+          "reason": "General capability score."
+        },
+        {
+          "source": "employee",
+          "name": "performance_score",
+          "reason": "Overall recent performance."
+        },
+        {
+          "source": "employee",
+          "name": "training_hours_12m",
+          "reason": "Recent learning and upskilling proxy."
+        },
+        {
+          "source": "employee",
+          "name": "certifications_count",
+          "reason": "Formal qualification proxy for technical and security-heavy work."
+        },
+        {
+          "source": "github_activity",
+          "name": "commit_count_3m",
+          "reason": "Recent implementation activity."
+        },
+        {
+          "source": "github_activity",
+          "name": "pr_count_3m",
+          "reason": "Recent change delivery activity."
+        },
+        {
+          "source": "github_activity",
+          "name": "merged_pr_count_3m",
+          "reason": "Accepted change activity."
+        },
+        {
+          "source": "github_activity",
+          "name": "repository_contribution_count",
+          "reason": "Breadth of repository contribution."
+        }
+      ]
+    },
+    "delivery_reliability": {
+      "description": "Estimate delivery consistency, planning quality, and issue completion reliability.",
+      "default_weight": 0.14,
+      "columns": [
+        {
+          "source": "jira_activity",
+          "name": "completed_issue_count",
+          "reason": "Recent completed work volume."
+        },
+        {
+          "source": "jira_activity",
+          "name": "avg_cycle_time",
+          "reason": "Average delivery speed."
+        },
+        {
+          "source": "jira_activity",
+          "name": "overdue_issue_count",
+          "reason": "Deadline risk signal."
+        },
+        {
+          "source": "jira_activity",
+          "name": "estimation_accuracy",
+          "reason": "Planning reliability signal."
+        },
+        {
+          "source": "jira_activity",
+          "name": "sprint_completion_rate",
+          "reason": "Sprint execution reliability."
+        },
+        {
+          "source": "jira_activity",
+          "name": "ownership_score",
+          "reason": "End-to-end task ownership signal."
+        }
+      ]
+    },
+    "quality_assurance": {
+      "description": "Select criteria for quality-sensitive requirements and regression-heavy features.",
+      "default_weight": 0.12,
+      "columns": [
+        {
+          "source": "employee",
+          "name": "job_category_code",
+          "reason": "QA role identification through QA job category."
+        },
+        {
+          "source": "jira_activity",
+          "name": "reopened_issue_count",
+          "reason": "Low value is a quality signal; high value can indicate rework risk."
+        },
+        {
+          "source": "jira_activity",
+          "name": "issue_type_mix",
+          "reason": "Bug-heavy experience can support QA or stabilization work."
+        },
+        {
+          "source": "jira_activity",
+          "name": "completed_issue_count",
+          "reason": "Issue closure experience."
+        },
+        {
+          "source": "employee",
+          "name": "manager_review_score",
+          "reason": "Manager-assessed reliability signal."
+        },
+        {
+          "source": "employee",
+          "name": "peer_review_score",
+          "reason": "Peer-assessed collaboration and quality signal."
+        }
+      ]
+    },
+    "collaboration_communication": {
+      "description": "Select criteria for cross-functional, discussion-heavy, or coordination-heavy requirements.",
+      "default_weight": 0.12,
+      "columns": [
+        {
+          "source": "slack_activity",
+          "name": "collaboration_frequency",
+          "reason": "Collaboration interaction frequency."
+        },
+        {
+          "source": "slack_activity",
+          "name": "avg_response_time",
+          "reason": "Responsiveness proxy."
+        },
+        {
+          "source": "slack_activity",
+          "name": "communication_balance",
+          "reason": "Question/answer balance proxy."
+        },
+        {
+          "source": "slack_activity",
+          "name": "thread_replies",
+          "reason": "Threaded discussion participation."
+        },
+        {
+          "source": "jira_activity",
+          "name": "comment_count",
+          "reason": "Issue-level collaboration activity."
+        },
+        {
+          "source": "jira_activity",
+          "name": "avg_comment_response_time",
+          "reason": "Issue response speed."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "external_meeting_ratio",
+          "reason": "External stakeholder coordination signal."
+        }
+      ]
+    },
+    "availability_schedule": {
+      "description": "Use calendar and workload proxies for schedule-sensitive requirements.",
+      "default_weight": 0.12,
+      "columns": [
+        {
+          "source": "calendar_activity",
+          "name": "busy_minutes",
+          "reason": "Lower busy time can indicate more capacity."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "focus_time_minutes",
+          "reason": "Focus capacity signal."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "no_meeting_block_count",
+          "reason": "Long work blocks available for deep work."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "fragmented_calendar_score",
+          "reason": "High fragmentation can reduce execution capacity."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "total_meeting_minutes",
+          "reason": "Meeting load proxy."
+        },
+        {
+          "source": "employee",
+          "name": "absence_days_12m",
+          "reason": "Availability risk proxy."
+        },
+        {
+          "source": "employee",
+          "name": "remote_work_days_12m",
+          "reason": "Remote work fit proxy for distributed requirements."
+        }
+      ]
+    },
+    "cost_budget": {
+      "description": "Use restricted compensation proxies only when the PRD explicitly includes budget constraints.",
+      "default_weight": 0.06,
+      "requires_human_confirm": true,
+      "columns": [
+        {
+          "source": "employee",
+          "name": "base_salary_krw",
+          "reason": "Restricted salary proxy for staffing cost."
+        },
+        {
+          "source": "employee",
+          "name": "bonus_krw",
+          "reason": "Restricted compensation proxy; use only for internal cost planning."
+        }
+      ]
+    },
+    "risk_stability": {
+      "description": "Select criteria for staffing risk, bottleneck risk, burnout risk, and delivery risk.",
+      "default_weight": 0.1,
+      "columns": [
+        {
+          "source": "employee",
+          "name": "turnover_risk_score",
+          "reason": "Retention risk proxy."
+        },
+        {
+          "source": "employee",
+          "name": "disciplinary_actions_12m",
+          "reason": "Operational risk proxy."
+        },
+        {
+          "source": "employee",
+          "name": "overtime_hours_12m",
+          "reason": "Workload stress proxy."
+        },
+        {
+          "source": "slack_activity",
+          "name": "burnout_risk",
+          "reason": "Derived burnout signal; use carefully."
+        },
+        {
+          "source": "slack_activity",
+          "name": "bottleneck_risk",
+          "reason": "Communication bottleneck risk."
+        },
+        {
+          "source": "jira_activity",
+          "name": "bottleneck_risk",
+          "reason": "Delivery bottleneck risk."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "early_late_meeting_ratio",
+          "reason": "Work-life strain proxy."
+        },
+        {
+          "source": "calendar_activity",
+          "name": "weekend_meeting_ratio",
+          "reason": "Work-life strain proxy."
+        }
+      ]
+    }
+  },
+  "feature_rule_mapping": {
+    "authentication_account": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "notification_center": [
+      "role_match",
+      "technical_execution",
+      "collaboration_communication",
+      "quality_assurance",
+      "availability_schedule"
+    ],
+    "search_filtering": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "quality_assurance"
+    ],
+    "dashboard_analytics": [
+      "role_match",
+      "technical_execution",
+      "collaboration_communication",
+      "availability_schedule"
+    ],
+    "admin_console_content_ops": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "payment_checkout": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "external_api_integration": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "file_upload_media": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "mobile_app_experience": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "availability_schedule"
+    ],
+    "design_system_ui": [
+      "role_match",
+      "technical_execution",
+      "collaboration_communication",
+      "quality_assurance"
+    ],
+    "infrastructure_observability": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "security_compliance": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "notification_preferences": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "collaboration_communication"
+    ],
+    "notification_read_state": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "delivery_reliability"
+    ],
+    "notification_delivery_integration": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "notification_deeplink_navigation": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance"
+    ],
+    "notification_history_retention": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "product_analytics_instrumentation": [
+      "role_match",
+      "technical_execution",
+      "collaboration_communication",
+      "delivery_reliability"
+    ],
+    "release_rollout_management": [
+      "role_match",
+      "collaboration_communication",
+      "delivery_reliability",
+      "availability_schedule",
+      "risk_stability"
+    ],
+    "async_queue_processing": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "error_empty_state_handling": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "collaboration_communication"
+    ],
+    "hris_integration": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "account_provisioning": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "onboarding_checklist_tracking": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "collaboration_communication"
+    ],
+    "workflow_automation": [
+      "role_match",
+      "technical_execution",
+      "delivery_reliability",
+      "risk_stability"
+    ],
+    "lms_training_integration": [
+      "role_match",
+      "technical_execution",
+      "collaboration_communication",
+      "delivery_reliability"
+    ],
+    "admin_role_template_management": [
+      "role_match",
+      "technical_execution",
+      "quality_assurance",
+      "risk_stability"
+    ],
+    "onboarding_dashboard": [
+      "role_match",
+      "technical_execution",
+      "collaboration_communication",
+      "availability_schedule"
+    ]
+  },
+  "selection_policy": {
+    "draft_stage": "Column Selection Draft may select candidate columns and reasons only.",
+    "final_stage": "Column weights are finalized only after Human Confirm.",
+    "restricted_column_policy": "Restricted columns require explicit PRD relevance and Human Confirm before final scoring.",
+    "excluded_column_policy": "Excluded columns must not be used for matching unless governance policy changes."
+  }
+}

@@ -1,0 +1,530 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-org-simulation.local/schemas/requirements_agent/extracted_requirements_draft_schema.json",
+  "title": "Extracted_Requirements_Draft",
+  "description": "Intermediate output produced by section extraction and chunk merge before taxonomy mapping.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "_meta",
+    "document",
+    "sections",
+    "section_results",
+    "merged_requirement_candidates"
+  ],
+  "properties": {
+    "_meta": {
+      "$ref": "#/$defs/meta"
+    },
+    "document": {
+      "$ref": "#/$defs/document_ref"
+    },
+    "sections": {
+      "type": "array",
+      "description": "Semantic sections/chunks processed by the extractor.",
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    },
+    "section_results": {
+      "type": "array",
+      "description": "Raw extraction result for each section or chunk.",
+      "items": {
+        "$ref": "#/$defs/section_extraction_result"
+      }
+    },
+    "merged_requirement_candidates": {
+      "type": "array",
+      "description": "Deduplicated raw requirement candidates with evidence preserved.",
+      "items": {
+        "$ref": "#/$defs/raw_requirement_candidate"
+      }
+    },
+    "duplicate_items": {
+      "type": "array",
+      "description": "Candidates merged as duplicates while preserving source evidence.",
+      "items": {
+        "$ref": "#/$defs/duplicate_item"
+      }
+    },
+    "conflict_items": {
+      "type": "array",
+      "description": "Conflicting candidates that must not be deleted automatically.",
+      "items": {
+        "$ref": "#/$defs/conflict_item"
+      }
+    },
+    "low_confidence_items": {
+      "type": "array",
+      "description": "Low confidence extraction candidates to pass to validation and Human Confirm.",
+      "items": {
+        "$ref": "#/$defs/raw_requirement_candidate"
+      }
+    },
+    "evidence_map": {
+      "$ref": "#/$defs/evidence_map"
+    },
+    "extraction_stats": {
+      "$ref": "#/$defs/extraction_stats"
+    }
+  },
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "draft_id",
+        "pipeline_phase",
+        "status"
+      ],
+      "properties": {
+        "draft_id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "pipeline_phase": {
+          "type": "string",
+          "const": "chunk_result_merge"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "completed",
+            "failed"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "extractor_prompt_version": {
+          "type": "string"
+        }
+      }
+    },
+    "document_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document_id",
+        "document_type",
+        "raw_text_ref"
+      ],
+      "properties": {
+        "document_id": {
+          "type": "string"
+        },
+        "document_type": {
+          "type": "string",
+          "enum": [
+            "prd",
+            "pm_requirements",
+            "combined"
+          ]
+        },
+        "source_uri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "raw_text_ref": {
+          "type": "string",
+          "description": "Reference to preserved raw text. PRD text must not be replaced by a summary."
+        },
+        "clean_text_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cleaning_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "section_title",
+        "section_text",
+        "estimated_tokens"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "parent_section_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chunk_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "section_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_range": {
+          "$ref": "#/$defs/source_range"
+        },
+        "estimated_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "overlap_with_previous": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "section_extraction_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "section_title",
+        "raw_features",
+        "raw_roles",
+        "raw_skills",
+        "raw_constraints",
+        "raw_risk_candidates",
+        "confidence"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "chunk_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "raw_features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/raw_requirement_candidate"
+          }
+        },
+        "raw_roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/raw_requirement_candidate"
+          }
+        },
+        "raw_skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/raw_requirement_candidate"
+          }
+        },
+        "raw_constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/raw_requirement_candidate"
+          }
+        },
+        "raw_risk_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/raw_requirement_candidate"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "extractor_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "raw_requirement_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "item_type",
+        "text",
+        "source_evidence",
+        "confidence"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "item_type": {
+          "type": "string",
+          "enum": [
+            "feature",
+            "role",
+            "skill",
+            "constraint",
+            "risk",
+            "field"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_text": {
+          "type": "string"
+        },
+        "source_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "inference_level": {
+          "type": "string",
+          "enum": [
+            "explicit",
+            "strongly_implied",
+            "weakly_implied"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "candidate",
+            "merged",
+            "low_confidence",
+            "conflict"
+          ],
+          "default": "candidate"
+        }
+      }
+    },
+    "source_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "text"
+      ],
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "section_id": {
+          "type": "string"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "chunk_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_range": {
+          "$ref": "#/$defs/source_range"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "start_char": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "end_char": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "start_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "end_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "duplicate_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kept_candidate_id",
+        "merged_candidate_ids",
+        "reason"
+      ],
+      "properties": {
+        "kept_candidate_id": {
+          "type": "string"
+        },
+        "merged_candidate_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "conflict_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_ids",
+        "reason",
+        "status"
+      ],
+      "properties": {
+        "candidate_ids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "manual_review_required",
+            "resolved"
+          ]
+        },
+        "source_evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "by_evidence_id",
+        "by_candidate_id",
+        "by_section_id"
+      ],
+      "properties": {
+        "by_evidence_id": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/source_evidence"
+          }
+        },
+        "by_candidate_id": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "by_section_id": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "extraction_stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "section_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "merged_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low_confidence_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conflict_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}
