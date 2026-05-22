@@ -1,0 +1,170 @@
+{
+  "simulation_id": "sim_v2_chatbot",
+  "team_id": "team_002",
+  "project_name": "AI 고객 서비스 챗봇 플랫폼 v1.0",
+  "simulation_verdict": "needs_rebalancing",
+  "overall_project_fit": 0.7807,
+  "score_note": "[AI 고객 서비스 챗봇 플랫폼 v1.0] simulation overall_project_fit = 0.781. 이 팀 조합은 역할·workload·ownership 재조정 후 진행을 권장한다. 착수 전 필수 해결 카테고리: integration_risk, workload_concentration.",
+  "score_breakdown": [
+    {
+      "dimension": "schedule_stability",
+      "raw_score": 0.871,
+      "weighted_score": 0.1742,
+      "weight": 0.2,
+      "status": "good"
+    },
+    {
+      "dimension": "role_clarity",
+      "raw_score": 0.9045,
+      "weighted_score": 0.1357,
+      "weight": 0.15,
+      "status": "good"
+    },
+    {
+      "dimension": "technical_risk_control",
+      "raw_score": 0.7117,
+      "weighted_score": 0.1068,
+      "weight": 0.15,
+      "status": "warning"
+    },
+    {
+      "dimension": "integration_readiness",
+      "raw_score": 0.5975,
+      "weighted_score": 0.0896,
+      "weight": 0.15,
+      "status": "warning"
+    },
+    {
+      "dimension": "collaboration_quality",
+      "raw_score": 1.0,
+      "weighted_score": 0.15,
+      "weight": 0.15,
+      "status": "good"
+    },
+    {
+      "dimension": "qa_release_readiness",
+      "raw_score": 0.6905,
+      "weighted_score": 0.0691,
+      "weight": 0.1,
+      "status": "warning"
+    },
+    {
+      "dimension": "workload_balance",
+      "raw_score": 0.5533,
+      "weighted_score": 0.0553,
+      "weight": 0.1,
+      "status": "warning"
+    }
+  ],
+  "top_risks": [
+    {
+      "rank": 1,
+      "issue_category": "integration_risk",
+      "severity": "high",
+      "status": "confirmed",
+      "observed_in_phases": [
+        "Design Phase",
+        "Development Phase",
+        "Integration Phase",
+        "QA / Release Phase"
+      ],
+      "suggested_action": "API schema를 Development phase 착수 전 Mock으로 우선 확정. 인터페이스 계약 문서화.",
+      "evidence_refs": [
+        "calendar.focus_time_minutes",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "slack.avg_response_time"
+      ]
+    },
+    {
+      "rank": 2,
+      "issue_category": "workload_concentration",
+      "severity": "high",
+      "status": "confirmed",
+      "observed_in_phases": [
+        "Design Phase",
+        "Development Phase",
+        "Integration Phase",
+        "Kickoff Meeting"
+      ],
+      "suggested_action": "[긴급] 작업 재분배 또는 buffer sprint 배정. 해당 역할의 P0/P1 우선순위 재조정.",
+      "evidence_refs": [
+        "calendar.busy_minutes",
+        "jira.overdue_issue_count",
+        "jira.worklog_hours",
+        "slack.avg_response_time"
+      ]
+    },
+    {
+      "rank": 3,
+      "issue_category": "technical_dependency_risk",
+      "severity": "high",
+      "status": "candidate",
+      "observed_in_phases": [
+        "Design Phase",
+        "Integration Phase"
+      ],
+      "suggested_action": "시작 전 기술 spike(PoC) 수행 또는 skill 보유자 추가 투입.",
+      "evidence_refs": [
+        "jira.reopened_issue_count"
+      ]
+    },
+    {
+      "rank": 4,
+      "issue_category": "release_blocker",
+      "severity": "high",
+      "status": "candidate",
+      "observed_in_phases": [
+        "QA / Release Phase"
+      ],
+      "suggested_action": "릴리즈 전 must-fix 체크리스트 실행. 미해소 시 릴리즈 일정 연기 또는 feature flag 처리.",
+      "evidence_refs": [
+        "calendar.focus_time_minutes",
+        "slack.avg_response_time"
+      ]
+    }
+  ],
+  "must_fix_before_start": [
+    {
+      "issue_category": "integration_risk",
+      "severity": "high",
+      "suggested_action": "API schema를 Development phase 착수 전 Mock으로 우선 확정. 인터페이스 계약 문서화.",
+      "affected_roles": [
+        "Backend Developer",
+        "Frontend Developer",
+        "ML Engineer",
+        "PM"
+      ]
+    },
+    {
+      "issue_category": "workload_concentration",
+      "severity": "high",
+      "suggested_action": "[긴급] 작업 재분배 또는 buffer sprint 배정. 해당 역할의 P0/P1 우선순위 재조정.",
+      "affected_roles": [
+        "Backend Developer",
+        "ML Engineer",
+        "PM"
+      ]
+    }
+  ],
+  "evidence_summary": {
+    "total_evidence_refs": 8,
+    "total_confirmed_issues": 2,
+    "total_candidate_issues": 4,
+    "total_unresolved_turns": 4,
+    "phases_with_high_risk": [
+      "Kickoff Meeting",
+      "Design Phase",
+      "Development Phase",
+      "Integration Phase",
+      "QA / Release Phase"
+    ]
+  },
+  "phase_stability_summary": {
+    "Kickoff Meeting": 0.48,
+    "Design Phase": 0.247,
+    "Development Phase": 0.175,
+    "Integration Phase": 0.47,
+    "QA / Release Phase": 0.41
+  }
+}

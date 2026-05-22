@@ -1,5 +1,11 @@
 import { create } from "zustand"
-import type { Message, SessionStage } from "@/lib/types"
+import type {
+  Message,
+  SessionStage,
+  SimulationPhase,
+  PmPersona,
+  TeamCandidate,
+} from "@/lib/types"
 
 interface SessionStore {
   sessionId: string | null
@@ -7,13 +13,25 @@ interface SessionStore {
   statusText: string
   messages: Message[]
   elapsed: number
+  currentPhase: SimulationPhase | null
+  backendLogs: string[]
+  pmPersona: PmPersona | null
+  selectedTeam: TeamCandidate | null
+  requirementsAccepted: boolean
 
   setSessionId: (id: string) => void
   setStage: (stage: SessionStage, text?: string) => void
   appendMessage: (msg: Message) => void
   appendToken: (messageId: string, token: string) => void
   setStreaming: (messageId: string, isStreaming: boolean) => void
+  setEventDone: (eventId: string) => void
   tickElapsed: () => void
+  setCurrentPhase: (phase: SimulationPhase) => void
+  appendBackendLog: (text: string) => void
+  clearBackendLogs: () => void
+  setPmPersona: (p: PmPersona) => void
+  setSelectedTeam: (t: TeamCandidate) => void
+  setRequirementsAccepted: (v: boolean) => void
   reset: () => void
 }
 
@@ -23,6 +41,11 @@ const INITIAL_STATE = {
   statusText: "",
   messages: [],
   elapsed: 0,
+  currentPhase: null,
+  backendLogs: [],
+  pmPersona: null,
+  selectedTeam: null,
+  requirementsAccepted: false,
 }
 
 export const useSessionStore = create<SessionStore>((set) => ({
@@ -50,7 +73,32 @@ export const useSessionStore = create<SessionStore>((set) => ({
       ),
     })),
 
+  // event_start 마커를 event_end(완료) 상태로 전환
+  setEventDone: (eventId) =>
+    set((s) => ({
+      messages: s.messages.map((m) =>
+        m.kind === "event_start" && m.eventId === eventId
+          ? { ...m, kind: "event_end" as const }
+          : m,
+      ),
+    })),
+
   tickElapsed: () => set((s) => ({ elapsed: s.elapsed + 1 })),
+
+  setCurrentPhase: (phase) => set({ currentPhase: phase }),
+
+  appendBackendLog: (text) =>
+    set((s) => ({
+      backendLogs: [...s.backendLogs.slice(-9), text],
+    })),
+
+  clearBackendLogs: () => set({ backendLogs: [] }),
+
+  setPmPersona: (p) => set({ pmPersona: p }),
+
+  setSelectedTeam: (t) => set({ selectedTeam: t }),
+
+  setRequirementsAccepted: (v) => set({ requirementsAccepted: v }),
 
   reset: () => set(INITIAL_STATE),
 }))

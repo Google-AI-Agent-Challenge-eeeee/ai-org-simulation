@@ -1,0 +1,1432 @@
+{
+  "simulation_id": "sim_v2_chatbot",
+  "project_name": "AI 고객 서비스 챗봇 플랫폼 v1.0",
+  "team_id": "team_002",
+  "phase_logs": [
+    {
+      "phase_name": "Kickoff Meeting",
+      "phase_objective": "프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 발견한다.",
+      "trigger_sources": [
+        "calendar.busy_minutes",
+        "jira.scope_change_count",
+        "jira.worklog_hours",
+        "ml_workload_concentration",
+        "scope_creep_risk"
+      ],
+      "conversation_summary": "Kickoff Meeting: 2개 이벤트(evt_001, evt_002)에서 5건 발언이 수집됨. 관찰된 issue 카테고리: schedule_risk, workload_concentration. evidence 미확보 발언 1건이 unresolved로 기록됨.",
+      "participant_turns": [
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: '이지훈(PM)의 scope change 8회 패턴 확인. AI 기능 가능성 과대 평가로 인한 요구사항 추가 반복이 오하은(ML...'. 담당 agenda: [프로젝트 목표 및 MVP 범위 공유, 역할별 책임(R&R) 및 기능 owner 확정].",
+          "concern": "[PM] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['scope_creep_risk']) (evidence: ['jira.scope_change_count'])",
+          "dependency": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: '이지훈(PM)의 scope change 8회 패턴 확인. AI 기능 가능성 과대 평가로 인한 요구사항 추가 반복이 오하은(ML...'.",
+          "concern": "[ML Engineer] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "dependency": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능.",
+          "evidence_refs_used": [],
+          "is_valid": false
+        },
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: '오하은(ML)의 워크로드(162.5시간)가 팀 평균 대비 37% 초과. ML 엔진 단독 담당 구조에서 추가 scope 흡수 여...'.",
+          "concern": "[ML Engineer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours', 'calendar.busy_minutes'])",
+          "dependency": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: '오하은(ML)의 워크로드(162.5시간)가 팀 평균 대비 37% 초과. ML 엔진 단독 담당 구조에서 추가 scope 흡수 여...'. 담당 agenda: [프로젝트 목표 및 MVP 범위 공유, 역할별 책임(R&R) 및 기능 owner 확정].",
+          "concern": "[PM] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['calendar.busy_minutes']) | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "dependency": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "calendar.busy_minutes"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: '오하은(ML)의 워크로드(162.5시간)가 팀 평균 대비 37% 초과. ML 엔진 단독 담당 구조에서 추가 scope 흡수 여...'. 담당 agenda: [[기능] 사용자 인증 및 권한 관리 (P1) 진행 확인].",
+          "concern": "[Backend Developer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours']) | 제약: 스킬 부재: ML API 연동 경험",
+          "dependency": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '[기능] 사용자 인증 및 권한 관리 (P1) 진행 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.worklog_hours"
+          ],
+          "is_valid": true
+        }
+      ],
+      "detected_issues": [
+        {
+          "issue_id": "issue_001",
+          "issue_category": "schedule_risk",
+          "description": "[PM] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['scope_creep_risk']) (evidence: ['jira.scope_change_count'])",
+          "raised_by": "이지훈",
+          "raised_in_phase": "Kickoff Meeting",
+          "trigger_source": [
+            "scope_creep_risk",
+            "jira.scope_change_count"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.scope_change_count"
+          ]
+        },
+        {
+          "issue_id": "issue_002",
+          "issue_category": "workload_concentration",
+          "description": "[ML Engineer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours', 'calendar.busy_minutes'])",
+          "raised_by": "오하은",
+          "raised_in_phase": "Kickoff Meeting",
+          "trigger_source": [
+            "ml_workload_concentration",
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "issue_id": "issue_003",
+          "issue_category": "workload_concentration",
+          "description": "[PM] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['calendar.busy_minutes']) | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "raised_by": "이지훈",
+          "raised_in_phase": "Kickoff Meeting",
+          "trigger_source": [
+            "ml_workload_concentration",
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "issue_id": "issue_004",
+          "issue_category": "workload_concentration",
+          "description": "[Backend Developer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours']) | 제약: 스킬 부재: ML API 연동 경험",
+          "raised_by": "최민준",
+          "raised_in_phase": "Kickoff Meeting",
+          "trigger_source": [
+            "ml_workload_concentration",
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.worklog_hours"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "decision_id": "dec_001",
+          "summary": "[PM] '일정 관리 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유'에서 즉시 착수 가능.",
+          "decided_by": "이지훈",
+          "phase": "Kickoff Meeting"
+        },
+        {
+          "decision_id": "dec_002",
+          "summary": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능.",
+          "decided_by": "오하은",
+          "phase": "Kickoff Meeting"
+        },
+        {
+          "decision_id": "dec_003",
+          "summary": "[PM] '일정 관리 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유'에서 즉시 착수 가능.",
+          "decided_by": "이지훈",
+          "phase": "Kickoff Meeting"
+        },
+        {
+          "decision_id": "dec_004",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '[기능] 사용자 인증 및 권한 관리 ",
+          "decided_by": "최민준",
+          "phase": "Kickoff Meeting"
+        }
+      ],
+      "action_items": [
+        {
+          "action_id": "act_001",
+          "description": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장. | 제안: [PM] '일정 관리 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유",
+          "owner_role": "PM",
+          "phase": "Kickoff Meeting",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.scope_change_count"
+          ]
+        },
+        {
+          "action_id": "act_002",
+          "description": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk']), Backend Developer (risk: ['be_ml_integration_r | 제안: [ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'workload_concentration'",
+          "owner_role": "ML Engineer",
+          "phase": "Kickoff Meeting",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "action_id": "act_003",
+          "description": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integrat | 제안: [PM] '일정 관리 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 ",
+          "owner_role": "PM",
+          "phase": "Kickoff Meeting",
+          "priority": "medium",
+          "evidence_refs": [
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "action_id": "act_004",
+          "description": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), PM (risk: ['scope_creep_ri | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'workload_concentration' 완",
+          "owner_role": "Backend Developer",
+          "phase": "Kickoff Meeting",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.worklog_hours"
+          ]
+        }
+      ],
+      "unresolved_questions": [
+        {
+          "question_id": "unres_001",
+          "description": "[needs_retry] 오하은(ML Engineer) concern에 evidence 연결 미확보. concern: [ML Engineer] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 t",
+          "raised_by": "오하은",
+          "phase": "Kickoff Meeting",
+          "risk_category": "workload_concentration"
+        }
+      ],
+      "phase_scores": {
+        "phase": "Kickoff Meeting",
+        "valid_turn_ratio": 0.8,
+        "issue_count": 4,
+        "unresolved_count": 1,
+        "observed_risk_categories": [
+          "schedule_risk",
+          "workload_concentration"
+        ],
+        "phase_stability_score": 0.48
+      },
+      "raw_dialogue": null
+    },
+    {
+      "phase_name": "Design Phase",
+      "phase_objective": "API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다.",
+      "trigger_sources": [
+        "be_ml_integration_risk",
+        "fe_streaming_inexperience",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "jira.reopened_issue_count",
+        "ml_model_latency_risk",
+        "slack.avg_response_time"
+      ],
+      "conversation_summary": "Design Phase: 3개 이벤트(evt_003, evt_004, evt_005)에서 7건 발언이 수집됨. 관찰된 issue 카테고리: technical_dependency_risk, integration_risk, workload_concentration. HIGH severity issue 3건 — integration_risk, integration_risk, technical_dependency_risk. evidence 미확보 발언 1건이 unresolved로 기록됨.",
+      "participant_turns": [
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'.",
+          "concern": "[ML Engineer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'slack.avg_response_time']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "dependency": "[ML Engineer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk']), Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [DB 스키마 및 데이터 모델 확정, API 엔드포인트 스펙 초안 공유].",
+          "concern": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'jira.avg_cycle_time', 'slack.avg_response_time']) | 제약: 스킬 부재: ML API 연동 경험",
+          "dependency": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'DB 스키마 및 데이터 모델 확정'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "김서연",
+          "role": "Frontend Developer",
+          "observation": "[Frontend Developer / 김서연] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [FE 디자인 시안 및 컴포넌트 구조 공유, [기능] 실시간 챗봇 UI (스트리밍) (P0) 진행 확인].",
+          "concern": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.avg_cycle_time'])",
+          "dependency": "[Frontend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE 디자인 시안 및 컴포넌트 구조 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.avg_cycle_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'LLM 응답 지연 및 프롬프트 반복 개선으로 ML 미완료 이슈 5건 누적. 오하은(ML) 워크로드 초과 및 응답 품질 편차가 ...'.",
+          "concern": "[ML Engineer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (risk: ['ml_model_latency_risk']) (evidence: ['jira.overdue_issue_count']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "dependency": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'LLM 응답 지연 및 프롬프트 반복 개선으로 ML 미완료 이슈 5건 누적. 오하은(ML) 워크로드 초과 및 응답 품질 편차가 ...'.",
+          "concern": "[PM] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "dependency": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능.",
+          "evidence_refs_used": [],
+          "is_valid": false
+        },
+        {
+          "agent_id": "김서연",
+          "role": "Frontend Developer",
+          "observation": "[Frontend Developer / 김서연] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: '김서연(FE)의 WebSocket/SSE 스트리밍 구현 경험 부재. 재오픈 이슈 4건 패턴으로 초기 구현 후 수정 반복 예상....'. 담당 agenda: [FE 디자인 시안 및 컴포넌트 구조 공유, [기능] 실시간 챗봇 UI (스트리밍) (P0) 진행 확인].",
+          "concern": "[Frontend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (evidence: ['jira.reopened_issue_count'])",
+          "dependency": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'React 컴포넌트 설계 (design-system) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'FE 디자인 시안 및 컴포넌트 구조 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.reopened_issue_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: '김서연(FE)의 WebSocket/SSE 스트리밍 구현 경험 부재. 재오픈 이슈 4건 패턴으로 초기 구현 후 수정 반복 예상....'. 담당 agenda: [DB 스키마 및 데이터 모델 확정, API 엔드포인트 스펙 초안 공유].",
+          "concern": "[Backend Developer] 직접적 리스크 참조는 없으나, 'technical_dependency_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'DB 스키마 및 데이터 모델 확정'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "is_valid": true
+        }
+      ],
+      "detected_issues": [
+        {
+          "issue_id": "issue_005",
+          "issue_category": "workload_concentration",
+          "description": "[ML Engineer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'slack.avg_response_time']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "raised_by": "오하은",
+          "raised_in_phase": "Design Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "issue_id": "issue_006",
+          "issue_category": "integration_risk",
+          "description": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'jira.avg_cycle_time', 'slack.avg_response_time']) | 제약: 스킬 부재: ML API 연동 경험",
+          "raised_by": "최민준",
+          "raised_in_phase": "Design Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "issue_id": "issue_007",
+          "issue_category": "integration_risk",
+          "description": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.avg_cycle_time'])",
+          "raised_by": "김서연",
+          "raised_in_phase": "Design Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.avg_cycle_time"
+          ]
+        },
+        {
+          "issue_id": "issue_008",
+          "issue_category": "workload_concentration",
+          "description": "[ML Engineer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (risk: ['ml_model_latency_risk']) (evidence: ['jira.overdue_issue_count']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "raised_by": "오하은",
+          "raised_in_phase": "Design Phase",
+          "trigger_source": [
+            "ml_model_latency_risk",
+            "jira.overdue_issue_count"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count"
+          ]
+        },
+        {
+          "issue_id": "issue_009",
+          "issue_category": "technical_dependency_risk",
+          "description": "[Frontend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (evidence: ['jira.reopened_issue_count'])",
+          "raised_by": "김서연",
+          "raised_in_phase": "Design Phase",
+          "trigger_source": [
+            "fe_streaming_inexperience",
+            "jira.reopened_issue_count"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.reopened_issue_count"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "decision_id": "dec_005",
+          "summary": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능.",
+          "decided_by": "오하은",
+          "phase": "Design Phase"
+        },
+        {
+          "decision_id": "dec_006",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'DB 스키마 및 데이터 모델 확정'에서 즉시 착",
+          "decided_by": "최민준",
+          "phase": "Design Phase"
+        },
+        {
+          "decision_id": "dec_007",
+          "summary": "[Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE 디자인 시안 및 컴포넌트 구조 공유'에서 즉시 착수 가능",
+          "decided_by": "김서연",
+          "phase": "Design Phase"
+        },
+        {
+          "decision_id": "dec_008",
+          "summary": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능.",
+          "decided_by": "오하은",
+          "phase": "Design Phase"
+        },
+        {
+          "decision_id": "dec_009",
+          "summary": "[Frontend Developer] 'React 컴포넌트 설계 (design-system) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'FE 디자인 ",
+          "decided_by": "김서연",
+          "phase": "Design Phase"
+        },
+        {
+          "decision_id": "dec_010",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'DB 스키마 및 데이터 모델 확",
+          "decided_by": "최민준",
+          "phase": "Design Phase"
+        }
+      ],
+      "action_items": [
+        {
+          "action_id": "act_005",
+          "description": "[ML Engineer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk']), Frontend Developer (risk: | 제안: [ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치",
+          "owner_role": "ML Engineer",
+          "phase": "Design Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "action_id": "act_006",
+          "description": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Frontend Developer (risk:  | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가",
+          "owner_role": "Backend Developer",
+          "phase": "Design Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "action_id": "act_007",
+          "description": "[Frontend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk:  | 제안: [Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agend",
+          "owner_role": "Frontend Developer",
+          "phase": "Design Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.avg_cycle_time"
+          ]
+        },
+        {
+          "action_id": "act_008",
+          "description": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장. | 제안: [ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'technical_dependency_ri",
+          "owner_role": "ML Engineer",
+          "phase": "Design Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count"
+          ]
+        },
+        {
+          "action_id": "act_009",
+          "description": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함.  | 제안: [Frontend Developer] 'React 컴포넌트 설계 (design-system) 경험 보유'를 활용해 'technical_depen",
+          "owner_role": "Frontend Developer",
+          "phase": "Design Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.reopened_issue_count"
+          ]
+        },
+        {
+          "action_id": "act_010",
+          "description": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함.  | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'technical_dependency_risk",
+          "owner_role": "Backend Developer",
+          "phase": "Design Phase",
+          "priority": "high",
+          "evidence_refs": []
+        }
+      ],
+      "unresolved_questions": [
+        {
+          "question_id": "unres_002",
+          "description": "[needs_retry] 이지훈(PM) concern에 evidence 연결 미확보. concern: [PM] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "raised_by": "이지훈",
+          "phase": "Design Phase",
+          "risk_category": "technical_dependency_risk"
+        }
+      ],
+      "phase_scores": {
+        "phase": "Design Phase",
+        "valid_turn_ratio": 0.857,
+        "issue_count": 5,
+        "unresolved_count": 1,
+        "observed_risk_categories": [
+          "technical_dependency_risk",
+          "integration_risk",
+          "workload_concentration"
+        ],
+        "phase_stability_score": 0.247
+      },
+      "raw_dialogue": null
+    },
+    {
+      "phase_name": "Development Phase",
+      "phase_objective": "업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.",
+      "trigger_sources": [
+        "be_ml_integration_risk",
+        "calendar.busy_minutes",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "jira.scope_change_count",
+        "jira.worklog_hours",
+        "ml_workload_concentration",
+        "scope_creep_risk",
+        "slack.avg_response_time"
+      ],
+      "conversation_summary": "Development Phase: 3개 이벤트(evt_006, evt_007, evt_008)에서 8건 발언이 수집됨. 관찰된 issue 카테고리: schedule_risk, integration_risk, workload_concentration. HIGH severity issue 2건 — integration_risk, integration_risk. evidence 미확보 발언 1건이 unresolved로 기록됨.",
+      "participant_turns": [
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [[기능] LLM 챗봇 응답 엔진 (P0) 진행 확인].",
+          "concern": "[ML Engineer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'slack.avg_response_time']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "dependency": "[ML Engineer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk']), Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 '[기능] LLM 챗봇 응답 엔진 (P0) 진행 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [BE P0 기능(인증·결제 API) 구현 상태 점검, [기능] 티켓 분류 및 라우팅 API (P0) 진행 확인].",
+          "concern": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'jira.avg_cycle_time', 'slack.avg_response_time']) | 제약: 스킬 부재: ML API 연동 경험",
+          "dependency": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'BE P0 기능(인증·결제 API) 구현 상태 점검'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "김서연",
+          "role": "Frontend Developer",
+          "observation": "[Frontend Developer / 김서연] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인, [기능] 실시간 챗봇 UI (스트리밍) (P0) 진행 확인].",
+          "concern": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.avg_cycle_time'])",
+          "dependency": "[Frontend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.avg_cycle_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: '이지훈(PM)의 scope change 8회 패턴 확인. AI 기능 가능성 과대 평가로 인한 요구사항 추가 반복이 오하은(ML...'. 담당 agenda: [P0 기능 진척 현황 공유, PR 리뷰 병목 및 업무 집중 여부 점검].",
+          "concern": "[PM] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['scope_creep_risk']) (evidence: ['jira.scope_change_count'])",
+          "dependency": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: '이지훈(PM)의 scope change 8회 패턴 확인. AI 기능 가능성 과대 평가로 인한 요구사항 추가 반복이 오하은(ML...'. 담당 agenda: [[기능] LLM 챗봇 응답 엔진 (P0) 진행 확인].",
+          "concern": "[ML Engineer] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "dependency": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 '[기능] LLM 챗봇 응답 엔진 (P0) 진행 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "is_valid": false
+        },
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: '오하은(ML)의 워크로드(162.5시간)가 팀 평균 대비 37% 초과. ML 엔진 단독 담당 구조에서 추가 scope 흡수 여...'. 담당 agenda: [[기능] LLM 챗봇 응답 엔진 (P0) 진행 확인].",
+          "concern": "[ML Engineer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours', 'calendar.busy_minutes'])",
+          "dependency": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '[기능] LLM 챗봇 응답 엔진 (P0) 진행 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: '오하은(ML)의 워크로드(162.5시간)가 팀 평균 대비 37% 초과. ML 엔진 단독 담당 구조에서 추가 scope 흡수 여...'. 담당 agenda: [P0 기능 진척 현황 공유, PR 리뷰 병목 및 업무 집중 여부 점검].",
+          "concern": "[PM] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['calendar.busy_minutes']) | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "dependency": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "calendar.busy_minutes"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: '오하은(ML)의 워크로드(162.5시간)가 팀 평균 대비 37% 초과. ML 엔진 단독 담당 구조에서 추가 scope 흡수 여...'. 담당 agenda: [BE P0 기능(인증·결제 API) 구현 상태 점검, [기능] 티켓 분류 및 라우팅 API (P0) 진행 확인].",
+          "concern": "[Backend Developer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours']) | 제약: 스킬 부재: ML API 연동 경험",
+          "dependency": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'BE P0 기능(인증·결제 API) 구현 상태 점검'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.worklog_hours"
+          ],
+          "is_valid": true
+        }
+      ],
+      "detected_issues": [
+        {
+          "issue_id": "issue_010",
+          "issue_category": "workload_concentration",
+          "description": "[ML Engineer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'slack.avg_response_time']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "raised_by": "오하은",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "issue_id": "issue_011",
+          "issue_category": "integration_risk",
+          "description": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'jira.avg_cycle_time', 'slack.avg_response_time']) | 제약: 스킬 부재: ML API 연동 경험",
+          "raised_by": "최민준",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "issue_id": "issue_012",
+          "issue_category": "integration_risk",
+          "description": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.avg_cycle_time'])",
+          "raised_by": "김서연",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.avg_cycle_time"
+          ]
+        },
+        {
+          "issue_id": "issue_013",
+          "issue_category": "schedule_risk",
+          "description": "[PM] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['scope_creep_risk']) (evidence: ['jira.scope_change_count'])",
+          "raised_by": "이지훈",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "scope_creep_risk",
+            "jira.scope_change_count"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.scope_change_count"
+          ]
+        },
+        {
+          "issue_id": "issue_014",
+          "issue_category": "workload_concentration",
+          "description": "[ML Engineer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours', 'calendar.busy_minutes'])",
+          "raised_by": "오하은",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "ml_workload_concentration",
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "issue_id": "issue_015",
+          "issue_category": "workload_concentration",
+          "description": "[PM] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['calendar.busy_minutes']) | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "raised_by": "이지훈",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "ml_workload_concentration",
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "issue_id": "issue_016",
+          "issue_category": "workload_concentration",
+          "description": "[Backend Developer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours']) | 제약: 스킬 부재: ML API 연동 경험",
+          "raised_by": "최민준",
+          "raised_in_phase": "Development Phase",
+          "trigger_source": [
+            "ml_workload_concentration",
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.worklog_hours"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "decision_id": "dec_011",
+          "summary": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 '[기능] LLM 챗봇 응답 엔진 (P0) 진",
+          "decided_by": "오하은",
+          "phase": "Development Phase"
+        },
+        {
+          "decision_id": "dec_012",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'BE P0 기능(인증·결제 API) 구현 상태 ",
+          "decided_by": "최민준",
+          "phase": "Development Phase"
+        },
+        {
+          "decision_id": "dec_013",
+          "summary": "[Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인'",
+          "decided_by": "김서연",
+          "phase": "Development Phase"
+        },
+        {
+          "decision_id": "dec_014",
+          "summary": "[PM] '일정 관리 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "decided_by": "이지훈",
+          "phase": "Development Phase"
+        },
+        {
+          "decision_id": "dec_015",
+          "summary": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '[기능] LLM 챗봇 응답 엔진 ",
+          "decided_by": "오하은",
+          "phase": "Development Phase"
+        },
+        {
+          "decision_id": "dec_016",
+          "summary": "[PM] '일정 관리 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "decided_by": "이지훈",
+          "phase": "Development Phase"
+        },
+        {
+          "decision_id": "dec_017",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'BE P0 기능(인증·결제 API) ",
+          "decided_by": "최민준",
+          "phase": "Development Phase"
+        }
+      ],
+      "action_items": [
+        {
+          "action_id": "act_011",
+          "description": "[ML Engineer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk']), Frontend Developer (risk: | 제안: [ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치",
+          "owner_role": "ML Engineer",
+          "phase": "Development Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "action_id": "act_012",
+          "description": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Frontend Developer (risk:  | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가",
+          "owner_role": "Backend Developer",
+          "phase": "Development Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "action_id": "act_013",
+          "description": "[Frontend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk:  | 제안: [Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agend",
+          "owner_role": "Frontend Developer",
+          "phase": "Development Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.avg_cycle_time"
+          ]
+        },
+        {
+          "action_id": "act_014",
+          "description": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장. | 제안: [PM] '일정 관리 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉",
+          "owner_role": "PM",
+          "phase": "Development Phase",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.scope_change_count"
+          ]
+        },
+        {
+          "action_id": "act_015",
+          "description": "[ML Engineer] 해소를 위해 PM (risk: ['scope_creep_risk']), Backend Developer (risk: ['be_ml_integration_r | 제안: [ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'workload_concentration'",
+          "owner_role": "ML Engineer",
+          "phase": "Development Phase",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.worklog_hours",
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "action_id": "act_016",
+          "description": "[PM] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integrat | 제안: [PM] '일정 관리 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현",
+          "owner_role": "PM",
+          "phase": "Development Phase",
+          "priority": "medium",
+          "evidence_refs": [
+            "calendar.busy_minutes"
+          ]
+        },
+        {
+          "action_id": "act_017",
+          "description": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), PM (risk: ['scope_creep_ri | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'workload_concentration' 완",
+          "owner_role": "Backend Developer",
+          "phase": "Development Phase",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.worklog_hours"
+          ]
+        }
+      ],
+      "unresolved_questions": [
+        {
+          "question_id": "unres_003",
+          "description": "[needs_retry] 오하은(ML Engineer) concern에 evidence 연결 미확보. concern: [ML Engineer] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 t",
+          "raised_by": "오하은",
+          "phase": "Development Phase",
+          "risk_category": "workload_concentration"
+        }
+      ],
+      "phase_scores": {
+        "phase": "Development Phase",
+        "valid_turn_ratio": 0.875,
+        "issue_count": 7,
+        "unresolved_count": 1,
+        "observed_risk_categories": [
+          "schedule_risk",
+          "integration_risk",
+          "workload_concentration"
+        ],
+        "phase_stability_score": 0.175
+      },
+      "raw_dialogue": null
+    },
+    {
+      "phase_name": "Integration Phase",
+      "phase_objective": "FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집중 관찰한다.",
+      "trigger_sources": [
+        "be_ml_integration_risk",
+        "fe_streaming_inexperience",
+        "jira.avg_cycle_time",
+        "jira.overdue_issue_count",
+        "jira.reopened_issue_count",
+        "slack.avg_response_time"
+      ],
+      "conversation_summary": "Integration Phase: 2개 이벤트(evt_009, evt_010)에서 5건 발언이 수집됨. 관찰된 issue 카테고리: technical_dependency_risk, integration_risk, workload_concentration. HIGH severity issue 3건 — integration_risk, integration_risk, technical_dependency_risk.",
+      "participant_turns": [
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'.",
+          "concern": "[ML Engineer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'slack.avg_response_time']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "dependency": "[ML Engineer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk']), Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [BE API 완료 여부 및 FE 연동 착수 조건 확인, 결제 API schema 확정 및 FE 연동 테스트].",
+          "concern": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'jira.avg_cycle_time', 'slack.avg_response_time']) | 제약: 스킬 부재: ML API 연동 경험",
+          "dependency": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'BE API 완료 여부 및 FE 연동 착수 조건 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "김서연",
+          "role": "Frontend Developer",
+          "observation": "[Frontend Developer / 김서연] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'ML 엔진 응답 스키마가 미확정 상태로 BE API 설계가 지연되고 있음. ML-BE 인터페이스 계약 미확정 시 FE 스트리밍...'. 담당 agenda: [FE-BE 연동 이슈 목록 공유].",
+          "concern": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.avg_cycle_time'])",
+          "dependency": "[Frontend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연동 이슈 목록 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.avg_cycle_time"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "김서연",
+          "role": "Frontend Developer",
+          "observation": "[Frontend Developer / 김서연] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: '김서연(FE)의 WebSocket/SSE 스트리밍 구현 경험 부재. 재오픈 이슈 4건 패턴으로 초기 구현 후 수정 반복 예상....'. 담당 agenda: [FE-BE 연동 이슈 목록 공유].",
+          "concern": "[Frontend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (evidence: ['jira.reopened_issue_count'])",
+          "dependency": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'React 컴포넌트 설계 (design-system) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연동 이슈 목록 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.reopened_issue_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "최민준",
+          "role": "Backend Developer",
+          "observation": "[Backend Developer / 최민준] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: '김서연(FE)의 WebSocket/SSE 스트리밍 구현 경험 부재. 재오픈 이슈 4건 패턴으로 초기 구현 후 수정 반복 예상....'. 담당 agenda: [BE API 완료 여부 및 FE 연동 착수 조건 확인, 결제 API schema 확정 및 FE 연동 테스트].",
+          "concern": "[Backend Developer] 직접적 리스크 참조는 없으나, 'technical_dependency_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'BE API 완료 여부 및 FE 연동 착수 조건 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "is_valid": true
+        }
+      ],
+      "detected_issues": [
+        {
+          "issue_id": "issue_017",
+          "issue_category": "workload_concentration",
+          "description": "[ML Engineer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'slack.avg_response_time']) | 제약: capacity_signal=high_risk: 업무 과부하 우려, 추가 task 수용 제한",
+          "raised_by": "오하은",
+          "raised_in_phase": "Integration Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "issue_id": "issue_018",
+          "issue_category": "integration_risk",
+          "description": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.overdue_issue_count', 'jira.avg_cycle_time', 'slack.avg_response_time']) | 제약: 스킬 부재: ML API 연동 경험",
+          "raised_by": "최민준",
+          "raised_in_phase": "Integration Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "issue_id": "issue_019",
+          "issue_category": "integration_risk",
+          "description": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['be_ml_integration_risk']) (evidence: ['jira.avg_cycle_time'])",
+          "raised_by": "김서연",
+          "raised_in_phase": "Integration Phase",
+          "trigger_source": [
+            "be_ml_integration_risk",
+            "slack.avg_response_time",
+            "jira.avg_cycle_time",
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.avg_cycle_time"
+          ]
+        },
+        {
+          "issue_id": "issue_020",
+          "issue_category": "technical_dependency_risk",
+          "description": "[Frontend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (evidence: ['jira.reopened_issue_count'])",
+          "raised_by": "김서연",
+          "raised_in_phase": "Integration Phase",
+          "trigger_source": [
+            "fe_streaming_inexperience",
+            "jira.reopened_issue_count"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.reopened_issue_count"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "decision_id": "dec_018",
+          "summary": "[ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능.",
+          "decided_by": "오하은",
+          "phase": "Integration Phase"
+        },
+        {
+          "decision_id": "dec_019",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'BE API 완료 여부 및 FE 연동 착수 조건",
+          "decided_by": "최민준",
+          "phase": "Integration Phase"
+        },
+        {
+          "decision_id": "dec_020",
+          "summary": "[Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연동 이슈 목록 공유'에서 즉시 착수 가능.",
+          "decided_by": "김서연",
+          "phase": "Integration Phase"
+        },
+        {
+          "decision_id": "dec_021",
+          "summary": "[Frontend Developer] 'React 컴포넌트 설계 (design-system) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연",
+          "decided_by": "김서연",
+          "phase": "Integration Phase"
+        },
+        {
+          "decision_id": "dec_022",
+          "summary": "[Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'BE API 완료 여부 및 FE",
+          "decided_by": "최민준",
+          "phase": "Integration Phase"
+        }
+      ],
+      "action_items": [
+        {
+          "action_id": "act_018",
+          "description": "[ML Engineer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk']), Frontend Developer (risk: | 제안: [ML Engineer] 'LLM 프롬프트 엔지니어링 (ml-platform) 경험 보유'를 활용해 'integration_risk' 완화 조치",
+          "owner_role": "ML Engineer",
+          "phase": "Integration Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "action_id": "act_019",
+          "description": "[Backend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Frontend Developer (risk:  | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가",
+          "owner_role": "Backend Developer",
+          "phase": "Integration Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.overdue_issue_count",
+            "jira.avg_cycle_time",
+            "slack.avg_response_time"
+          ]
+        },
+        {
+          "action_id": "act_020",
+          "description": "[Frontend Developer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), Backend Developer (risk:  | 제안: [Frontend Developer] 'REST API 연동 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agend",
+          "owner_role": "Frontend Developer",
+          "phase": "Integration Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.avg_cycle_time"
+          ]
+        },
+        {
+          "action_id": "act_021",
+          "description": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함.  | 제안: [Frontend Developer] 'React 컴포넌트 설계 (design-system) 경험 보유'를 활용해 'technical_depen",
+          "owner_role": "Frontend Developer",
+          "phase": "Integration Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "jira.reopened_issue_count"
+          ]
+        },
+        {
+          "action_id": "act_022",
+          "description": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['be_ml_integration_risk'])의 선행 작업 또는 협의가 필요함.  | 제안: [Backend Developer] 'FastAPI (api-server) 경험 보유'를 활용해 'technical_dependency_risk",
+          "owner_role": "Backend Developer",
+          "phase": "Integration Phase",
+          "priority": "high",
+          "evidence_refs": []
+        }
+      ],
+      "unresolved_questions": [],
+      "phase_scores": {
+        "phase": "Integration Phase",
+        "valid_turn_ratio": 1.0,
+        "issue_count": 4,
+        "unresolved_count": 0,
+        "observed_risk_categories": [
+          "technical_dependency_risk",
+          "integration_risk",
+          "workload_concentration"
+        ],
+        "phase_stability_score": 0.47
+      },
+      "raw_dialogue": null
+    },
+    {
+      "phase_name": "QA / Release Phase",
+      "phase_objective": "테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 집중 점검한다.",
+      "trigger_sources": [
+        "calendar.focus_time_minutes",
+        "jira.overdue_issue_count",
+        "qa_ai_coverage_gap",
+        "qa_communication_gap",
+        "slack.avg_response_time"
+      ],
+      "conversation_summary": "QA / Release Phase: 2개 이벤트(evt_011, evt_012)에서 5건 발언이 수집됨. 관찰된 issue 카테고리: qa_coverage_gap, integration_risk. HIGH severity issue 1건 — integration_risk. evidence 미확보 발언 1건이 unresolved로 기록됨.",
+      "participant_turns": [
+        {
+          "agent_id": "박준혁",
+          "role": "QA Engineer",
+          "observation": "[QA Engineer / 박준혁] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'AI 응답 비결정성으로 기존 E2E 자동화 기준 적용 불가. 박준혁(QA)의 AI 품질 평가 경험 부재로 결제/분류 오류 케이...'. 담당 agenda: [전체 테스트 케이스 커버리지 리뷰, 결제 흐름 E2E 테스트 계획 및 실행 현황].",
+          "concern": "[QA Engineer] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. (risk: ['qa_ai_coverage_gap']) (evidence: ['jira.overdue_issue_count']) | 제약: 스킬 부재: AI 응답 품질 평가 기준",
+          "dependency": "[QA Engineer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[QA Engineer] '수동 테스트 (qa-manual) 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능. Agenda 항목 '전체 테스트 케이스 커버리지 리뷰'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "오하은",
+          "role": "ML Engineer",
+          "observation": "[ML Engineer / 오하은] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'AI 응답 비결정성으로 기존 E2E 자동화 기준 적용 불가. 박준혁(QA)의 AI 품질 평가 경험 부재로 결제/분류 오류 케이...'.",
+          "concern": "[ML Engineer] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. (evidence: ['jira.overdue_issue_count'])",
+          "dependency": "[ML Engineer] 해소를 위해 QA Engineer (risk: ['qa_ai_coverage_gap']), PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[ML Engineer] 'OpenAI API 연동 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'AI 응답 비결정성으로 기존 E2E 자동화 기준 적용 불가. 박준혁(QA)의 AI 품질 평가 경험 부재로 결제/분류 오류 케이...'. 담당 agenda: [High severity 버그 목록 및 owner 확인, 릴리즈 blocker 이슈 해소 상태 점검].",
+          "concern": "[PM] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "dependency": "[PM] 해소를 위해 QA Engineer (risk: ['qa_ai_coverage_gap']), ML Engineer (risk: ['ml_model_latency_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능. Agenda 항목 'High severity 버그 목록 및 owner 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "is_valid": false
+        },
+        {
+          "agent_id": "박준혁",
+          "role": "QA Engineer",
+          "observation": "[QA Engineer / 박준혁] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'QA 담당자의 슬랙 메시지 수(85건)가 팀 평균(172건) 대비 낮고 집중 작업 시간(515분)도 부족. 버그 리포트 지연 ...'. 담당 agenda: [전체 테스트 케이스 커버리지 리뷰, 결제 흐름 E2E 테스트 계획 및 실행 현황].",
+          "concern": "[QA Engineer] 이 이벤트는 'communication_delay' 유형 이슈 가능성이 있음. (risk: ['qa_communication_gap']) (evidence: ['slack.avg_response_time', 'calendar.focus_time_minutes']) | 제약: communication_signal=high_delay: 슬랙 응답 지연 (90분+), 의사결정 블로킹 우려",
+          "dependency": "[QA Engineer] 해소를 위해 PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[QA Engineer] '수동 테스트 (qa-manual) 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 '전체 테스트 케이스 커버리지 리뷰'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "slack.avg_response_time",
+            "calendar.focus_time_minutes"
+          ],
+          "is_valid": true
+        },
+        {
+          "agent_id": "이지훈",
+          "role": "PM",
+          "observation": "[PM / 이지훈] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'QA 담당자의 슬랙 메시지 수(85건)가 팀 평균(172건) 대비 낮고 집중 작업 시간(515분)도 부족. 버그 리포트 지연 ...'. 담당 agenda: [High severity 버그 목록 및 owner 확인, 릴리즈 blocker 이슈 해소 상태 점검].",
+          "concern": "[PM] 이 이벤트는 'communication_delay' 유형 이슈 가능성이 있음. (evidence: ['slack.avg_response_time'])",
+          "dependency": "[PM] 해소를 위해 QA Engineer (risk: ['qa_ai_coverage_gap'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '일정 관리 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 'High severity 버그 목록 및 owner 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "slack.avg_response_time"
+          ],
+          "is_valid": true
+        }
+      ],
+      "detected_issues": [
+        {
+          "issue_id": "issue_021",
+          "issue_category": "qa_coverage_gap",
+          "description": "[QA Engineer] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. (risk: ['qa_ai_coverage_gap']) (evidence: ['jira.overdue_issue_count']) | 제약: 스킬 부재: AI 응답 품질 평가 기준",
+          "raised_by": "박준혁",
+          "raised_in_phase": "QA / Release Phase",
+          "trigger_source": [
+            "qa_ai_coverage_gap",
+            "jira.overdue_issue_count"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count"
+          ]
+        },
+        {
+          "issue_id": "issue_022",
+          "issue_category": "qa_coverage_gap",
+          "description": "[ML Engineer] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. (evidence: ['jira.overdue_issue_count'])",
+          "raised_by": "오하은",
+          "raised_in_phase": "QA / Release Phase",
+          "trigger_source": [
+            "qa_ai_coverage_gap",
+            "jira.overdue_issue_count"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "jira.overdue_issue_count"
+          ]
+        },
+        {
+          "issue_id": "issue_023",
+          "issue_category": "integration_risk",
+          "description": "[QA Engineer] 이 이벤트는 'communication_delay' 유형 이슈 가능성이 있음. (risk: ['qa_communication_gap']) (evidence: ['slack.avg_response_time', 'calendar.focus_time_minutes']) | 제약: communication_signal=high_delay: 슬랙 응답 지연 (90분+), 의사결정 블로킹 우려",
+          "raised_by": "박준혁",
+          "raised_in_phase": "QA / Release Phase",
+          "trigger_source": [
+            "qa_communication_gap",
+            "slack.avg_response_time",
+            "calendar.focus_time_minutes"
+          ],
+          "severity": "high",
+          "status": "candidate",
+          "evidence_refs": [
+            "slack.avg_response_time",
+            "calendar.focus_time_minutes"
+          ]
+        },
+        {
+          "issue_id": "issue_024",
+          "issue_category": "qa_coverage_gap",
+          "description": "[PM] 이 이벤트는 'communication_delay' 유형 이슈 가능성이 있음. (evidence: ['slack.avg_response_time'])",
+          "raised_by": "이지훈",
+          "raised_in_phase": "QA / Release Phase",
+          "trigger_source": [
+            "qa_communication_gap",
+            "slack.avg_response_time",
+            "calendar.focus_time_minutes"
+          ],
+          "severity": "medium",
+          "status": "candidate",
+          "evidence_refs": [
+            "slack.avg_response_time"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "decision_id": "dec_023",
+          "summary": "[QA Engineer] '수동 테스트 (qa-manual) 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능. Agenda 항목 '전체 테스트 케이스 커버리지 리뷰'에서 즉시 착수 가능.",
+          "decided_by": "박준혁",
+          "phase": "QA / Release Phase"
+        },
+        {
+          "decision_id": "dec_024",
+          "summary": "[ML Engineer] 'OpenAI API 연동 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능.",
+          "decided_by": "오하은",
+          "phase": "QA / Release Phase"
+        },
+        {
+          "decision_id": "dec_025",
+          "summary": "[QA Engineer] '수동 테스트 (qa-manual) 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 '전체 테스트 케이스 커버리지 리뷰'에서 즉시 착수 가능.",
+          "decided_by": "박준혁",
+          "phase": "QA / Release Phase"
+        },
+        {
+          "decision_id": "dec_026",
+          "summary": "[PM] '일정 관리 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 'High severity 버그 목록 및 owner 확인'에서 즉시 착수 가능.",
+          "decided_by": "이지훈",
+          "phase": "QA / Release Phase"
+        }
+      ],
+      "action_items": [
+        {
+          "action_id": "act_023",
+          "description": "[QA Engineer] 해소를 위해 ML Engineer (risk: ['ml_model_latency_risk']), PM (risk: ['scope_creep_risk'])의 | 제안: [QA Engineer] '수동 테스트 (qa-manual) 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능. Agenda",
+          "owner_role": "QA Engineer",
+          "phase": "QA / Release Phase",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.overdue_issue_count"
+          ]
+        },
+        {
+          "action_id": "act_024",
+          "description": "[ML Engineer] 해소를 위해 QA Engineer (risk: ['qa_ai_coverage_gap']), PM (risk: ['scope_creep_risk'])의 선행 | 제안: [ML Engineer] 'OpenAI API 연동 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능.",
+          "owner_role": "ML Engineer",
+          "phase": "QA / Release Phase",
+          "priority": "medium",
+          "evidence_refs": [
+            "jira.overdue_issue_count"
+          ]
+        },
+        {
+          "action_id": "act_025",
+          "description": "[QA Engineer] 해소를 위해 PM (risk: ['scope_creep_risk'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장. | 제안: [QA Engineer] '수동 테스트 (qa-manual) 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Ag",
+          "owner_role": "QA Engineer",
+          "phase": "QA / Release Phase",
+          "priority": "high",
+          "evidence_refs": [
+            "slack.avg_response_time",
+            "calendar.focus_time_minutes"
+          ]
+        },
+        {
+          "action_id": "act_026",
+          "description": "[PM] 해소를 위해 QA Engineer (risk: ['qa_ai_coverage_gap'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장. | 제안: [PM] '일정 관리 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 'High severity",
+          "owner_role": "PM",
+          "phase": "QA / Release Phase",
+          "priority": "low",
+          "evidence_refs": [
+            "slack.avg_response_time"
+          ]
+        }
+      ],
+      "unresolved_questions": [
+        {
+          "question_id": "unres_004",
+          "description": "[needs_retry] 이지훈(PM) concern에 evidence 연결 미확보. concern: [PM] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: AI/ML 도메인 이해",
+          "raised_by": "이지훈",
+          "phase": "QA / Release Phase",
+          "risk_category": "qa_coverage_gap"
+        }
+      ],
+      "phase_scores": {
+        "phase": "QA / Release Phase",
+        "valid_turn_ratio": 0.8,
+        "issue_count": 4,
+        "unresolved_count": 1,
+        "observed_risk_categories": [
+          "qa_coverage_gap",
+          "integration_risk"
+        ],
+        "phase_stability_score": 0.41
+      },
+      "raw_dialogue": null
+    }
+  ],
+  "total_issues": 24,
+  "total_actions": 26,
+  "total_unresolved": 4
+}

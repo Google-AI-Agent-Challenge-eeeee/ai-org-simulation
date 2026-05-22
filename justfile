@@ -3,7 +3,6 @@
 
 set windows-shell := ["powershell.exe", "-NoLogo", "-NoProfile", "-Command"]
 set shell := ["bash", "-c"]
-set dotenv-load := true
 
 # Make ``backend.*`` and ``scripts.*`` imports work from any recipe,
 # regardless of how Python resolves CWD (uv run, alembic CLI, etc.).

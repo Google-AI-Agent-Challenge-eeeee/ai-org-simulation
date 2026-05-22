@@ -1,0 +1,95 @@
+[
+  {
+    "employee_id": "E20260021",
+    "employee_name": "이지훈",
+    "assigned_role": "PM",
+    "matched_skills": ["일정 관리", "스프린트 운영", "스테이크홀더 커뮤니케이션"],
+    "missing_skills": ["AI/ML 도메인 이해", "기술 아키텍처 의사결정"],
+    "capacity_signal": "low_risk",
+    "communication_signal": "low_delay",
+    "delivery_signal": "stable",
+    "collaboration_signal": "rapid_responder",
+    "risk_tags": ["scope_creep_risk"],
+    "evidence_refs": [
+      "jira.sprint_completion_rate",
+      "jira.scope_change_count",
+      "slack.avg_response_time",
+      "calendar.busy_minutes"
+    ]
+  },
+  {
+    "employee_id": "E20260055",
+    "employee_name": "최민준",
+    "assigned_role": "Backend Developer",
+    "matched_skills": ["FastAPI (api-server)", "PostgreSQL 설계 (db-migrations)", "인증 서비스 (auth-service)"],
+    "missing_skills": ["ML API 연동 경험", "WebSocket 구현", "LangChain"],
+    "capacity_signal": "medium_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "stable",
+    "collaboration_signal": "review_hub",
+    "risk_tags": ["be_ml_integration_risk"],
+    "evidence_refs": [
+      "jira.overdue_issue_count",
+      "jira.worklog_hours",
+      "jira.avg_cycle_time",
+      "github.pr_count_3m",
+      "slack.avg_response_time"
+    ]
+  },
+  {
+    "employee_id": "E20260062",
+    "employee_name": "김서연",
+    "assigned_role": "Frontend Developer",
+    "matched_skills": ["React 컴포넌트 설계 (design-system)", "TypeScript (web-frontend)", "REST API 연동"],
+    "missing_skills": ["WebSocket / SSE 스트리밍", "실시간 UI 상태관리 경험"],
+    "capacity_signal": "low_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "variable",
+    "collaboration_signal": "focused_individual",
+    "risk_tags": ["be_ml_integration_risk"],
+    "evidence_refs": [
+      "jira.reopened_issue_count",
+      "jira.scope_change_count",
+      "jira.avg_cycle_time",
+      "calendar.busy_minutes"
+    ]
+  },
+  {
+    "employee_id": "E20260031",
+    "employee_name": "박준혁",
+    "assigned_role": "QA Engineer",
+    "matched_skills": ["수동 테스트 (qa-manual)", "버그 리포팅 (release-tools)", "API 테스팅"],
+    "missing_skills": ["AI 응답 품질 평가 기준", "Playwright E2E", "LLM 출력 검증"],
+    "capacity_signal": "low_risk",
+    "communication_signal": "high_delay",
+    "delivery_signal": "unstable",
+    "collaboration_signal": "focused_individual",
+    "risk_tags": ["qa_ai_coverage_gap", "qa_communication_gap"],
+    "evidence_refs": [
+      "slack.message_count",
+      "slack.avg_response_time",
+      "calendar.focus_time_minutes",
+      "jira.overdue_issue_count",
+      "jira.reopened_issue_count"
+    ]
+  },
+  {
+    "employee_id": "E20260073",
+    "employee_name": "오하은",
+    "assigned_role": "ML Engineer",
+    "matched_skills": ["LLM 프롬프트 엔지니어링 (ml-platform)", "OpenAI API 연동", "Python ML 파이프라인"],
+    "missing_skills": ["FastAPI 백엔드 연동 경험", "팀 협업 프로토콜 (신규 역할)", "운영 모니터링"],
+    "capacity_signal": "high_risk",
+    "communication_signal": "medium_delay",
+    "delivery_signal": "variable",
+    "collaboration_signal": "connector",
+    "risk_tags": ["ml_model_latency_risk", "be_ml_integration_risk"],
+    "evidence_refs": [
+      "jira.worklog_hours",
+      "jira.overdue_issue_count",
+      "github.pr_count_3m",
+      "calendar.busy_minutes",
+      "slack.avg_response_time"
+    ]
+  }
+]

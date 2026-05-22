@@ -1,0 +1,670 @@
+{
+  "simulation_id": "sim_p6_demo",
+  "llm_mode": "stub",
+  "phase_runs": [
+    {
+      "phase_name": "Kickoff Meeting",
+      "event_id": "evt_001",
+      "event_desc": "BE 담당자에게 P0 기능(인증·결제 API)이 집중되고 미완료 이슈(6건)가 누적. 업무 과부하로 인한 일정 지연 가능성 확인 필요.",
+      "trigger_source": [
+        "backend_workload_concentration",
+        "jira.overdue_issue_count",
+        "jira.worklog_hours"
+      ],
+      "turns": [
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: 'BE 담당자에게 P0 기능(인증·결제 API)이 집중되고 미완료 이슈(6건)가 누적. 업무 과부하로 인한 일정 지연 가능성 확...'.",
+          "concern": "[Backend Developer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (risk: ['backend_workload_concentration']) (evidence: ['jira.overdue_issue_count', 'jira.worklog_hours'])",
+          "dependency": "[Backend Developer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] '플랫폼 인프라 이해 (platform-infra) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "jira.worklog_hours"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: 'BE 담당자에게 P0 기능(인증·결제 API)이 집중되고 미완료 이슈(6건)가 누적. 업무 과부하로 인한 일정 지연 가능성 확...'. 담당 agenda: [프로젝트 목표 및 MVP 범위 공유, 역할별 책임(R&R) 및 기능 owner 확정].",
+          "concern": "[PM] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours'])",
+          "dependency": "[PM] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] 'Payment Service 도메인 이해 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.worklog_hours"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Kickoff Meeting",
+      "event_id": "evt_002",
+      "event_desc": "PM의 최근 스프린트 완료율(29.1%)이 낮아 일정 관리에 대한 우려가 제기됨. 팀 전체 속도와 마일스톤 달성 가능성을 재확인해야 함.",
+      "trigger_source": [
+        "pm_low_sprint_velocity",
+        "jira.sprint_completion_rate",
+        "slack.avg_response_time"
+      ],
+      "turns": [
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: 'PM의 최근 스프린트 완료율(29.1%)이 낮아 일정 관리에 대한 우려가 제기됨. 팀 전체 속도와 마일스톤 달성 가능성을 재확...'. 담당 agenda: [프로젝트 목표 및 MVP 범위 공유, 역할별 책임(R&R) 및 기능 owner 확정].",
+          "concern": "[PM] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['pm_low_sprint_velocity']) (evidence: ['jira.sprint_completion_rate', 'slack.avg_response_time'])",
+          "dependency": "[PM] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] 'Payment Service 도메인 이해 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 '프로젝트 목표 및 MVP 범위 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.sprint_completion_rate",
+            "slack.avg_response_time"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Kickoff Meeting — 프로젝트 목표·R&R·owner·일정 공유. 역할/책임 불명확성과 일정 인식 차이를 조기 . 현재 이벤트: 'PM의 최근 스프린트 완료율(29.1%)이 낮아 일정 관리에 대한 우려가 제기됨. 팀 전체 속도와 마일스톤 달성 가능성을 재확...'.",
+          "concern": "[Backend Developer] 직접적 리스크 참조는 없으나, 'schedule_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[Backend Developer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] '플랫폼 인프라 이해 (platform-infra) 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Design Phase",
+      "event_id": "evt_003",
+      "event_desc": "외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경 시 FE 연동 블로킹 위험.",
+      "trigger_source": [
+        "payment_api_integration_risk",
+        "jira.scope_change_count"
+      ],
+      "turns": [
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: '외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경...'. 담당 agenda: [DB 스키마 및 데이터 모델 확정, API 엔드포인트 스펙 초안 공유].",
+          "concern": "[Backend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (risk: ['payment_api_integration_risk']) (evidence: ['jira.scope_change_count']) | 제약: 스킬 부재: Payment API SDK",
+          "dependency": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['fe_scope_instability']), PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'API 연동 (web-frontend) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'DB 스키마 및 데이터 모델 확정'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "심예린",
+          "assigned_role": "Frontend Developer",
+          "observation": "[Frontend Developer / 심예린] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: '외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경...'. 담당 agenda: [FE 디자인 시안 및 컴포넌트 구조 공유, [기능] 메인 대시보드 UI (P0) 진행 확인].",
+          "concern": "[Frontend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (evidence: ['jira.scope_change_count']) | 제약: 스킬 부재: Payment UI 경험",
+          "dependency": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration']), PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 (api-server) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'FE 디자인 시안 및 컴포넌트 구조 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: '외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경...'.",
+          "concern": "[PM] 직접적 리스크 참조는 없으나, 'technical_dependency_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[PM] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration']), Frontend Developer (risk: ['fe_scope_instability'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '프로젝트 기획 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Design Phase",
+      "event_id": "evt_004",
+      "event_desc": "DevOps 담당자의 GCP Cloud Run 실운영 경험 없음. 초기 IAM 설정 및 Cloud Run 구성 지연 시 전체 배포 파이프라인 블로킹.",
+      "trigger_source": [
+        "devops_gcp_experience_gap",
+        "github.contributed_repositories"
+      ],
+      "turns": [
+        {
+          "agent_id": "박라경",
+          "assigned_role": "DevOps Engineer",
+          "observation": "[DevOps Engineer / 박라경] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'DevOps 담당자의 GCP Cloud Run 실운영 경험 없음. 초기 IAM 설정 및 Cloud Run 구성 지연 시 전체 ...'. 담당 agenda: [GCP Cloud Run 배포 아키텍처 설계, [기능] GCP Cloud Run 배포 환경 구성 (P0) 진행 확인].",
+          "concern": "[DevOps Engineer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (risk: ['devops_gcp_experience_gap']) (evidence: ['github.contributed_repositories']) | 제약: 스킬 부재: GCP Cloud Run 실운영 경험",
+          "dependency": "[DevOps Engineer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[DevOps Engineer] 'CI/CD 구성 (platform-infra) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'GCP Cloud Run 배포 아키텍처 설계'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "github.contributed_repositories"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Design Phase — API 스펙·DB 스키마·외부 의존성·기술 선택 검토. 기술 복잡성과 설계 공백을 확인한다. 현재 이벤트: 'DevOps 담당자의 GCP Cloud Run 실운영 경험 없음. 초기 IAM 설정 및 Cloud Run 구성 지연 시 전체 ...'.",
+          "concern": "[PM] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: GCP Cloud Run",
+          "dependency": "[PM] 해소를 위해 DevOps Engineer (risk: ['devops_gcp_experience_gap'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '프로젝트 기획 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "needs_retry",
+            "failed_checks": [
+              "concern_no_evidence"
+            ],
+            "reason": "concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상."
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": [
+        {
+          "flag_type": "re_question",
+          "agent_id": "권원솔",
+          "event_id": "evt_004",
+          "message": "[needs_retry] concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상. checks=['concern_no_evidence']"
+        }
+      ]
+    },
+    {
+      "phase_name": "Development Phase",
+      "event_id": "evt_005",
+      "event_desc": "BE 담당자에게 P0 기능(인증·결제 API)이 집중되고 미완료 이슈(6건)가 누적. 업무 과부하로 인한 일정 지연 가능성 확인 필요.",
+      "trigger_source": [
+        "backend_workload_concentration",
+        "jira.overdue_issue_count",
+        "jira.worklog_hours"
+      ],
+      "turns": [
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'BE 담당자에게 P0 기능(인증·결제 API)이 집중되고 미완료 이슈(6건)가 누적. 업무 과부하로 인한 일정 지연 가능성 확...'. 담당 agenda: [BE P0 기능(인증·결제 API) 구현 상태 점검, [기능] 결제 API 연동 (P0) 진행 확인].",
+          "concern": "[Backend Developer] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (risk: ['backend_workload_concentration']) (evidence: ['jira.overdue_issue_count', 'jira.worklog_hours'])",
+          "dependency": "[Backend Developer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] '플랫폼 인프라 이해 (platform-infra) 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'BE P0 기능(인증·결제 API) 구현 상태 점검'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count",
+            "jira.worklog_hours"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'BE 담당자에게 P0 기능(인증·결제 API)이 집중되고 미완료 이슈(6건)가 누적. 업무 과부하로 인한 일정 지연 가능성 확...'. 담당 agenda: [P0 기능 진척 현황 공유, PR 리뷰 병목 및 업무 집중 여부 점검].",
+          "concern": "[PM] 이 이벤트는 'workload_concentration' 유형 이슈 가능성이 있음. (evidence: ['jira.worklog_hours'])",
+          "dependency": "[PM] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] 'Payment Service 도메인 이해 경험 보유'를 활용해 'workload_concentration' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.worklog_hours"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Development Phase",
+      "event_id": "evt_006",
+      "event_desc": "PM의 최근 스프린트 완료율(29.1%)이 낮아 일정 관리에 대한 우려가 제기됨. 팀 전체 속도와 마일스톤 달성 가능성을 재확인해야 함.",
+      "trigger_source": [
+        "pm_low_sprint_velocity",
+        "jira.sprint_completion_rate",
+        "slack.avg_response_time"
+      ],
+      "turns": [
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'PM의 최근 스프린트 완료율(29.1%)이 낮아 일정 관리에 대한 우려가 제기됨. 팀 전체 속도와 마일스톤 달성 가능성을 재확...'. 담당 agenda: [P0 기능 진척 현황 공유, PR 리뷰 병목 및 업무 집중 여부 점검].",
+          "concern": "[PM] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['pm_low_sprint_velocity']) (evidence: ['jira.sprint_completion_rate', 'slack.avg_response_time'])",
+          "dependency": "[PM] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] 'Payment Service 도메인 이해 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.sprint_completion_rate",
+            "slack.avg_response_time"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'PM의 최근 스프린트 완료율(29.1%)이 낮아 일정 관리에 대한 우려가 제기됨. 팀 전체 속도와 마일스톤 달성 가능성을 재확...'. 담당 agenda: [BE P0 기능(인증·결제 API) 구현 상태 점검, [기능] 결제 API 연동 (P0) 진행 확인].",
+          "concern": "[Backend Developer] 직접적 리스크 참조는 없으나, 'schedule_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[Backend Developer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] '플랫폼 인프라 이해 (platform-infra) 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'BE P0 기능(인증·결제 API) 구현 상태 점검'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Development Phase",
+      "event_id": "evt_007",
+      "event_desc": "FE 담당자의 최근 scope change 10회, 재오픈 이슈 3건 발생. 요구사항 변동 반복 패턴으로 구현 완성도 저하 우려.",
+      "trigger_source": [
+        "fe_scope_instability",
+        "jira.scope_change_count",
+        "jira.reopened_issue_count"
+      ],
+      "turns": [
+        {
+          "agent_id": "심예린",
+          "assigned_role": "Frontend Developer",
+          "observation": "[Frontend Developer / 심예린] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'FE 담당자의 최근 scope change 10회, 재오픈 이슈 3건 발생. 요구사항 변동 반복 패턴으로 구현 완성도 저하 우...'. 담당 agenda: [FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인, [기능] 메인 대시보드 UI (P0) 진행 확인].",
+          "concern": "[Frontend Developer] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['fe_scope_instability']) (evidence: ['jira.scope_change_count', 'jira.reopened_issue_count'])",
+          "dependency": "[Frontend Developer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 (api-server) 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count",
+            "jira.reopened_issue_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Development Phase — 업무 분배·구현 병목·PR 리뷰 흐름 확인. 일정/업무 집중 리스크를 점검한다.. 현재 이벤트: 'FE 담당자의 최근 scope change 10회, 재오픈 이슈 3건 발생. 요구사항 변동 반복 패턴으로 구현 완성도 저하 우...'. 담당 agenda: [P0 기능 진척 현황 공유, PR 리뷰 병목 및 업무 집중 여부 점검].",
+          "concern": "[PM] 직접적 리스크 참조는 없으나, 'schedule_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[PM] 해소를 위해 Frontend Developer (risk: ['fe_scope_instability'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] 'FE 리뷰 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'P0 기능 진척 현황 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Integration Phase",
+      "event_id": "evt_008",
+      "event_desc": "FE 담당자의 최근 scope change 10회, 재오픈 이슈 3건 발생. 요구사항 변동 반복 패턴으로 구현 완성도 저하 우려.",
+      "trigger_source": [
+        "fe_scope_instability",
+        "jira.scope_change_count",
+        "jira.reopened_issue_count"
+      ],
+      "turns": [
+        {
+          "agent_id": "심예린",
+          "assigned_role": "Frontend Developer",
+          "observation": "[Frontend Developer / 심예린] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'FE 담당자의 최근 scope change 10회, 재오픈 이슈 3건 발생. 요구사항 변동 반복 패턴으로 구현 완성도 저하 우...'. 담당 agenda: [FE-BE 연동 이슈 목록 공유].",
+          "concern": "[Frontend Developer] 이 이벤트는 'schedule_risk' 유형 이슈 가능성이 있음. (risk: ['fe_scope_instability']) (evidence: ['jira.scope_change_count', 'jira.reopened_issue_count'])",
+          "dependency": "[Frontend Developer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 (api-server) 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연동 이슈 목록 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count",
+            "jira.reopened_issue_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'FE 담당자의 최근 scope change 10회, 재오픈 이슈 3건 발생. 요구사항 변동 반복 패턴으로 구현 완성도 저하 우...'. 담당 agenda: [연동 단계 미해결 이슈 owner 지정].",
+          "concern": "[PM] 직접적 리스크 참조는 없으나, 'schedule_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[PM] 해소를 위해 Frontend Developer (risk: ['fe_scope_instability'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] 'FE 리뷰 경험 보유'를 활용해 'schedule_risk' 완화 조치 가능. Agenda 항목 '연동 단계 미해결 이슈 owner 지정'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Integration Phase",
+      "event_id": "evt_009",
+      "event_desc": "FE 이슈 평균 사이클 타임 8.4일로 팀 내 최고. BE API 완료 전 FE 연동 착수 불가 구조로 Integration 단계 블로킹 가능성.",
+      "trigger_source": [
+        "fe_be_api_dependency",
+        "jira.avg_cycle_time"
+      ],
+      "turns": [
+        {
+          "agent_id": "심예린",
+          "assigned_role": "Frontend Developer",
+          "observation": "[Frontend Developer / 심예린] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'FE 이슈 평균 사이클 타임 8.4일로 팀 내 최고. BE API 완료 전 FE 연동 착수 불가 구조로 Integration ...'. 담당 agenda: [FE-BE 연동 이슈 목록 공유].",
+          "concern": "[Frontend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. (risk: ['fe_be_api_dependency']) (evidence: ['jira.avg_cycle_time'])",
+          "dependency": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 (api-server) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연동 이슈 목록 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.avg_cycle_time"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'FE 이슈 평균 사이클 타임 8.4일로 팀 내 최고. BE API 완료 전 FE 연동 착수 불가 구조로 Integration ...'. 담당 agenda: [BE API 완료 여부 및 FE 연동 착수 조건 확인, 결제 API schema 확정 및 FE 연동 테스트].",
+          "concern": "[Backend Developer] 이 이벤트는 'integration_risk' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: Payment API SDK",
+          "dependency": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['fe_scope_instability'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'JWT 인증 (auth-service) 경험 보유'를 활용해 'integration_risk' 완화 조치 가능. Agenda 항목 'BE API 완료 여부 및 FE 연동 착수 조건 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "needs_retry",
+            "failed_checks": [
+              "concern_no_evidence"
+            ],
+            "reason": "concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상."
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": [
+        {
+          "flag_type": "re_question",
+          "agent_id": "안우빈",
+          "event_id": "evt_009",
+          "message": "[needs_retry] concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상. checks=['concern_no_evidence']"
+        }
+      ]
+    },
+    {
+      "phase_name": "Integration Phase",
+      "event_id": "evt_010",
+      "event_desc": "외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경 시 FE 연동 블로킹 위험.",
+      "trigger_source": [
+        "payment_api_integration_risk",
+        "jira.scope_change_count"
+      ],
+      "turns": [
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: '외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경...'. 담당 agenda: [BE API 완료 여부 및 FE 연동 착수 조건 확인, 결제 API schema 확정 및 FE 연동 테스트].",
+          "concern": "[Backend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (risk: ['payment_api_integration_risk']) (evidence: ['jira.scope_change_count']) | 제약: 스킬 부재: Payment API SDK",
+          "dependency": "[Backend Developer] 해소를 위해 Frontend Developer (risk: ['fe_scope_instability']), PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'API 연동 (web-frontend) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'BE API 완료 여부 및 FE 연동 착수 조건 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "심예린",
+          "assigned_role": "Frontend Developer",
+          "observation": "[Frontend Developer / 심예린] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: '외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경...'. 담당 agenda: [FE-BE 연동 이슈 목록 공유].",
+          "concern": "[Frontend Developer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (evidence: ['jira.scope_change_count']) | 제약: 스킬 부재: Payment UI 경험",
+          "dependency": "[Frontend Developer] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration']), PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Frontend Developer] 'REST API 연동 (api-server) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'FE-BE 연동 이슈 목록 공유'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.scope_change_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: '외부 결제 PG API SDK 경험이 없고 최근 scope change 5회 발생. sandbox 환경 미확보 또는 스펙 변경...'. 담당 agenda: [연동 단계 미해결 이슈 owner 지정].",
+          "concern": "[PM] 직접적 리스크 참조는 없으나, 'technical_dependency_risk'가 팀 일정 전체에 영향을 줄 수 있음. 모니터링 필요.",
+          "dependency": "[PM] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration']), Frontend Developer (risk: ['fe_scope_instability'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '프로젝트 기획 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 '연동 단계 미해결 이슈 owner 지정'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "phase_name": "Integration Phase",
+      "event_id": "evt_011",
+      "event_desc": "DevOps 담당자의 GCP Cloud Run 실운영 경험 없음. 초기 IAM 설정 및 Cloud Run 구성 지연 시 전체 배포 파이프라인 블로킹.",
+      "trigger_source": [
+        "devops_gcp_experience_gap",
+        "github.contributed_repositories"
+      ],
+      "turns": [
+        {
+          "agent_id": "박라경",
+          "assigned_role": "DevOps Engineer",
+          "observation": "[DevOps Engineer / 박라경] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'DevOps 담당자의 GCP Cloud Run 실운영 경험 없음. 초기 IAM 설정 및 Cloud Run 구성 지연 시 전체 ...'. 담당 agenda: [Cloud Run 스테이징 환경 배포 완료 확인].",
+          "concern": "[DevOps Engineer] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. (risk: ['devops_gcp_experience_gap']) (evidence: ['github.contributed_repositories']) | 제약: 스킬 부재: GCP Cloud Run 실운영 경험",
+          "dependency": "[DevOps Engineer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[DevOps Engineer] 'CI/CD 구성 (platform-infra) 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 'Cloud Run 스테이징 환경 배포 완료 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "github.contributed_repositories"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] Integration Phase — FE/BE/API/DB 연동·스펙 불일치 확인. 실제 충돌이 가장 많이 드러나는 구간을 집. 현재 이벤트: 'DevOps 담당자의 GCP Cloud Run 실운영 경험 없음. 초기 IAM 설정 및 Cloud Run 구성 지연 시 전체 ...'. 담당 agenda: [연동 단계 미해결 이슈 owner 지정].",
+          "concern": "[PM] 이 이벤트는 'technical_dependency_risk' 유형 이슈 가능성이 있음. | 제약: 스킬 부재: GCP Cloud Run",
+          "dependency": "[PM] 해소를 위해 DevOps Engineer (risk: ['devops_gcp_experience_gap'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '프로젝트 기획 경험 보유'를 활용해 'technical_dependency_risk' 완화 조치 가능. Agenda 항목 '연동 단계 미해결 이슈 owner 지정'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "needs_retry",
+            "failed_checks": [
+              "concern_no_evidence"
+            ],
+            "reason": "concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상."
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": [
+        {
+          "flag_type": "re_question",
+          "agent_id": "권원솔",
+          "event_id": "evt_011",
+          "message": "[needs_retry] concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상. checks=['concern_no_evidence']"
+        }
+      ]
+    },
+    {
+      "phase_name": "QA / Release Phase",
+      "event_id": "evt_012",
+      "event_desc": "QA 담당자의 슬랙 메시지 수(85건)가 팀 평균(172건) 대비 낮고 집중 작업 시간(515분)도 부족. 버그 리포트 지연 및 이슈 소통 단절 위험.",
+      "trigger_source": [
+        "qa_communication_gap",
+        "slack.message_count",
+        "calendar.focus_time_minutes"
+      ],
+      "turns": [
+        {
+          "agent_id": "송다원",
+          "assigned_role": "QA Engineer",
+          "observation": "[QA Engineer / 송다원] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'QA 담당자의 슬랙 메시지 수(85건)가 팀 평균(172건) 대비 낮고 집중 작업 시간(515분)도 부족. 버그 리포트 지연 ...'. 담당 agenda: [전체 테스트 케이스 커버리지 리뷰, 결제 흐름 E2E 테스트 계획 및 실행 현황].",
+          "concern": "[QA Engineer] 이 이벤트는 'communication_delay' 유형 이슈 가능성이 있음. (risk: ['qa_communication_gap']) (evidence: ['slack.message_count', 'calendar.focus_time_minutes']) | 제약: communication_signal=medium_delay: 응답 시간 30~90분 수준",
+          "dependency": "[QA Engineer] 해소를 위해 PM (risk: ['pm_low_sprint_velocity'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[QA Engineer] 'Pytest 자동화 (qa-automation) 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 '전체 테스트 케이스 커버리지 리뷰'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "slack.message_count",
+            "calendar.focus_time_minutes"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "권원솔",
+          "assigned_role": "PM",
+          "observation": "[PM / 권원솔] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'QA 담당자의 슬랙 메시지 수(85건)가 팀 평균(172건) 대비 낮고 집중 작업 시간(515분)도 부족. 버그 리포트 지연 ...'. 담당 agenda: [High severity 버그 목록 및 owner 확인, 릴리즈 blocker 이슈 해소 상태 점검].",
+          "concern": "[PM] 이 이벤트는 'communication_delay' 유형 이슈 가능성이 있음. | 제약: communication_signal=high_delay: 슬랙 응답 지연 (90분+), 의사결정 블로킹 우려",
+          "dependency": "[PM] 해소를 위해 QA Engineer (risk: ['qa_communication_gap'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[PM] '프로젝트 기획 경험 보유'를 활용해 'communication_delay' 완화 조치 가능. Agenda 항목 'High severity 버그 목록 및 owner 확인'에서 즉시 착수 가능.",
+          "evidence_refs_used": [],
+          "validation": {
+            "status": "needs_retry",
+            "failed_checks": [
+              "concern_no_evidence"
+            ],
+            "reason": "concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상."
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": [
+        {
+          "flag_type": "re_question",
+          "agent_id": "권원솔",
+          "event_id": "evt_012",
+          "message": "[needs_retry] concern이 risk_tags 또는 evidence_refs와 연결되지 않음. 재질문 대상. checks=['concern_no_evidence']"
+        }
+      ]
+    },
+    {
+      "phase_name": "QA / Release Phase",
+      "event_id": "evt_013",
+      "event_desc": "Playwright E2E 스킬 미보유 및 결제 도메인 테스트 케이스 경험 없음. 결제 실패·예외 케이스 테스트 누락으로 release blocker 가능성.",
+      "trigger_source": [
+        "qa_coverage_gap",
+        "jira.overdue_issue_count"
+      ],
+      "turns": [
+        {
+          "agent_id": "송다원",
+          "assigned_role": "QA Engineer",
+          "observation": "[QA Engineer / 송다원] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'Playwright E2E 스킬 미보유 및 결제 도메인 테스트 케이스 경험 없음. 결제 실패·예외 케이스 테스트 누락으로 re...'. 담당 agenda: [전체 테스트 케이스 커버리지 리뷰, 결제 흐름 E2E 테스트 계획 및 실행 현황].",
+          "concern": "[QA Engineer] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. (evidence: ['jira.overdue_issue_count'])",
+          "dependency": "[QA Engineer] 해소를 위해 Backend Developer (risk: ['backend_workload_concentration'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[QA Engineer] 'Pytest 자동화 (qa-automation) 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능. Agenda 항목 '전체 테스트 케이스 커버리지 리뷰'에서 즉시 착수 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        },
+        {
+          "agent_id": "안우빈",
+          "assigned_role": "Backend Developer",
+          "observation": "[Backend Developer / 안우빈] QA / Release Phase — 테스트 범위·결함·release blocker 확인. QA 커버리지 갭과 릴리즈 리스크를 . 현재 이벤트: 'Playwright E2E 스킬 미보유 및 결제 도메인 테스트 케이스 경험 없음. 결제 실패·예외 케이스 테스트 누락으로 re...'.",
+          "concern": "[Backend Developer] 이 이벤트는 'qa_coverage_gap' 유형 이슈 가능성이 있음. (evidence: ['jira.overdue_issue_count'])",
+          "dependency": "[Backend Developer] 해소를 위해 QA Engineer (risk: ['qa_communication_gap'])의 선행 작업 또는 협의가 필요함. 블로킹 전 사전 조율 권장.",
+          "proposed_action": "[Backend Developer] 'JWT 인증 (auth-service) 경험 보유'를 활용해 'qa_coverage_gap' 완화 조치 가능.",
+          "evidence_refs_used": [
+            "jira.overdue_issue_count"
+          ],
+          "validation": {
+            "status": "valid",
+            "failed_checks": [],
+            "reason": ""
+          },
+          "llm_mode": "stub"
+        }
+      ],
+      "flags": []
+    }
+  ],
+  "total_turns": 28,
+  "total_invalid": 0
+}

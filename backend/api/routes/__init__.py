@@ -22,6 +22,7 @@ def _wire_routes() -> None:
     from backend.api.routes.jira import router as jira_router
     from backend.api.routes.profile import router as profile_router
     from backend.api.routes.slack import router as slack_router
+    from backend.api.simulation import router as simulation_router
 
     api_router.include_router(employees_router)
     api_router.include_router(profile_router)
@@ -29,6 +30,7 @@ def _wire_routes() -> None:
     api_router.include_router(slack_router)
     api_router.include_router(jira_router)
     api_router.include_router(calendar_router)
+    api_router.include_router(simulation_router)
 
 
 _wire_routes()

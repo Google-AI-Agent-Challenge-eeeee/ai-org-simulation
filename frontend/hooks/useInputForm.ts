@@ -10,16 +10,28 @@ type InputMode = "text" | "file"
 
 export function useInputForm() {
   const router = useRouter()
-  const { setSessionId, reset } = useSessionStore()
+  const { setSessionId, setPmPersona, reset } = useSessionStore()
 
-  const [prd, setPrd] = useState("")
+  const [prd, setPrd]             = useState("")
   const [inputMode, setInputMode] = useState<InputMode>("text")
-  const [pmPreset, setPmPreset] = useState<PmStylePreset>("balance")
-  const [pmExtra, setPmExtra] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const isValid = prd.trim().length >= 20
+  // PM Persona
+  const [pmName, setPmName]             = useState("")
+  const [pmPreset, setPmPreset]         = useState<PmStylePreset>("speed")
+  const [pmPersona, setPmPersonaText]   = useState("")
+  const [pmConstraints, setPmConstraints] = useState("")
+
+  // PM Priority (separate card)
+  const [pmPriority, setPmPriority]     = useState<PmStylePreset>("quality")
+  const [pmPriorityExtra, setPmPriorityExtra] = useState("")
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState<string | null>(null)
+
+  const isValid =
+    prd.trim().length >= 20 &&
+    pmName.trim().length >= 1 &&
+    pmPersona.trim().length >= 10
 
   function handleFileSelect(file: File) {
     const reader = new FileReader()
@@ -36,15 +48,27 @@ export function useInputForm() {
     setLoading(true)
     reset()
 
-    const pmStyle =
-      pmPreset === "custom"
-        ? pmExtra
-        : `${pmPreset}${pmExtra ? ` / ${pmExtra}` : ""}`
+    const persona = {
+      name: pmName.trim(),
+      preset: pmPreset,
+      persona: pmPersona.trim(),
+      constraints: pmConstraints.trim() || undefined,
+    }
+
+    const priorityText =
+      pmPriority === "custom"
+        ? pmPriorityExtra
+        : `${pmPriority}${pmPriorityExtra ? ` / ${pmPriorityExtra}` : ""}`
 
     try {
-      const id = await createSession({ prd: prd.trim(), pmStyle })
+      const id = await createSession({
+        prd: prd.trim(),
+        pmPersona: persona,
+        pmPriority: priorityText,
+      })
       setSessionId(id)
-      router.push(`/session/${id}`)
+      setPmPersona(persona)
+      router.push(`/session/${id}/requirements`)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "시뮬레이션 시작 실패")
     } finally {
@@ -55,8 +79,12 @@ export function useInputForm() {
   return {
     prd, setPrd,
     inputMode, setInputMode,
+    pmName, setPmName,
     pmPreset, setPmPreset,
-    pmExtra, setPmExtra,
+    pmPersona, setPmPersonaText,
+    pmConstraints, setPmConstraints,
+    pmPriority, setPmPriority,
+    pmPriorityExtra, setPmPriorityExtra,
     loading, error, isValid,
     handleFileSelect,
     handleSubmit,
