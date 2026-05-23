@@ -124,6 +124,10 @@ def test_report_contract_returns_selected_session_id() -> None:
     assert body["metrics"]["teamFitScore"] >= 0
     assert body["meetingSummary"]
     assert body["phaseSummaries"]
+    assert body["reportSummary"]["generatedFrom"]
+    assert body["scoreBreakdown"]
+    assert body["topRisks"]
+    assert body["phaseDetails"]
 
 
 def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:

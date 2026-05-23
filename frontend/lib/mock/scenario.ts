@@ -227,6 +227,8 @@ export type MockSseEvent =
   | { event: "status";       data: { stage: SessionStage; text: string; phase?: SimulationPhase; phaseIndex?: number } }
   | { event: "message";      data: { persona: Persona; token: string; messageId: string; turnType?: Message["turnType"] } }
   | { event: "backend_log";  data: { text: string } }
+  | { event: "event_start";  data: { eventId: string; description: string } }
+  | { event: "event_end";    data: { eventId: string } }
   | { event: "done";         data: Record<string, never> }
 
 export function buildMockEvents(pmPersona?: PmPersona | null): MockSseEvent[] {

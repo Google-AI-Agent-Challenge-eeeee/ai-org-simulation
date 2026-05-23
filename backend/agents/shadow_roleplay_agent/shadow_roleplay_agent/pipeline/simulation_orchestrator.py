@@ -164,7 +164,12 @@ class SimulationOrchestrator:
 
             yield {"type": "phase_end", "phase": phase.phase_name.value}
 
-        yield {"type": "done", "total_turns": total_turns}
+        output = OrchestratorOutput(
+            simulation_id=plan.simulation_id,
+            llm_mode=self.llm_mode,
+            phase_runs=phase_runs,
+        )
+        yield {"type": "done", "total_turns": total_turns, "output": output}
 
     def _run_event(
         self,

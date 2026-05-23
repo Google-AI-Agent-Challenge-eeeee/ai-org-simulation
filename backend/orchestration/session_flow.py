@@ -12,9 +12,11 @@ import os
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from backend.agents.report_agent import ReportAgent
 from backend.agents.requirements_agent.pipeline.llm_adapter import (
     LLMConfig,
     build_section_extractor,
@@ -87,6 +89,7 @@ Goal: 이메일 기반 인증, 결제 API 연동, 메인 대시보드를 포함�
 class SessionRecord:
     session_id: str
     prd_text: str
+    created_at: str = field(default_factory=lambda: _utc_now_iso())
     pm_persona: dict[str, Any] | None = None
     pm_priority: str | None = None
     requirements_agent_result: dict[str, Any] | None = None
@@ -155,6 +158,14 @@ def select_team(session_id: str, team_id: str | None = None) -> dict[str, bool]:
 def get_report(session_id: str) -> dict[str, Any]:
     record = _get_or_create_session(session_id)
     selected_team = _selected_team(record)
+    return ReportAgent().build(
+        session_id=session_id,
+        created_at=record.created_at,
+        selected_team=selected_team,
+        pm_persona=record.pm_persona,
+        requirements_summary=record.requirements_summary,
+        roleplay_outputs=_roleplay_outputs_for_report(record),
+    )
     overall, verdict, score_note, top_risks, must_fix = _load_simulation_output()
     risk_level = "High" if overall < 0.6 else ("Mid" if overall < 0.8 else "Low")
 
@@ -223,15 +234,21 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
 
     from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules import (
         AgentCardBuilder,
+        IssueRiskEvaluator,
+        OutputBuilder,
+        PhaseLogCollector,
         PrivacyColumnFilter,
         ScenarioPhasePlanner,
+        ScoreCalculator,
     )
     from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline import (
         SimulationInputBuilder,
         SimulationOrchestrator,
     )
     from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_input import (
+        EvidenceMetadata,
         RequirementsList,
+        SelectedTeamRecord,
         TeamRiskSummary,
     )
 
@@ -308,6 +325,50 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
         elif ctype == "event_end":
             yield sse("event_end", {"eventId": chunk["event_id"]})
         elif ctype == "done":
+            try:
+                orchestrator_output = chunk.get("output")
+                if orchestrator_output is not None:
+                    team = SelectedTeamRecord.model_validate(team_record)
+                    evidence_list = [
+                        EvidenceMetadata.model_validate(item)
+                        for item in _load_json_list(
+                            SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json"
+                        )
+                    ]
+                    sim_log = PhaseLogCollector().collect(
+                        orchestrator_output,
+                        plan,
+                        requirements_full,
+                        team,
+                    )
+                    issue_summary = IssueRiskEvaluator().evaluate(
+                        sim_log,
+                        risk_summary,
+                        evidence_list,
+                    )
+                    score_breakdown = ScoreCalculator().calculate(issue_summary, sim_log)
+                    simulation_output = OutputBuilder().build(
+                        score_breakdown,
+                        issue_summary,
+                        sim_log,
+                        requirements_full.project_name,
+                    )
+                    record.metadata["roleplay_outputs"] = {
+                        "team_simulation_log": _model_dump_jsonable(sim_log),
+                        "issue_risk_summary": _model_dump_jsonable(issue_summary),
+                        "score_breakdown": _model_dump_jsonable(score_breakdown),
+                        "simulation_output": _model_dump_jsonable(simulation_output),
+                    }
+                    yield sse(
+                        "backend_log",
+                        {"text": "ReportAgent inputs finalized from live roleplay outputs"},
+                    )
+            except Exception as exc:
+                record.metadata["report_generation_error"] = str(exc)
+                yield sse(
+                    "backend_log",
+                    {"text": f"ReportAgent input finalize failed: {exc}"},
+                )
             yield sse("status", {"stage": "done", "text": "시뮬레이션 완료"})
             yield sse("done", {})
 
@@ -339,6 +400,34 @@ def iter_agent_turn_sse(chunk: dict[str, Any], msg_counter: int) -> Iterator[str
                 },
             )
     return msg_counter
+
+
+def _roleplay_outputs_for_report(record: SessionRecord) -> dict[str, Any]:
+    outputs = record.metadata.get("roleplay_outputs")
+    if isinstance(outputs, dict):
+        return outputs
+    return _load_roleplay_output_artifacts()
+
+
+def _load_roleplay_output_artifacts() -> dict[str, Any]:
+    return {
+        "simulation_output": _load_json_if_exists(SHADOW_AGENT_OUTPUTS / "Simulation_OUTPUT.json"),
+        "team_simulation_log": _load_json_if_exists(
+            SHADOW_AGENT_OUTPUTS / "Team_Simulation_Log.json"
+        ),
+        "issue_risk_summary": _load_json_if_exists(
+            SHADOW_AGENT_OUTPUTS / "Issue_Risk_Summary.json"
+        ),
+        "score_breakdown": _load_json_if_exists(SHADOW_AGENT_OUTPUTS / "Score_Breakdown.json"),
+    }
+
+
+def _model_dump_jsonable(value: Any) -> dict[str, Any]:
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json")
+    if isinstance(value, dict):
+        return value
+    return {}
 
 
 def _load_simulation_output() -> tuple[float, str, str, list[dict[str, Any]], list[dict[str, Any]]]:
@@ -783,9 +872,20 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_json_if_exists(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data if isinstance(data, dict) else {}
+
+
 def _load_json_list(path: Path) -> list[dict[str, Any]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     return data if isinstance(data, list) else []
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _load_env_file() -> None:

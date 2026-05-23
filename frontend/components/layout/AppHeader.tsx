@@ -10,7 +10,7 @@ interface AppHeaderProps {
   reportId?: string
   projectName?: string
   onCopyLink?: () => void
-  onDownloadJson?: () => void
+  onDownloadPdf?: () => void
 }
 
 const NAV_ITEMS = [
@@ -26,7 +26,7 @@ export function AppHeader({
   reportId,
   projectName,
   onCopyLink,
-  onDownloadJson,
+  onDownloadPdf,
 }: AppHeaderProps) {
   return (
     <header className="border-b border-zinc-800 bg-zinc-950">
@@ -54,7 +54,7 @@ export function AppHeader({
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 no-print">
           <Button
             variant="outline"
             size="sm"
@@ -66,11 +66,11 @@ export function AppHeader({
           </Button>
           <Button
             size="sm"
-            onClick={onDownloadJson}
+            onClick={onDownloadPdf}
             className="gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs"
           >
             <Download className="w-3.5 h-3.5" />
-            JSON
+            PDF
           </Button>
         </div>
       </div>

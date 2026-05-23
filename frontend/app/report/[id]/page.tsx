@@ -9,6 +9,7 @@ import { MeetingSummarySection } from "@/components/report/MeetingSummarySection
 import { RecommendationSection } from "@/components/report/RecommendationSection"
 import { RequirementsSummarySection } from "@/components/report/RequirementsSummarySection"
 import { PhaseSimulationSection } from "@/components/report/PhaseSimulationSection"
+import { RoleplayOutputSection } from "@/components/report/RoleplayOutputSection"
 import { useReport } from "@/hooks/useReport"
 import { fadeDown, fadeUp, staggerContainer } from "@/lib/motion"
 
@@ -31,15 +32,12 @@ export default function ReportPage({ params }: Props) {
     navigator.clipboard.writeText(window.location.href)
   }
 
-  function handleDownloadJson() {
+  function handleDownloadPdf() {
     if (!report) return
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `report-${sessionId}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    const previousTitle = document.title
+    document.title = `report-${sessionId}`
+    window.print()
+    document.title = previousTitle
   }
 
   if (loading) {
@@ -62,7 +60,7 @@ export default function ReportPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0f0f13]">
+    <div className="min-h-screen flex flex-col bg-[#0f0f13] print-surface">
       <motion.div initial="hidden" animate="show" variants={fadeDown}>
         <AppHeader
           reportTitle="시뮬레이션 리포트"
@@ -70,7 +68,7 @@ export default function ReportPage({ params }: Props) {
           reportId={`SIM-${sessionId.slice(-6).toUpperCase()}`}
           projectName={report.selectedTeam?.teamName ?? "Project Alpha"}
           onCopyLink={handleCopyLink}
-          onDownloadJson={handleDownloadJson}
+          onDownloadPdf={handleDownloadPdf}
         />
       </motion.div>
 
@@ -119,6 +117,16 @@ export default function ReportPage({ params }: Props) {
         {/* 킥오프 회의 요약 */}
         <motion.div variants={fadeUp}>
           <MeetingSummarySection data={report.meetingSummary} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <RoleplayOutputSection
+            reportSummary={report.reportSummary}
+            scoreBreakdown={report.scoreBreakdown}
+            topRisks={report.topRisks}
+            mustFixBeforeStart={report.mustFixBeforeStart}
+            evidenceSummary={report.evidenceSummary}
+            phaseDetails={report.phaseDetails}
+          />
         </motion.div>
       </motion.main>
     </div>
