@@ -82,6 +82,18 @@
       "items": {
         "$ref": "#/$defs/source_evidence"
       }
+    },
+    "normalization_trace": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "suggested_mapping_trace": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
     }
   },
   "$defs": {
@@ -216,6 +228,9 @@
             "manual_review_required",
             "human_confirmed"
           ]
+        },
+        "match_method": {
+          "type": "string"
         }
       }
     },
@@ -242,6 +257,16 @@
           "items": {
             "type": "string"
           }
+        },
+        "role_type": {
+          "type": "string",
+          "enum": [
+            "staffing",
+            "stakeholder"
+          ]
+        },
+        "match_method": {
+          "type": "string"
         },
         "reason": {
           "type": "string"

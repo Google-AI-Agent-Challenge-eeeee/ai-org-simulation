@@ -104,7 +104,24 @@ class OrchestratorOutput(BaseModel):
     phase_runs: list[PhaseRun]
     total_turns: int = 0
     total_invalid: int = 0
+    actual_llm_mode: str = ""
+    vertex_turn_count: int = 0
+    fallback_count: int = 0
 
     def model_post_init(self, __context) -> None:
-        object.__setattr__(self, "total_turns", sum(len(r.turns) for r in self.phase_runs))
+        turns = [turn for run in self.phase_runs for turn in run.turns]
+        vertex_turn_count = sum(1 for turn in turns if turn.llm_mode == LLMMode.VERTEX)
+        fallback_count = (
+            sum(1 for turn in turns if turn.llm_mode != LLMMode.VERTEX)
+            if self.llm_mode == LLMMode.VERTEX
+            else 0
+        )
+        object.__setattr__(self, "total_turns", len(turns))
         object.__setattr__(self, "total_invalid", sum(r.invalid_count for r in self.phase_runs))
+        object.__setattr__(self, "vertex_turn_count", vertex_turn_count)
+        object.__setattr__(self, "fallback_count", fallback_count)
+        object.__setattr__(
+            self,
+            "actual_llm_mode",
+            "mixed_fallback" if fallback_count else self.llm_mode.value,
+        )

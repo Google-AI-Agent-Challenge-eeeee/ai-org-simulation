@@ -3,7 +3,7 @@
     "name": "requirements_agent_taxonomy",
     "phase": "file_create_phase_1",
     "status": "mvp_reference_expanded",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "purpose": "Define standard MVP web/app features and their required roles, skills, risks, and employee-column weighting hints.",
     "source_materials": [
       "../../requirements_agent_민성초기세팅/Final_Requirements_Agent_implementation_plan.md",
@@ -110,10 +110,12 @@
     },
     "Legal/Compliance Specialist": {
       "job_category_codes": [],
+      "role_type": "stakeholder",
       "description": "Privacy, legal review, compliance policy, and regulated data handling approval."
     },
     "Customer Support Specialist": {
       "job_category_codes": [],
+      "role_type": "stakeholder",
       "description": "Support operations, FAQ readiness, customer issue tagging, and launch support enablement."
     },
     "Engineering Lead": {
@@ -127,6 +129,7 @@
     },
     "Marketing Stakeholder": {
       "job_category_codes": [],
+      "role_type": "stakeholder",
       "description": "Internal marketing or growth stakeholder who owns campaign and messaging requirements but may not be staffed from engineering employee pools."
     }
   },
@@ -974,6 +977,187 @@
         "bottleneck_risk"
       ]
     },
+    "user_profile_preferences": {
+      "standard_name": "사용자 프로필/설정",
+      "category": "core_platform",
+      "description": "User profile, preferences, account settings, personalization defaults, and preference persistence.",
+      "requirement_types": [
+        "feature",
+        "backend",
+        "frontend",
+        "mobile"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "Mobile Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "User Preference Management",
+        "Profile API",
+        "State Management",
+        "Form Validation",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Preference state mismatch",
+        "Incorrect default setting",
+        "Profile data inconsistency"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "ownership_score",
+        "reopened_issue_count"
+      ]
+    },
+    "subscription_billing": {
+      "standard_name": "구독/청구",
+      "category": "commerce",
+      "description": "Subscription lifecycle, billing, invoice, plan change, cancellation, refund, and payment-provider integration.",
+      "requirement_types": [
+        "feature",
+        "backend",
+        "security",
+        "qa"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Web Frontend Engineer",
+        "QA Engineer",
+        "Product Manager"
+      ],
+      "skills": [
+        "Billing Logic",
+        "Payment Provider Integration",
+        "Refund Handling",
+        "Webhook Handling",
+        "Contract Testing",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Incorrect billing",
+        "Payment webhook drift",
+        "Refund edge-case failure"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "reopened_issue_count",
+        "ownership_score"
+      ]
+    },
+    "data_pipeline_analytics": {
+      "standard_name": "데이터 파이프라인/분석",
+      "category": "data",
+      "description": "Event tracking, analytics schema, ETL/ELT, data quality, reporting dataset, and dashboard data readiness.",
+      "requirement_types": [
+        "feature",
+        "data",
+        "backend",
+        "analytics"
+      ],
+      "roles": [
+        "Data Engineer",
+        "Backend Engineer",
+        "QA Engineer",
+        "Product Manager"
+      ],
+      "skills": [
+        "Event Tracking",
+        "Data Pipeline",
+        "Data Validation",
+        "Metric Definition",
+        "Analytics Instrumentation",
+        "Observability"
+      ],
+      "risks": [
+        "Metric definition ambiguity",
+        "Data freshness mismatch",
+        "Pipeline failure"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "completed_issue_count",
+        "ownership_score"
+      ]
+    },
+    "ai_llm_feature": {
+      "standard_name": "AI/LLM 기능",
+      "category": "ai",
+      "description": "LLM, chatbot, recommendation, prompt workflow, model evaluation, guardrail, and AI-assisted product behavior.",
+      "requirement_types": [
+        "feature",
+        "ai",
+        "backend",
+        "qa"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Data Engineer",
+        "Product Manager",
+        "QA Engineer"
+      ],
+      "skills": [
+        "LLM Integration",
+        "Prompt Engineering",
+        "Model Evaluation",
+        "Guardrail Design",
+        "API Integration",
+        "Regression Testing"
+      ],
+      "risks": [
+        "Hallucinated output",
+        "Evaluation gap",
+        "Prompt regression",
+        "Privacy leakage"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "certifications_count",
+        "ownership_score"
+      ]
+    },
+    "cache_scaling_architecture": {
+      "standard_name": "캐시/확장성 아키텍처",
+      "category": "architecture",
+      "description": "Cache, read/write separation, database scaling, API rate limit, traffic spike handling, and performance-oriented architecture.",
+      "requirement_types": [
+        "backend",
+        "infra",
+        "performance",
+        "reliability"
+      ],
+      "roles": [
+        "Backend Engineer",
+        "Infrastructure Engineer",
+        "QA Engineer"
+      ],
+      "skills": [
+        "Cache Strategy",
+        "Database Write Separation",
+        "Scalability Design",
+        "Rate Limit Handling",
+        "Performance Testing",
+        "Observability"
+      ],
+      "risks": [
+        "Cache inconsistency",
+        "Database overload",
+        "Rate limit breach",
+        "Performance regression"
+      ],
+      "weight_hints": [
+        "job_category_code",
+        "competency_score",
+        "avg_cycle_time",
+        "ownership_score",
+        "bottleneck_risk"
+      ]
+    },
     "error_empty_state_handling": {
       "standard_name": "오류/빈 상태 처리",
       "category": "experience",
@@ -1339,6 +1523,21 @@
         "Scope reduction",
         "Senior capacity constraint",
         "Cost-quality trade-off"
+      ]
+    },
+    "no_additional_budget": {
+      "standard_name": "추가 예산 없음",
+      "description": "The PRD explicitly states no additional budget, no new infrastructure cost, or work must be handled within an existing plan.",
+      "weight_hints": [
+        "scope_change_count",
+        "estimation_accuracy",
+        "completed_issue_count",
+        "ownership_score"
+      ],
+      "risks": [
+        "Scope trade-off required",
+        "Existing capacity constraint",
+        "Cost-driven architecture compromise"
       ]
     },
     "high_reliability": {

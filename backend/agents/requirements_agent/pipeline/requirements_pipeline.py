@@ -28,7 +28,12 @@ from backend.agents.requirements_agent.modules.requirements_list_builder import 
     build_requirements_list,
     ensure_valid_requirements_list,
 )
+from backend.agents.requirements_agent.modules.roleplay_handoff_builder import (
+    build_roleplay_handoff_manifest,
+    build_roleplay_requirements_input,
+)
 from backend.agents.requirements_agent.modules.taxonomy_matcher import (
+    MappingSuggester,
     load_json,
     match_requirements,
 )
@@ -68,6 +73,8 @@ OUTPUT_FILENAMES = {
     "human_confirm_result": "Human_Confirm_Result.json",
     "column_weighting_result": "Column_Weighting_Result.json",
     "requirements_list": "Requirements_List.json",
+    "roleplay_requirements_input": "Roleplay_Requirements_Input.json",
+    "roleplay_handoff_manifest": "Roleplay_Handoff_Manifest.json",
 }
 
 
@@ -96,6 +103,8 @@ def run_requirements_pipeline(
     project_specific_mapping: dict[str, str] | None = None,
     human_confirm_decisions: dict[str, Any] | None = None,
     extractor: SectionExtractor | None = None,
+    mapping_mode: str = "rule",
+    mapping_suggester: MappingSuggester | None = None,
     validator: Validator | None = None,
     config: RequirementsPipelineConfig | None = None,
 ) -> JsonObject:
@@ -167,9 +176,12 @@ def run_requirements_pipeline(
             references["taxonomy"],
             references["rulebase"],
             project_specific_mapping=effective_project_specific_mapping,
+            mapping_mode=mapping_mode,
+            mapping_suggester=mapping_suggester,
             mapped_requirements_id="mapped_requirements",
         ),
         candidate_count=len(extracted_draft.get("merged_requirement_candidates", [])),
+        mapping_mode=mapping_mode,
     )
     column_selection = _run_stage(
         "select_columns_draft",
@@ -249,6 +261,19 @@ def run_requirements_pipeline(
             schemas.get("requirements_schema"),
         ),
     )
+    roleplay_requirements_input = _run_stage(
+        "build_roleplay_requirements_input",
+        progress_logger,
+        lambda: build_roleplay_requirements_input(requirements_list),
+    )
+    roleplay_handoff_manifest = _run_stage(
+        "build_roleplay_handoff_manifest",
+        progress_logger,
+        lambda: build_roleplay_handoff_manifest(
+            requirements_list,
+            roleplay_requirements_input,
+        ),
+    )
 
     outputs = {
         "cleaned_prd_text": prepared_document,
@@ -265,6 +290,8 @@ def run_requirements_pipeline(
         "human_confirm_result": human_confirm_result,
         "column_weighting_result": column_weighting,
         "requirements_list": requirements_list,
+        "roleplay_requirements_input": roleplay_requirements_input,
+        "roleplay_handoff_manifest": roleplay_handoff_manifest,
     }
     result = {
         "_meta": {

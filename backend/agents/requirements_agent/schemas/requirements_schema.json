@@ -371,6 +371,14 @@
             "type": "string"
           }
         },
+        "role_type": {
+          "type": "string",
+          "enum": [
+            "staffing",
+            "stakeholder"
+          ],
+          "description": "Whether this role should be staffed from employee data or preserved as a stakeholder/context role."
+        },
         "source_feature_keys": {
           "type": "array",
           "items": {

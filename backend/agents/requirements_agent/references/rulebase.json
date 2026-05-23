@@ -3,7 +3,7 @@
     "name": "requirements_agent_rulebase",
     "phase": "file_create_phase_1",
     "status": "mvp_reference_expanded",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "purpose": "Map MVP web/app PRD expressions and aliases to standard taxonomy features.",
     "source_materials": [
       "../../requirements_agent_민성초기세팅/Final_Requirements_Agent_implementation_plan.md",
@@ -745,6 +745,78 @@
     "Add asynchronous queue": {
       "feature_key": "async_queue_processing",
       "confidence": 0.98
+    },
+    "사용자 프로필": {
+      "feature_key": "user_profile_preferences",
+      "confidence": 0.94
+    },
+    "프로필 설정": {
+      "feature_key": "user_profile_preferences",
+      "confidence": 0.94
+    },
+    "profile settings": {
+      "feature_key": "user_profile_preferences",
+      "confidence": 0.94
+    },
+    "구독": {
+      "feature_key": "subscription_billing",
+      "confidence": 0.94
+    },
+    "청구": {
+      "feature_key": "subscription_billing",
+      "confidence": 0.94
+    },
+    "subscription": {
+      "feature_key": "subscription_billing",
+      "confidence": 0.94
+    },
+    "billing": {
+      "feature_key": "subscription_billing",
+      "confidence": 0.94
+    },
+    "데이터 파이프라인": {
+      "feature_key": "data_pipeline_analytics",
+      "confidence": 0.96
+    },
+    "이벤트 스키마": {
+      "feature_key": "data_pipeline_analytics",
+      "confidence": 0.92
+    },
+    "event tracking": {
+      "feature_key": "data_pipeline_analytics",
+      "confidence": 0.94
+    },
+    "AI 챗봇": {
+      "feature_key": "ai_llm_feature",
+      "confidence": 0.96
+    },
+    "LLM": {
+      "feature_key": "ai_llm_feature",
+      "confidence": 0.92
+    },
+    "추천 모델": {
+      "feature_key": "ai_llm_feature",
+      "confidence": 0.9
+    },
+    "캐시": {
+      "feature_key": "cache_scaling_architecture",
+      "confidence": 0.92
+    },
+    "DB 분리": {
+      "feature_key": "cache_scaling_architecture",
+      "confidence": 0.9
+    },
+    "Write DB 분리": {
+      "feature_key": "cache_scaling_architecture",
+      "confidence": 0.96
+    },
+    "read/write separation": {
+      "feature_key": "cache_scaling_architecture",
+      "confidence": 0.94
+    },
+    "API rate limit": {
+      "feature_key": "cache_scaling_architecture",
+      "confidence": 0.9
     }
   },
   "constraint_aliases": {
@@ -793,6 +865,26 @@
       "confidence": 0.8,
       "action": "map_constraint"
     },
+    "주": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "기간": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "스프린트": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.82,
+      "action": "map_constraint"
+    },
+    "W1-W": {
+      "constraint_key": "short_timeline",
+      "confidence": 0.78,
+      "action": "map_constraint"
+    },
     "런칭일 고정": {
       "constraint_key": "short_timeline",
       "confidence": 0.92,
@@ -831,6 +923,36 @@
     "won": {
       "constraint_key": "budget_limited",
       "confidence": 0.78,
+      "action": "map_constraint"
+    },
+    "별도 추가 인프라 비용 없음": {
+      "constraint_key": "no_additional_budget",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "추가 인프라 비용 없음": {
+      "constraint_key": "no_additional_budget",
+      "confidence": 0.96,
+      "action": "map_constraint"
+    },
+    "별도 추가 비용 없음": {
+      "constraint_key": "no_additional_budget",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "추가 비용 없음": {
+      "constraint_key": "no_additional_budget",
+      "confidence": 0.92,
+      "action": "map_constraint"
+    },
+    "no additional cost": {
+      "constraint_key": "no_additional_budget",
+      "confidence": 0.94,
+      "action": "map_constraint"
+    },
+    "no additional budget": {
+      "constraint_key": "no_additional_budget",
+      "confidence": 0.94,
       "action": "map_constraint"
     },
     "고가용성": {
@@ -1568,6 +1690,58 @@
     "Non-Functional Requirements (NFR) threshold adjustment": {
       "skill_name": "NFR Threshold Definition",
       "confidence": 0.96
+    },
+    "JWT": {
+      "skill_name": "JWT",
+      "confidence": 0.96
+    },
+    "RBAC": {
+      "skill_name": "Authorization",
+      "confidence": 0.94
+    },
+    "민감 정보 마스킹": {
+      "skill_name": "Masking Policy",
+      "confidence": 0.98
+    },
+    "개인정보 마스킹": {
+      "skill_name": "Masking Policy",
+      "confidence": 0.98
+    },
+    "p95": {
+      "skill_name": "Monitoring",
+      "confidence": 0.86
+    },
+    "SLA": {
+      "skill_name": "Observability",
+      "confidence": 0.9
+    },
+    "Rate Limit": {
+      "skill_name": "Rate Limit Handling",
+      "confidence": 0.94
+    },
+    "LLM Integration": {
+      "skill_name": "LLM Integration",
+      "confidence": 0.98
+    },
+    "Prompt Engineering": {
+      "skill_name": "Prompt Engineering",
+      "confidence": 0.96
+    },
+    "Model Evaluation": {
+      "skill_name": "Model Evaluation",
+      "confidence": 0.96
+    },
+    "Data Pipeline": {
+      "skill_name": "Data Pipeline",
+      "confidence": 0.96
+    },
+    "Event Tracking": {
+      "skill_name": "Event Tracking",
+      "confidence": 0.96
+    },
+    "Cache": {
+      "skill_name": "Cache Strategy",
+      "confidence": 0.9
     }
   }
 }

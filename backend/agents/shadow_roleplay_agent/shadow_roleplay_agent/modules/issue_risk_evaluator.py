@@ -21,6 +21,10 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.risk_taxonomy_bridge import (
+    OFFICIAL_ISSUE_CATEGORIES,
+    canonical_issue_category,
+)
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.issue_risk_summary import (
     ConfirmedIssue,
     EvaluationStatus,
@@ -41,33 +45,9 @@ logger = logging.getLogger(__name__)
 # ── 상수 ───────────────────────────────────────────────────────────────
 
 # rules.md §2 9개 공식 카테고리
-_OFFICIAL_CATEGORIES = frozenset(
-    {
-        "role_conflict",
-        "unclear_ownership",
-        "schedule_risk",
-        "workload_concentration",
-        "technical_dependency_risk",
-        "integration_risk",
-        "communication_delay",
-        "qa_coverage_gap",
-        "release_blocker",
-    }
-)
+_OFFICIAL_CATEGORIES = OFFICIAL_ISSUE_CATEGORIES
 
 # Team_Risk_Summary risk_tag → 공식 카테고리 매핑
-_TAG_TO_CATEGORY: dict[str, str] = {
-    "backend_workload_concentration": "workload_concentration",
-    "pm_low_sprint_velocity": "schedule_risk",
-    "fe_scope_instability": "schedule_risk",
-    "fe_be_api_dependency": "integration_risk",
-    "payment_api_integration_risk": "integration_risk",
-    "devops_gcp_experience_gap": "technical_dependency_risk",
-    "qa_communication_gap": "communication_delay",
-    "qa_coverage_gap": "qa_coverage_gap",
-    "schedule_risk": "schedule_risk",
-    "integration_risk": "integration_risk",
-}
 
 # 공식 카테고리 → 분석 템플릿 (rules.md §4)
 _CATEGORY_TEMPLATES: dict[str, dict] = {
@@ -192,8 +172,9 @@ class IssueRiskEvaluator:
         # risk_tag → canonical category → pre_simulation_risk
         pre_scores: dict[str, float] = {}
         for tag, score in risk_summary.risk_prior_scores.items():
-            cat = _TAG_TO_CATEGORY.get(tag, tag)
+            cat = canonical_issue_category(tag)
             if cat in _OFFICIAL_CATEGORIES:
+                pre_scores[cat] = max(pre_scores.get(cat, 0.0), score)
                 # 같은 category에 여러 tag가 있으면 최댓값
                 pre_scores[cat] = max(pre_scores.get(cat, 0.0), score)
 
@@ -201,7 +182,7 @@ class IssueRiskEvaluator:
         for plog in sim_log.phase_logs:
             for cand in plog.detected_issues:
                 for tag in cand.trigger_source:
-                    cat = _TAG_TO_CATEGORY.get(tag, tag)
+                    cat = canonical_issue_category(tag)
                     if cat in _OFFICIAL_CATEGORIES:
                         score = risk_summary.risk_prior_scores.get(tag, 0.0)
                         pre_scores[cat] = max(pre_scores.get(cat, 0.0), score)
@@ -350,9 +331,8 @@ class IssueRiskEvaluator:
 
 def _normalize_category(raw: str) -> str:
     """비공식 카테고리명을 공식 카테고리로 변환한다."""
-    if raw in _OFFICIAL_CATEGORIES:
-        return raw
-    return _TAG_TO_CATEGORY.get(raw, raw)
+    category = canonical_issue_category(raw)
+    return category if category in _OFFICIAL_CATEGORIES else raw
 
 
 def _calc_observed_risk(

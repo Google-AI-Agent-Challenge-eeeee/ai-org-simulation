@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "employee_feature_matrix_schema.json",
+  "title": "Employee Feature Matrix",
+  "type": "object",
+  "required": ["_meta", "feature_profiles"],
+  "additionalProperties": true,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "required": ["matrix_id", "employee_count", "feature_key_count"],
+      "additionalProperties": true,
+      "properties": {
+        "matrix_id": { "type": "string" },
+        "created_at": { "type": "string" },
+        "source": { "type": "string" },
+        "employee_count": { "type": "integer", "minimum": 0 },
+        "feature_key_count": { "type": "integer", "minimum": 0 },
+        "normalization_policy": { "type": "string" },
+        "missing_value_policy": { "type": "string" },
+        "restricted_column_policy": { "type": "string" }
+      }
+    },
+    "feature_profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "employee_id",
+          "employee_name",
+          "job_category_code",
+          "feature_values",
+          "derived_features",
+          "role_eligibility",
+          "role_profile_scores",
+          "signals",
+          "evidence_refs"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "employee_id": { "type": "string" },
+          "employee_name": { "type": "string" },
+          "job_category_code": { "type": "string" },
+          "feature_values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "normalized_value",
+                "source_column",
+                "feature_type",
+                "direction",
+                "normalization",
+                "missing"
+              ],
+              "additionalProperties": true,
+              "properties": {
+                "normalized_value": { "type": "number", "minimum": 0, "maximum": 1 },
+                "raw_value": {},
+                "source_column": { "type": "string" },
+                "feature_type": { "type": "string" },
+                "direction": { "type": "string" },
+                "normalization": { "type": "string" },
+                "missing": { "type": "boolean" }
+              }
+            }
+          },
+          "derived_features": { "type": "object", "additionalProperties": { "type": "number" } },
+          "role_eligibility": { "type": "object", "additionalProperties": { "type": "number" } },
+          "role_profile_scores": { "type": "object", "additionalProperties": { "type": "number" } },
+          "signals": { "type": "object", "additionalProperties": { "type": "string" } },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

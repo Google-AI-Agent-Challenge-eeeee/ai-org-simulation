@@ -25,6 +25,8 @@ import json
 import logging
 import os
 
+from dotenv import load_dotenv
+
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.agent_card import (
     AgentCard,
 )
@@ -51,9 +53,16 @@ class RoleAgent:
     speak()               : 이전 인터페이스 호환용 — context 없이 event만 사용
     """
 
-    def __init__(self, card: AgentCard, llm_mode: LLMMode = LLMMode.STUB) -> None:
+    def __init__(
+        self,
+        card: AgentCard,
+        llm_mode: LLMMode = LLMMode.STUB,
+        *,
+        strict_llm: bool = False,
+    ) -> None:
         self.card = card
         self.llm_mode = llm_mode
+        self.strict_llm = strict_llm
 
     # ── 권장 인터페이스 ────────────────────────
     def speak_with_context(self, ctx: PhaseContext) -> AgentTurn:
@@ -90,13 +99,16 @@ class RoleAgent:
         from google import genai
         from google.genai import types
 
+        load_dotenv()
         project = os.environ.get("GCP_PROJECT_ID", "")
         location = os.environ.get("VERTEX_LOCATION", "asia-northeast3")
         model_id = os.environ.get("VERTEX_MODEL", "gemini-2.5-flash")
 
         if not project:
+            if self.strict_llm:
+                raise RuntimeError("GCP_PROJECT_ID not set for strict Vertex RolePlay mode.")
             logger.warning("GCP_PROJECT_ID not set — falling back to stub")
-            return self._speak_context_stub(ctx)
+            return self._speak_context_stub(ctx).model_copy(update={"llm_mode": LLMMode.STUB})
 
         client = genai.Client(vertexai=True, project=project, location=location)
 
@@ -128,8 +140,10 @@ class RoleAgent:
                 validation=ValidationResult(status=ValidationStatus.VALID),
             )
         except Exception as exc:
+            if self.strict_llm:
+                raise RuntimeError(f"Gemini call failed in strict RolePlay mode: {exc}") from exc
             logger.warning("Gemini call failed (%s) — falling back to stub", exc)
-            return self._speak_context_stub(ctx)
+            return self._speak_context_stub(ctx).model_copy(update={"llm_mode": LLMMode.STUB})
 
     # ── Context 기반 Stub 발언 ─────────────────
     def _speak_context_stub(self, ctx: PhaseContext) -> AgentTurn:
