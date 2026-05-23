@@ -15,6 +15,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from backend.agents.requirements_agent.modules.employee_team_ranking import (
+    build_employee_team_rankings,
+)
 from backend.agents.requirements_agent.pipeline.llm_adapter import (
     LLMConfig,
     build_section_extractor,
@@ -31,9 +34,6 @@ from backend.agents.requirements_agent.pipeline.requirements_pipeline import (
     load_references,
     run_requirements_pipeline,
 )
-from backend.db.repositories import EmployeeRepository
-from backend.db.session import get_session_factory
-from backend.services.team_selector import TeamSelectionResult, TopTeamSelector
 
 ROLE_MAP: dict[str, str] = {
     "PM": "PM",
@@ -69,6 +69,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SHADOW_AGENT_ROOT = REPO_ROOT / "backend/agents/shadow_roleplay_agent/shadow_roleplay_agent"
 SHADOW_AGENT_SAMPLES = SHADOW_AGENT_ROOT / "samples"
 SHADOW_AGENT_OUTPUTS = SHADOW_AGENT_ROOT / "outputs"
+SESSION_MAX_TEAM_SIZE = 6
+SESSION_TOP_CANDIDATES_PER_ROLE = 5
+SESSION_MAX_RANKED_TEAMS = 1
 
 DEFAULT_PRD_TEXT = """# 결제 및 사용자 관리 플랫폼 v1.0
 
@@ -94,6 +97,7 @@ class SessionRecord:
     pm_priority: str | None = None
     requirements_agent_result: dict[str, Any] | None = None
     requirements_summary: dict[str, Any] | None = None
+    ranking_result: dict[str, Any] | None = None
     team_candidates: list[dict[str, Any]] | None = None
     team_candidates_total: int | None = None
     requirements_accepted: bool = False
@@ -119,8 +123,7 @@ def create_session(body: dict[str, Any] | None = None) -> dict[str, str]:
 def get_requirements_summary(session_id: str) -> dict[str, Any]:
     record = _get_or_create_session(session_id)
     if record.requirements_summary is None:
-        agent_result = _run_requirements_agent(record)
-        record.requirements_agent_result = agent_result
+        agent_result = _ensure_requirements_agent_result(record)
         record.requirements_summary = _to_requirements_summary(
             agent_result["outputs"]["requirements_list"]
         )
@@ -136,6 +139,10 @@ def revise_requirements(session_id: str) -> dict[str, Any]:
     record = _get_or_create_session(session_id)
     record.requirements_agent_result = None
     record.requirements_summary = None
+    record.ranking_result = None
+    record.team_candidates = None
+    record.team_candidates_total = None
+    record.selected_team_id = None
     record.requirements_accepted = False
     return get_requirements_summary(session_id)
 
@@ -143,13 +150,13 @@ def revise_requirements(session_id: str) -> dict[str, Any]:
 def get_team_candidates(session_id: str) -> dict[str, Any]:
     record = _get_or_create_session(session_id)
     if record.team_candidates is None:
-        db_result = _load_db_team_candidates(record)
-        if db_result is None:
+        ranking_result = _load_requirements_agent_team_candidates(record)
+        if ranking_result is None:
             record.team_candidates = _load_sample_team_candidates()
             record.team_candidates_total = 1247
         else:
-            record.team_candidates = db_result.teams
-            record.team_candidates_total = db_result.total_combinations
+            record.team_candidates = ranking_result["teams"]
+            record.team_candidates_total = ranking_result["total_combinations"]
     return {"totalCombinations": record.team_candidates_total or 0, "teams": record.team_candidates}
 
 
@@ -231,33 +238,19 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
         ScenarioPhasePlanner,
     )
     from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline import (
-        SimulationInputBuilder,
         SimulationOrchestrator,
     )
-    from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_input import (
-        RequirementsList,
-        TeamRiskSummary,
+    from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import (
+        EvidenceIndex,
     )
 
     yield sse("status", {"stage": "analyzing", "text": "시뮬레이션 입력 데이터 구성 중"})
     yield sse("backend_log", {"text": "Simulation_Input_Packet 병합 중"})
 
-    requirements_payload = _shadow_requirements_payload(record)
-    team_record = _shadow_selected_team_record(record)
-    risk_summary_payload = _shadow_team_risk_summary_payload(team_record["team_id"])
-
-    builder = SimulationInputBuilder()
-    packet, evidence_index = builder.build(
-        requirements=requirements_payload,
-        team_record=team_record,
-        snapshots=_shadow_member_snapshots_payload(team_record),
-        risk_summary=risk_summary_payload,
-        evidence_metadata=SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
-        simulation_id=session_id,
-    )
-
-    requirements_full = RequirementsList.model_validate(requirements_payload)
-    risk_summary = TeamRiskSummary.model_validate(risk_summary_payload)
+    packet = _roleplay_packet(record)
+    evidence_index = EvidenceIndex.build(packet.evidence_metadata)
+    requirements_full = packet.project_context
+    risk_summary = packet.team_risk_summary
 
     yield sse("backend_log", {"text": "PrivacyColumnFilter · PII 컬럼 제거 완료"})
     result = PrivacyColumnFilter().filter(packet)
@@ -394,19 +387,120 @@ def _load_sample_team_candidates() -> list[dict[str, Any]]:
     ]
 
 
-def _load_db_team_candidates(record: SessionRecord) -> TeamSelectionResult | None:
-    try:
-        factory = get_session_factory()
-        with factory() as db:
-            employees = EmployeeRepository(db).list_all()
-    except Exception:
+def _load_requirements_agent_team_candidates(record: SessionRecord) -> dict[str, Any] | None:
+    ranking_result = _get_or_build_ranking_result(record)
+    teams = _frontend_team_candidates_from_ranking(ranking_result)
+    if not teams:
         return None
+    return {
+        "total_combinations": _ranking_total_combinations(ranking_result, team_count=len(teams)),
+        "teams": teams,
+    }
 
-    required_roles = []
-    if record.requirements_summary is not None:
-        required_roles = record.requirements_summary.get("required_roles", [])
 
-    return TopTeamSelector().select(employees, required_roles=required_roles)
+def _get_or_build_ranking_result(record: SessionRecord) -> dict[str, Any]:
+    if record.ranking_result is not None:
+        return record.ranking_result
+
+    outputs = _ensure_requirements_agent_result(record)["outputs"]
+    roleplay_requirements_input = dict(outputs["roleplay_requirements_input"])
+    roleplay_requirements_input["project_id"] = record.session_id
+    ranking_result = build_employee_team_rankings(
+        outputs["requirements_list"],
+        roleplay_requirements_input,
+        employee_data_dir=DEFAULT_EMPLOYEE_DATA_DIR,
+        max_team_size=SESSION_MAX_TEAM_SIZE,
+        top_candidates_per_role=SESSION_TOP_CANDIDATES_PER_ROLE,
+        max_ranked_teams=SESSION_MAX_RANKED_TEAMS,
+        simulation_id=record.session_id,
+    )
+    ranking_result["roleplay_requirements_input"] = roleplay_requirements_input
+    outputs["roleplay_requirements_input"] = roleplay_requirements_input
+    outputs.update(ranking_result)
+    record.ranking_result = ranking_result
+    return ranking_result
+
+
+def _frontend_team_candidates_from_ranking(ranking_result: dict[str, Any]) -> list[dict[str, Any]]:
+    teams = (
+        ranking_result.get("team_composition_ranking", {}).get("team_rankings")
+        or ranking_result.get("team_composition_candidates", {}).get("team_candidates")
+        or []
+    )
+    return [_frontend_team_candidate(team) for team in teams[:SESSION_MAX_RANKED_TEAMS]]
+
+
+def _frontend_team_candidate(team: dict[str, Any]) -> dict[str, Any]:
+    members = [
+        _team_member(
+            str(member.get("employee_id", "")),
+            str(member.get("employee_name", "")),
+            str(member.get("assigned_role", "Team Member")),
+        )
+        for member in team.get("members", [])
+    ]
+    return {
+        "team_id": str(team.get("team_id", "team_001")),
+        "team_name": _team_name(team),
+        "team_rank": int(team.get("team_rank") or 1),
+        "team_fit_score": round(float(team.get("team_fit_score") or 0.0), 1),
+        "role_coverage_score": float(team.get("role_coverage_score") or 0.0),
+        "skill_coverage_score": float(team.get("skill_coverage_score") or 0.0),
+        "availability_score": float(team.get("availability_score") or 0.0),
+        "team_risk_flags": [str(flag) for flag in team.get("team_risk_flags", [])],
+        "badges": ["Requirements Agent", "Rule-based", "Top 1"],
+        "rationale": (
+            "Selected by Requirements Agent ranking from PRD-required roles, "
+            "dataset-backed employee signals, and team-level risk coverage."
+        ),
+        "skill_gaps": _skill_gaps_from_ranked_team(team),
+        "members": members,
+    }
+
+
+def _team_name(team: dict[str, Any]) -> str:
+    rank = int(team.get("team_rank") or 1)
+    return f"Recommended Team #{rank}"
+
+
+def _skill_gaps_from_ranked_team(team: dict[str, Any]) -> list[str]:
+    gaps = []
+    for member in team.get("members", []):
+        role = str(member.get("assigned_role", "Team Member"))
+        for skill in member.get("missing_skills", []):
+            gaps.append(f"{role}: {skill}")
+    return _unique_strings(gaps)[:6]
+
+
+def _ranking_total_combinations(
+    ranking_result: dict[str, Any],
+    *,
+    team_count: int,
+) -> int:
+    role_counts = (
+        ranking_result.get("employee_fit_ranking", {})
+        .get("_meta", {})
+        .get("role_candidate_counts", {})
+    )
+    total = 1
+    for raw_count in role_counts.values():
+        try:
+            count = int(raw_count)
+        except (TypeError, ValueError):
+            count = 0
+        total *= max(1, min(count, SESSION_TOP_CANDIDATES_PER_ROLE))
+    return max(team_count, total)
+
+
+def _roleplay_packet(record: SessionRecord):
+    from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_input import (
+        SimulationInputPacket,
+    )
+
+    ranking_result = _get_or_build_ranking_result(record)
+    return SimulationInputPacket.model_validate(
+        ranking_result["roleplay_simulation_input_packet"]
+    )
 
 
 def _team_member_from_sample(
@@ -425,7 +519,9 @@ def _team_member_from_sample(
 
 
 def _selected_team(record: SessionRecord) -> dict[str, Any] | None:
-    teams = record.team_candidates or _load_sample_team_candidates()
+    teams = record.team_candidates
+    if teams is None:
+        teams = get_team_candidates(record.session_id)["teams"]
     record.team_candidates = teams
     selected_id = record.selected_team_id or (teams[0]["team_id"] if teams else None)
     return next((team for team in teams if team["team_id"] == selected_id), None)
@@ -465,6 +561,13 @@ def _team_personas(team: dict[str, Any] | None) -> list[dict[str, str]]:
 
 
 def _shadow_requirements_payload(record: SessionRecord) -> dict[str, Any]:
+    agent_outputs = _ensure_requirements_agent_result(record)["outputs"]
+    roleplay_input = agent_outputs.get("roleplay_requirements_input")
+    if isinstance(roleplay_input, dict):
+        payload = dict(roleplay_input)
+        payload["project_id"] = record.session_id
+        return payload
+
     summary = record.requirements_summary or get_requirements_summary(record.session_id)
     sample = _load_json(SHADOW_AGENT_SAMPLES / "sample_requirements_list.json")
     required_roles = summary.get("required_roles") or sample.get("required_roles", [])
@@ -586,6 +689,11 @@ def _shadow_constraints(record: SessionRecord, sample: dict[str, Any]) -> list[s
 
 
 def _shadow_selected_team_record(record: SessionRecord) -> dict[str, Any]:
+    if record.ranking_result is not None:
+        selected = record.ranking_result.get("roleplay_selected_team_record")
+        if isinstance(selected, dict):
+            return dict(selected)
+
     selected_team = _selected_team(record) or _load_sample_team_candidates()[0]
     sample = _load_json(SHADOW_AGENT_SAMPLES / "sample_selected_team_record.json")
     members = [
@@ -698,6 +806,12 @@ def _get_or_create_session(session_id: str) -> SessionRecord:
     if session_id not in _SESSIONS:
         _SESSIONS[session_id] = SessionRecord(session_id=session_id, prd_text=DEFAULT_PRD_TEXT)
     return _SESSIONS[session_id]
+
+
+def _ensure_requirements_agent_result(record: SessionRecord) -> dict[str, Any]:
+    if record.requirements_agent_result is None:
+        record.requirements_agent_result = _run_requirements_agent(record)
+    return record.requirements_agent_result
 
 
 def _run_requirements_agent(record: SessionRecord) -> dict[str, Any]:
@@ -884,6 +998,21 @@ def _initials(name: str) -> str:
     if len(parts) <= 1:
         return name[:2]
     return "".join(part[:1] for part in parts[:2])
+
+
+def _unique_strings(values: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        item = value.strip()
+        if not item:
+            continue
+        marker = item.casefold()
+        if marker in seen:
+            continue
+        seen.add(marker)
+        result.append(item)
+    return result
 
 
 def _load_json(path: Path) -> dict[str, Any]:

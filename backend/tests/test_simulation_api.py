@@ -87,51 +87,57 @@ def test_team_selection_contract_matches_frontend_shape() -> None:
     assert 0 <= team["team_fit_score"] <= 100
 
 
-def test_team_selection_prefers_db_candidates(monkeypatch) -> None:
-    from backend.services.team_selector import TeamSelectionResult
-
-    def fake_db_candidates(_record: object) -> TeamSelectionResult:
-        return TeamSelectionResult(
-            total_combinations=5,
-            teams=[
-                {
-                    "team_id": "team_db_top_001",
-                    "team_name": "DB Top Recommendation",
-                    "team_rank": 1,
-                    "team_fit_score": 91.2,
-                    "role_coverage_score": 1.0,
-                    "skill_coverage_score": 1.0,
-                    "availability_score": 0.9,
-                    "team_risk_flags": [],
-                    "members": [
-                        {
-                            "employee_id": "E_DB_001",
-                            "employee_name": "DB Member",
-                            "assigned_role": "Backend Developer",
-                            "initials": "DB",
-                            "color": "bg-blue-600",
-                        },
-                        {
-                            "employee_id": "E_DB_002",
-                            "employee_name": "DB QA",
-                            "assigned_role": "QA Engineer",
-                            "initials": "DQ",
-                            "color": "bg-amber-600",
-                        },
-                    ],
+def test_team_selection_uses_requirements_agent_ranking(monkeypatch) -> None:
+    def fake_ranking_result(_record: object) -> dict:
+        return {
+            "employee_fit_ranking": {
+                "_meta": {
+                    "role_candidate_counts": {
+                        "PM": 2,
+                        "Backend Developer": 3,
+                    }
                 }
-            ],
-        )
+            },
+            "team_composition_ranking": {
+                "team_rankings": [
+                    {
+                        "team_id": "team_001",
+                        "team_rank": 1,
+                        "team_fit_score": 91.2,
+                        "role_coverage_score": 1.0,
+                        "skill_coverage_score": 0.8,
+                        "availability_score": 0.9,
+                        "team_risk_flags": ["integration_risk"],
+                        "members": [
+                            {
+                                "employee_id": "E_RA_001",
+                                "employee_name": "Ranked Member",
+                                "assigned_role": "Backend Developer",
+                                "missing_skills": ["API contract sync"],
+                            },
+                            {
+                                "employee_id": "E_RA_002",
+                                "employee_name": "Ranked PM",
+                                "assigned_role": "PM",
+                                "missing_skills": [],
+                            },
+                        ],
+                    }
+                ]
+            },
+        }
 
-    monkeypatch.setattr(session_flow, "_load_db_team_candidates", fake_db_candidates)
+    monkeypatch.setattr(session_flow, "_get_or_build_ranking_result", fake_ranking_result)
     client = TestClient(app)
 
-    response = client.get("/api/sessions/sim_db/teams")
+    response = client.get("/api/sessions/sim_ranked/teams")
 
     assert response.status_code == 200
     body = response.json()
-    assert body["totalCombinations"] == 5
-    assert body["teams"][0]["team_id"] == "team_db_top_001"
+    assert body["totalCombinations"] == 6
+    assert body["teams"][0]["team_id"] == "team_001"
+    assert body["teams"][0]["badges"] == ["Requirements Agent", "Rule-based", "Top 1"]
+    assert body["teams"][0]["skill_gaps"] == ["Backend Developer: API contract sync"]
 
 
 def test_team_select_returns_ok() -> None:
@@ -219,26 +225,16 @@ def test_shadow_requirements_payload_uses_session_prd_input() -> None:
 
 
 def test_shadow_stream_payloads_build_simulation_input_packet() -> None:
-    from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline import (
-        SimulationInputBuilder,
-    )
-
     client = TestClient(app)
     session_id = client.post("/api/sessions", json={"prd": "# Team Ops MVP"}).json()["session_id"]
     client.get(f"/api/sessions/{session_id}/requirements")
     client.get(f"/api/sessions/{session_id}/teams")
 
     record = session_flow._get_or_create_session(session_id)
-    team_record = session_flow._shadow_selected_team_record(record)
-    packet, _ = SimulationInputBuilder().build(
-        requirements=session_flow._shadow_requirements_payload(record),
-        team_record=team_record,
-        snapshots=session_flow._shadow_member_snapshots_payload(team_record),
-        risk_summary=session_flow._shadow_team_risk_summary_payload(team_record["team_id"]),
-        evidence_metadata=session_flow.SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
-        simulation_id=session_id,
-    )
+    packet = session_flow._roleplay_packet(record)
 
     assert packet.simulation_id == session_id
     assert packet.project_context.project_id == session_id
-    assert packet.selected_team.team_id == team_record["team_id"]
+    assert packet.selected_team.team_id == record.team_candidates[0]["team_id"]
+    assert packet.member_snapshots
+    assert packet.team_risk_summary.team_id == packet.selected_team.team_id
