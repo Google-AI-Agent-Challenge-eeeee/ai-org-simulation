@@ -44,7 +44,7 @@ export function PmPriorityCard({
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-xs font-medium transition-all",
                 isSelected
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-300"
+                  ? "bg-indigo-100 border-indigo-500 text-zinc-950 font-semibold"
                   : "bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200",
               )}
             >

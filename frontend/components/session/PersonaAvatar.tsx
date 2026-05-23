@@ -9,7 +9,7 @@ interface PersonaAvatarProps {
 export function PersonaAvatar({ persona }: PersonaAvatarProps) {
   return (
     <div className="flex flex-col items-center gap-1 shrink-0">
-      <Avatar initials={persona.initials} color={persona.color} size="md" />
+      <Avatar initials={persona.name} color={persona.color} size="md" className="text-[10px]" />
     </div>
   )
 }

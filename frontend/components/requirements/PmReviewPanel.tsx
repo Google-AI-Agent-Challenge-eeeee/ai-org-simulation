@@ -90,27 +90,23 @@ export function PmReviewPanel({
       {/* CTA */}
       <div className="flex flex-col gap-2">
         <Button
-          onClick={onAccept}
-          disabled={isLoading}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold gap-2"
-        >
-          <Check className="w-4 h-4" />
-          요구사항 수락하고 팀 매칭 시작
-        </Button>
-        <Button
           variant="outline"
           onClick={onRevise}
           disabled={isLoading}
-          className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800 gap-2"
+          className="w-full h-10 border-zinc-600 text-zinc-300 hover:bg-zinc-800 gap-2"
         >
           <RotateCcw className="w-4 h-4" />
           재검토 요청
         </Button>
+        <Button
+          onClick={onAccept}
+          disabled={isLoading}
+          className="w-full h-10 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold gap-2"
+        >
+          <Check className="w-4 h-4" />
+          팀 매칭 시작
+        </Button>
       </div>
-
-      <p className="text-[11px] text-zinc-600 text-center leading-relaxed">
-        수락 후 팀 조합 순위가 계산됩니다. 바로 시뮬레이션이 시작되지 않습니다.
-      </p>
     </div>
   )
 }

@@ -17,7 +17,7 @@ export function Avatar({ initials, color, size = "md", className }: AvatarProps)
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-full font-semibold text-white shrink-0",
+        "flex items-center justify-center rounded-full font-semibold text-white shrink-0 whitespace-nowrap leading-none",
         SIZE_MAP[size],
         color,
         className,

@@ -6,14 +6,11 @@ import { createSession } from "@/lib/api"
 import { useSessionStore } from "@/store/sessionStore"
 import type { PmStylePreset } from "@/lib/constants"
 
-type InputMode = "text" | "file"
-
 export function useInputForm() {
   const router = useRouter()
   const { setSessionId, setPmPersona, reset } = useSessionStore()
 
   const [prd, setPrd]             = useState("")
-  const [inputMode, setInputMode] = useState<InputMode>("text")
 
   // PM Persona
   const [pmName, setPmName]             = useState("")
@@ -29,17 +26,12 @@ export function useInputForm() {
   const [error, setError]     = useState<string | null>(null)
 
   const isValid =
-    prd.trim().length >= 20 &&
+    prd.trim().length >= 1 &&
     pmName.trim().length >= 1 &&
     pmPersona.trim().length >= 2
 
   function handleFileSelect(file: File) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const text = e.target?.result as string
-      setPrd(text ?? "")
-    }
-    reader.readAsText(file, "utf-8")
+    setPrd(file.name)
   }
 
   async function handleSubmit() {
@@ -78,7 +70,6 @@ export function useInputForm() {
 
   return {
     prd, setPrd,
-    inputMode, setInputMode,
     pmName, setPmName,
     pmPreset, setPmPreset,
     pmPersona, setPmPersonaText,

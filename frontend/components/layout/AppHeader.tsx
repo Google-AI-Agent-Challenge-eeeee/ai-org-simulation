@@ -1,6 +1,7 @@
 "use client"
 
-import { Cpu, Link, Download, LayoutDashboard, FlaskConical, Bot, FileBarChart } from "lucide-react"
+import NextLink from "next/link"
+import { Link, Download, LayoutDashboard, FlaskConical, Bot, FileBarChart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -32,10 +33,9 @@ export function AppHeader({
     <header className="border-b border-zinc-800 bg-zinc-950">
       {/* top nav */}
       <div className="flex items-center gap-6 px-6 py-3">
-        <div className="flex items-center gap-2">
-          <Cpu className="w-5 h-5 text-indigo-400" />
-          <span className="text-sm font-bold text-zinc-100">AI Org Simulation</span>
-        </div>
+        <NextLink href="/" className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-200 transition-colors">
+          HOME
+        </NextLink>
 
         <nav className="flex items-center gap-1 flex-1">
           {NAV_ITEMS.map((item) => (
