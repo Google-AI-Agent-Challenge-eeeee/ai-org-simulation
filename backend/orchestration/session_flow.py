@@ -71,7 +71,6 @@ ROLE_COLORS: dict[str, str] = {
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SHADOW_AGENT_ROOT = REPO_ROOT / "backend/agents/shadow_roleplay_agent/shadow_roleplay_agent"
 SHADOW_AGENT_SAMPLES = SHADOW_AGENT_ROOT / "samples"
-SHADOW_AGENT_OUTPUTS = SHADOW_AGENT_ROOT / "outputs"
 
 DEFAULT_PRD_TEXT = """# 결제 및 사용자 관리 플랫폼 v1.0
 
@@ -103,7 +102,16 @@ class SessionRecord:
     team_candidates_total: int | None = None
     requirements_accepted: bool = False
     selected_team_id: str | None = None
+    roleplay_outputs: dict[str, Any] | None = None
+    report_generation_error: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
+
+class ReportNotReadyError(RuntimeError):
+    def __init__(self, session_id: str, *, generation_error: str | None = None) -> None:
+        self.session_id = session_id
+        self.generation_error = generation_error
+        super().__init__("Report is not ready. Run the simulation stream first.")
 
 
 _SESSIONS: dict[str, SessionRecord] = {}
@@ -144,6 +152,8 @@ def revise_requirements(session_id: str) -> dict[str, Any]:
     record.team_candidates = None
     record.team_candidates_total = None
     record.selected_team_id = None
+    record.roleplay_outputs = None
+    record.report_generation_error = None
     record.requirements_accepted = False
     return get_requirements_summary(session_id)
 
@@ -175,6 +185,7 @@ def select_team(session_id: str, team_id: str | None = None) -> dict[str, bool]:
 
 def get_report(session_id: str) -> dict[str, Any]:
     record = _get_or_create_session(session_id)
+    roleplay_outputs = _roleplay_outputs_for_report(record)
     selected_team = _selected_team(record)
     return ReportAgent().build(
         session_id=session_id,
@@ -182,58 +193,8 @@ def get_report(session_id: str) -> dict[str, Any]:
         selected_team=selected_team,
         pm_persona=record.pm_persona,
         requirements_summary=record.requirements_summary,
-        roleplay_outputs=_roleplay_outputs_for_report(record),
+        roleplay_outputs=roleplay_outputs,
     )
-    overall, verdict, score_note, top_risks, must_fix = _load_simulation_output()
-    risk_level = "High" if overall < 0.6 else ("Mid" if overall < 0.8 else "Low")
-
-    return {
-        "id": session_id,
-        "createdAt": "2026-05-23T03:00:00Z",
-        **_selected_team_summary(selected_team),
-        "team": _team_personas(selected_team),
-        "metrics": {
-            "teamFitScore": round(overall * 100, 1),
-            "riskIndex": round((1 - overall) * 100, 1),
-            "riskLevel": risk_level,
-            "completionRate": round(overall * 100, 1),
-            "completionLabel": verdict.replace("_", " "),
-            "riskDistribution": {"technical": 45, "resource": 35, "timeline": 20},
-            "confidenceLevel": "Mid",
-        },
-        "meetingSummary": {
-            "decisions": [r.get("suggested_action", "") for r in must_fix[:3]],
-            "issues": [r.get("issue_category", "") for r in top_risks[:3]],
-            "discussions": [score_note] if score_note else ["시뮬레이션 기반 분석 완료"],
-        },
-        "recommendations": [
-            {
-                "type": "bottleneck",
-                "title": r.get("issue_category", "risk"),
-                "body": r.get("suggested_action", ""),
-            }
-            for r in must_fix[:3]
-        ],
-        "phaseSummaries": [
-            {
-                "phase": "kickoff",
-                "score": 0.68,
-                "summary": "R&R 불명확성·일정 리스크 초기 발견",
-            },
-            {"phase": "design", "score": 0.53, "summary": "기술 의존성·스펙 변동 리스크 확인"},
-            {
-                "phase": "development",
-                "score": 0.52,
-                "summary": "업무 과부하·스프린트 속도 저하 관찰",
-            },
-            {
-                "phase": "integration",
-                "score": 0.04,
-                "summary": "FE-BE 연동 블로킹 이슈 집중 발생",
-            },
-            {"phase": "qa_release", "score": 0.61, "summary": "QA 커버리지 갭·릴리즈 리스크 잔존"},
-        ],
-    }
 
 
 def sse(event: str, data: dict[str, Any]) -> str:
@@ -243,7 +204,7 @@ def sse(event: str, data: dict[str, Any]) -> str:
 def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
     _load_env_file()
     record = _get_or_create_session(session_id)
-    if isinstance(record.metadata.get("roleplay_outputs"), dict):
+    if isinstance(record.roleplay_outputs, dict):
         yield sse("backend_log", {"text": "Using cached roleplay report outputs"})
         yield sse("status", {"stage": "done", "text": "시뮬레이션 완료"})
         yield sse("done", {})
@@ -349,18 +310,19 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
                         sim_log,
                         requirements_full.project_name,
                     )
-                    record.metadata["roleplay_outputs"] = {
+                    record.roleplay_outputs = {
                         "team_simulation_log": _model_dump_jsonable(sim_log),
                         "issue_risk_summary": _model_dump_jsonable(issue_summary),
                         "score_breakdown": _model_dump_jsonable(score_breakdown),
                         "simulation_output": _model_dump_jsonable(simulation_output),
                     }
+                    record.report_generation_error = None
                     yield sse(
                         "backend_log",
                         {"text": "ReportAgent inputs finalized from live roleplay outputs"},
                     )
             except Exception as exc:
-                record.metadata["report_generation_error"] = str(exc)
+                record.report_generation_error = str(exc)
                 yield sse(
                     "backend_log",
                     {"text": f"ReportAgent input finalize failed: {exc}"},
@@ -405,23 +367,12 @@ def _chunk_text_for_sse(text: str, words_per_chunk: int = 12) -> Iterator[str]:
 
 
 def _roleplay_outputs_for_report(record: SessionRecord) -> dict[str, Any]:
-    outputs = record.metadata.get("roleplay_outputs")
-    if isinstance(outputs, dict):
-        return outputs
-    return _load_roleplay_output_artifacts()
-
-
-def _load_roleplay_output_artifacts() -> dict[str, Any]:
-    return {
-        "simulation_output": _load_json_if_exists(SHADOW_AGENT_OUTPUTS / "Simulation_OUTPUT.json"),
-        "team_simulation_log": _load_json_if_exists(
-            SHADOW_AGENT_OUTPUTS / "Team_Simulation_Log.json"
-        ),
-        "issue_risk_summary": _load_json_if_exists(
-            SHADOW_AGENT_OUTPUTS / "Issue_Risk_Summary.json"
-        ),
-        "score_breakdown": _load_json_if_exists(SHADOW_AGENT_OUTPUTS / "Score_Breakdown.json"),
-    }
+    if isinstance(record.roleplay_outputs, dict):
+        return record.roleplay_outputs
+    raise ReportNotReadyError(
+        record.session_id,
+        generation_error=record.report_generation_error,
+    )
 
 
 def _model_dump_jsonable(value: Any) -> dict[str, Any]:
@@ -430,21 +381,6 @@ def _model_dump_jsonable(value: Any) -> dict[str, Any]:
     if isinstance(value, dict):
         return value
     return {}
-
-
-def _load_simulation_output() -> tuple[float, str, str, list[dict[str, Any]], list[dict[str, Any]]]:
-    output_path = SHADOW_AGENT_OUTPUTS / "Simulation_OUTPUT.json"
-    if not output_path.exists():
-        return 0.84, "proceed_with_conditions", "", [], []
-
-    data = _load_json(output_path)
-    return (
-        data.get("overall_project_fit", 0.84),
-        data.get("simulation_verdict", "proceed_with_conditions"),
-        data.get("score_note", ""),
-        data.get("top_risks", []),
-        data.get("must_fix_before_start", []),
-    )
 
 
 def _load_sample_team_candidates() -> list[dict[str, Any]]:

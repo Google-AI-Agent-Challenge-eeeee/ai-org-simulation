@@ -455,14 +455,23 @@ def _must_fix(simulation_output: JsonObject) -> list[JsonObject]:
 
 
 def _score_details(simulation_output: JsonObject, score_breakdown: JsonObject) -> list[JsonObject]:
-    source = _list(simulation_output.get("score_breakdown")) or _list(score_breakdown.get("dimensions"))
+    summary_by_dimension = {
+        str(item.get("dimension") or ""): item
+        for item in _list(simulation_output.get("score_breakdown"))
+        if isinstance(item, dict)
+    }
+    source = _list(score_breakdown.get("dimensions")) or _list(simulation_output.get("score_breakdown"))
     return [
         {
             "dimension": str(item.get("dimension") or ""),
             "rawScore": round(_as_float(item.get("raw_score"), 0.0) * 100, 1),
             "weightedScore": round(_as_float(item.get("weighted_score"), 0.0) * 100, 1),
             "weight": round(_as_float(item.get("weight"), 0.0) * 100, 1),
-            "status": str(item.get("status") or ""),
+            "status": str(
+                item.get("status")
+                or summary_by_dimension.get(str(item.get("dimension") or ""), {}).get("status")
+                or ""
+            ),
             "deductedBy": [str(ref) for ref in _list(item.get("deducted_by"))],
             "penaltyDetail": [str(detail) for detail in _list(item.get("penalty_detail"))],
             "phaseSignal": str(item.get("phase_signal") or ""),

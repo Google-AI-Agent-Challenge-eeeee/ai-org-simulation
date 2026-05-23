@@ -399,6 +399,7 @@ def test_selected_team_is_reflected_in_report() -> None:
         f"/api/sessions/{session_id}/teams/select",
         json={"teamId": teams[0]["team_id"]},
     )
+    list(session_flow.iter_pipeline_sse(session_id, "stub"))
     report_response = client.get(f"/api/sessions/{session_id}/report")
 
     assert select_response.status_code == 200
@@ -406,19 +407,42 @@ def test_selected_team_is_reflected_in_report() -> None:
     assert report_response.json()["selectedTeam"]["teamId"] == teams[0]["team_id"]
 
 
-def test_report_contract_returns_selected_session_id() -> None:
+def test_report_returns_not_ready_before_stream() -> None:
     client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={"prd": "# Report Pending\n\nGoal: do not use sample output."},
+    ).json()["session_id"]
 
-    response = client.get("/api/sessions/sim_test/report")
+    response = client.get(f"/api/sessions/{session_id}/report")
+
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == "REPORT_NOT_READY"
+
+
+def test_report_contract_returns_selected_session_result() -> None:
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={"prd": "# Session Report\n\nGoal: build a session-scoped report."},
+    ).json()["session_id"]
+    list(session_flow.iter_pipeline_sse(session_id, "stub"))
+
+    response = client.get(f"/api/sessions/{session_id}/report")
 
     assert response.status_code == 200
     body = response.json()
-    assert body["id"] == "sim_test"
+    assert body["id"] == session_id
     assert body["team"]
     assert body["metrics"]["teamFitScore"] >= 0
     assert body["meetingSummary"]
     assert body["phaseSummaries"]
-    assert body["reportSummary"]["generatedFrom"]
+    assert body["reportSummary"]["generatedFrom"] == [
+        "Simulation_OUTPUT",
+        "Team_Simulation_Log",
+        "Issue_Risk_Summary",
+        "Score_Breakdown",
+    ]
     assert body["scoreBreakdown"]
     assert body["topRisks"]
     assert body["phaseDetails"]
@@ -452,8 +476,10 @@ def test_roleplay_stream_populates_report_agent_outputs() -> None:
 
     chunks = list(session_flow.iter_pipeline_sse(session_id, "stub"))
     report = session_flow.get_report(session_id)
+    record = session_flow._get_or_create_session(session_id)
 
     assert any("ReportAgent inputs finalized" in chunk for chunk in chunks)
+    assert isinstance(record.roleplay_outputs, dict)
     assert report["reportSummary"]["generatedFrom"] == [
         "Simulation_OUTPUT",
         "Team_Simulation_Log",
