@@ -35,4 +35,3 @@ def build_vertex_requirements_extractor(
         prompt_path=prompt_path,
         invoker=invoker,
     )
-

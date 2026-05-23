@@ -3,6 +3,7 @@
 Phases 1-7을 재실행한 뒤 IssueRiskEvaluator로 Issue_Risk_Summary.json을 생성하고
 기본 지표를 콘솔에 출력한다.
 """
+
 import json
 import sys
 from pathlib import Path
@@ -35,11 +36,11 @@ OUTPUTS = ROOT / "backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/out
 print("=== Phase 1-6: Pipeline ===")
 builder = SimulationInputBuilder()
 packet, evidence_index = builder.build(
-    requirements      = SAMPLES / "sample_requirements_list.json",
-    team_record       = SAMPLES / "sample_selected_team_record.json",
-    snapshots         = SAMPLES / "sample_employee_fit_profile_snapshots.json",
-    risk_summary      = SAMPLES / "sample_team_risk_summary.json",
-    evidence_metadata = SAMPLES / "sample_evidence_metadata.json",
+    requirements=SAMPLES / "sample_requirements_list.json",
+    team_record=SAMPLES / "sample_selected_team_record.json",
+    snapshots=SAMPLES / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=SAMPLES / "sample_team_risk_summary.json",
+    evidence_metadata=SAMPLES / "sample_evidence_metadata.json",
 )
 
 requirements_full = RequirementsList.model_validate(
@@ -53,9 +54,7 @@ risk_summary = TeamRiskSummary.model_validate(
 )
 evidence_list = [
     EvidenceMetadata.model_validate(e)
-    for e in json.loads(
-        (SAMPLES / "sample_evidence_metadata.json").read_text(encoding="utf-8")
-    )
+    for e in json.loads((SAMPLES / "sample_evidence_metadata.json").read_text(encoding="utf-8"))
 ]
 
 pcf = PrivacyColumnFilter()
@@ -65,7 +64,9 @@ card_builder = AgentCardBuilder()
 agent_cards = card_builder.build(result.sanitized_snapshots, requirements_full)
 
 planner = ScenarioPhasePlanner()
-plan = planner.plan(requirements_full, risk_summary, evidence_index, simulation_id="sim_phase8_test")
+plan = planner.plan(
+    requirements_full, risk_summary, evidence_index, simulation_id="sim_phase8_test"
+)
 
 orchestrator = SimulationOrchestrator(llm_mode="stub")
 orch_output = orchestrator.run(plan, agent_cards)
@@ -90,13 +91,15 @@ out_path = OUTPUTS / "Issue_Risk_Summary.json"
 IssueRiskEvaluator.to_json(issue_summary, out_path)
 
 # ── 출력 요약 ─────────────────────────────────
-print(f"\n[Issue_Risk_Summary 요약]")
+print("\n[Issue_Risk_Summary 요약]")
 print(f"  simulation_id    : {issue_summary.simulation_id}")
 print(f"  team_id          : {issue_summary.team_id}")
 print(f"  confirmed issues : {issue_summary.total_confirmed}")
 print(f"  candidate issues : {issue_summary.total_candidate}")
 print(f"  invalid  issues  : {issue_summary.total_invalid}")
-print(f"  HIGH / MEDIUM / LOW : {issue_summary.high_count} / {issue_summary.medium_count} / {issue_summary.low_count}")
+print(
+    f"  HIGH / MEDIUM / LOW : {issue_summary.high_count} / {issue_summary.medium_count} / {issue_summary.low_count}"
+)
 
 print("\n[CONFIRMED 목록]")
 for ci in issue_summary.confirmed_issues:

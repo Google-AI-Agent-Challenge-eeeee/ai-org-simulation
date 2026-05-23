@@ -71,8 +71,8 @@ class AgentCardBuilder:
         """단일 snapshot → AgentCard 변환."""
 
         responsibilities = _derive_responsibilities(snap, req)
-        strengths        = _derive_strengths(snap)
-        constraints      = _derive_constraints(snap)
+        strengths = _derive_strengths(snap)
+        constraints = _derive_constraints(snap)
 
         return AgentCard(
             agent_id=snap.employee_name,
@@ -100,6 +100,7 @@ class AgentCardBuilder:
 # ──────────────────────────────────────────────
 # 파생 로직 (private helpers)
 # ──────────────────────────────────────────────
+
 
 def _derive_responsibilities(
     snap: SanitizedProfileSnapshot,
@@ -141,7 +142,9 @@ def _derive_constraints(snap: SanitizedProfileSnapshot) -> list[str]:
 
     # 3) communication_signal 경고
     if snap.communication_signal == CommunicationSignal.HIGH_DELAY:
-        items.append("communication_signal=high_delay: 슬랙 응답 지연 (90분+), 의사결정 블로킹 우려")
+        items.append(
+            "communication_signal=high_delay: 슬랙 응답 지연 (90분+), 의사결정 블로킹 우려"
+        )
     elif snap.communication_signal == CommunicationSignal.MEDIUM_DELAY:
         items.append("communication_signal=medium_delay: 응답 시간 30~90분 수준")
 

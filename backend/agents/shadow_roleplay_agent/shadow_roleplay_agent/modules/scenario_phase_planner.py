@@ -12,7 +12,6 @@ RequirementsList + TeamRiskSummary + EvidenceMetadata를 기반으로
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 
@@ -66,9 +65,13 @@ _PHASE_DEFINITIONS: dict[PhaseName, dict] = {
         "base_agenda": [
             AgendaItem(topic="DB 스키마 및 데이터 모델 확정", owner_role="Backend Developer"),
             AgendaItem(topic="API 엔드포인트 스펙 초안 공유", owner_role="Backend Developer"),
-            AgendaItem(topic="외부 API(결제 PG) sandbox 환경 확보 계획", owner_role="Backend Developer"),
+            AgendaItem(
+                topic="외부 API(결제 PG) sandbox 환경 확보 계획", owner_role="Backend Developer"
+            ),
             AgendaItem(topic="GCP Cloud Run 배포 아키텍처 설계", owner_role="DevOps Engineer"),
-            AgendaItem(topic="FE 디자인 시안 및 컴포넌트 구조 공유", owner_role="Frontend Developer"),
+            AgendaItem(
+                topic="FE 디자인 시안 및 컴포넌트 구조 공유", owner_role="Frontend Developer"
+            ),
         ],
     },
     PhaseName.DEVELOPMENT: {
@@ -82,9 +85,16 @@ _PHASE_DEFINITIONS: dict[PhaseName, dict] = {
         },
         "base_agenda": [
             AgendaItem(topic="P0 기능 진척 현황 공유", owner_role="PM"),
-            AgendaItem(topic="BE P0 기능(인증·결제 API) 구현 상태 점검", owner_role="Backend Developer"),
-            AgendaItem(topic="FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인", owner_role="Frontend Developer"),
-            AgendaItem(topic="DevOps CI/CD 파이프라인 구성 진행 상황", owner_role="DevOps Engineer"),
+            AgendaItem(
+                topic="BE P0 기능(인증·결제 API) 구현 상태 점검", owner_role="Backend Developer"
+            ),
+            AgendaItem(
+                topic="FE 컴포넌트 개발 현황 및 API mock 사용 여부 확인",
+                owner_role="Frontend Developer",
+            ),
+            AgendaItem(
+                topic="DevOps CI/CD 파이프라인 구성 진행 상황", owner_role="DevOps Engineer"
+            ),
             AgendaItem(topic="PR 리뷰 병목 및 업무 집중 여부 점검", owner_role="PM"),
         ],
     },
@@ -98,10 +108,16 @@ _PHASE_DEFINITIONS: dict[PhaseName, dict] = {
             "integration_risk",
         },
         "base_agenda": [
-            AgendaItem(topic="BE API 완료 여부 및 FE 연동 착수 조건 확인", owner_role="Backend Developer"),
-            AgendaItem(topic="결제 API schema 확정 및 FE 연동 테스트", owner_role="Backend Developer"),
+            AgendaItem(
+                topic="BE API 완료 여부 및 FE 연동 착수 조건 확인", owner_role="Backend Developer"
+            ),
+            AgendaItem(
+                topic="결제 API schema 확정 및 FE 연동 테스트", owner_role="Backend Developer"
+            ),
             AgendaItem(topic="FE-BE 연동 이슈 목록 공유", owner_role="Frontend Developer"),
-            AgendaItem(topic="Cloud Run 스테이징 환경 배포 완료 확인", owner_role="DevOps Engineer"),
+            AgendaItem(
+                topic="Cloud Run 스테이징 환경 배포 완료 확인", owner_role="DevOps Engineer"
+            ),
             AgendaItem(topic="연동 단계 미해결 이슈 owner 지정", owner_role="PM"),
         ],
     },
@@ -176,6 +192,7 @@ _RISK_EVENT_TEMPLATES: dict[str, dict] = {
 # 3. Planner 클래스
 # ──────────────────────────────────────────────
 
+
 class ScenarioPhasePlanner:
     """RequirementsList + TeamRiskSummary를 기반으로 5개 phase 계획을 생성한다.
 
@@ -201,10 +218,7 @@ class ScenarioPhasePlanner:
             focus_categories: set[str] = defn["focus_categories"]
 
             # 이 phase에서 활성화되는 risk_tag 필터링
-            active_risk_tags = [
-                tag for tag in risk_summary.risk_tags
-                if tag in focus_categories
-            ]
+            active_risk_tags = [tag for tag in risk_summary.risk_tags if tag in focus_categories]
 
             # agenda: 기본 agenda + 해당 phase의 features
             agenda = list(defn["base_agenda"]) + _feature_agenda(requirements, phase_name)
@@ -219,26 +233,29 @@ class ScenarioPhasePlanner:
 
                 # evidence_refs 자동 연결
                 trigger_sources = [risk_tag] + [
-                    ev.source_column
-                    for ev in evidence_index.for_risk(risk_tag)
+                    ev.source_column for ev in evidence_index.for_risk(risk_tag)
                 ]
 
-                events.append(ScenarioEvent(
-                    event_id=f"evt_{event_counter:03d}",
-                    description=tmpl["description"],
-                    trigger_source=trigger_sources,
-                    involved_roles=tmpl["involved_roles"],
-                    expected_issue_category=tmpl["expected_issue_category"],
-                ))
+                events.append(
+                    ScenarioEvent(
+                        event_id=f"evt_{event_counter:03d}",
+                        description=tmpl["description"],
+                        trigger_source=trigger_sources,
+                        involved_roles=tmpl["involved_roles"],
+                        expected_issue_category=tmpl["expected_issue_category"],
+                    )
+                )
                 event_counter += 1
 
-            phases.append(SimulationPhase(
-                phase_name=phase_name,
-                phase_objective=defn["objective"],
-                agenda=agenda,
-                scenario_events=events,
-                focus_risk_tags=active_risk_tags,
-            ))
+            phases.append(
+                SimulationPhase(
+                    phase_name=phase_name,
+                    phase_objective=defn["objective"],
+                    agenda=agenda,
+                    scenario_events=events,
+                    focus_risk_tags=active_risk_tags,
+                )
+            )
 
             logger.info(
                 "[Planner] %s | agenda=%d, events=%d, focus_risks=%s",
@@ -274,11 +291,11 @@ class ScenarioPhasePlanner:
 
 # 각 phase가 커버하는 스프린트 day 범위 (14일 기준)
 _PHASE_DAY_RANGES: dict[PhaseName, tuple[int, int]] = {
-    PhaseName.KICKOFF:     (1, 2),
-    PhaseName.DESIGN:      (2, 4),
+    PhaseName.KICKOFF: (1, 2),
+    PhaseName.DESIGN: (2, 4),
     PhaseName.DEVELOPMENT: (4, 10),
     PhaseName.INTEGRATION: (10, 13),
-    PhaseName.QA_RELEASE:  (13, 14),
+    PhaseName.QA_RELEASE: (13, 14),
 }
 
 
@@ -289,9 +306,11 @@ def _feature_agenda(req: RequirementsList, phase: PhaseName) -> list[AgendaItem]
 
     for feat in req.features:
         if start <= feat.estimated_days <= end:
-            items.append(AgendaItem(
-                topic=f"[기능] {feat.feature_name} ({feat.priority.value}) 진행 확인",
-                owner_role=feat.assigned_role,
-                related_features=[feat.feature_id],
-            ))
+            items.append(
+                AgendaItem(
+                    topic=f"[기능] {feat.feature_name} ({feat.priority.value}) 진행 확인",
+                    owner_role=feat.assigned_role,
+                    related_features=[feat.feature_id],
+                )
+            )
     return items

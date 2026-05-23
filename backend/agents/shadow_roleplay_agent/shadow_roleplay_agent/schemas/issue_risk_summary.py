@@ -18,9 +18,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class EvaluationStatus(StrEnum):
-    CONFIRMED = "confirmed"   # 근거 + 관찰 모두 확인 → 확정 issue
-    CANDIDATE = "candidate"   # 관찰만 있음 / 근거 없음 → Phase 9에서 재심사
-    INVALID   = "invalid"     # 근거 없는 우려 → 기각
+    CONFIRMED = "confirmed"  # 근거 + 관찰 모두 확인 → 확정 issue
+    CANDIDATE = "candidate"  # 관찰만 있음 / 근거 없음 → Phase 9에서 재심사
+    INVALID = "invalid"  # 근거 없는 우려 → 기각
 
 
 class ConfirmedIssue(BaseModel):
@@ -32,26 +32,26 @@ class ConfirmedIssue(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    issue_id:   str
-    issue_category: str        # rules.md §2 9개 카테고리 중 하나
+    issue_id: str
+    issue_category: str  # rules.md §2 9개 카테고리 중 하나
 
     # 점수 구성
-    pre_simulation_risk:       float = Field(ge=0.0, le=1.0, default=0.0)
-    observed_simulation_risk:  float = Field(ge=0.0, le=1.0, default=0.0)
-    final_issue_score:         float = Field(ge=0.0, le=1.0, default=0.0)
+    pre_simulation_risk: float = Field(ge=0.0, le=1.0, default=0.0)
+    observed_simulation_risk: float = Field(ge=0.0, le=1.0, default=0.0)
+    final_issue_score: float = Field(ge=0.0, le=1.0, default=0.0)
 
-    severity:        str        # high / medium / low
-    status:          EvaluationStatus
+    severity: str  # high / medium / low
+    status: EvaluationStatus
 
     # 분석 내용
-    root_cause:      str        = ""
-    affected_roles:  list[str]  = Field(default_factory=list)
-    suggested_action: str       = ""
+    root_cause: str = ""
+    affected_roles: list[str] = Field(default_factory=list)
+    suggested_action: str = ""
 
     # 근거 추적
-    evidence_refs:         list[str] = Field(default_factory=list)
-    observed_in_phases:    list[str] = Field(default_factory=list)
-    source_risk_tags:      list[str] = Field(
+    evidence_refs: list[str] = Field(default_factory=list)
+    observed_in_phases: list[str] = Field(default_factory=list)
+    source_risk_tags: list[str] = Field(
         default_factory=list,
         description="이 issue를 트리거한 Team_Risk_Summary risk_tags",
     )
@@ -68,25 +68,27 @@ class IssueRiskSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     simulation_id: str
-    team_id:       str
+    team_id: str
 
     confirmed_issues: list[ConfirmedIssue] = Field(default_factory=list)
     candidate_issues: list[ConfirmedIssue] = Field(default_factory=list)
-    invalid_issues:   list[ConfirmedIssue] = Field(default_factory=list)
+    invalid_issues: list[ConfirmedIssue] = Field(default_factory=list)
 
     # 통계 (model_post_init에서 자동 계산)
-    total_confirmed:  int = 0
-    total_candidate:  int = 0
-    total_invalid:    int = 0
-    high_count:       int = 0
-    medium_count:     int = 0
-    low_count:        int = 0
+    total_confirmed: int = 0
+    total_candidate: int = 0
+    total_invalid: int = 0
+    high_count: int = 0
+    medium_count: int = 0
+    low_count: int = 0
 
     def model_post_init(self, __context) -> None:
         all_issues = self.confirmed_issues + self.candidate_issues
         object.__setattr__(self, "total_confirmed", len(self.confirmed_issues))
-        object.__setattr__(self, "total_candidate",  len(self.candidate_issues))
-        object.__setattr__(self, "total_invalid",    len(self.invalid_issues))
-        object.__setattr__(self, "high_count",   sum(1 for i in all_issues if i.severity == "high"))
-        object.__setattr__(self, "medium_count", sum(1 for i in all_issues if i.severity == "medium"))
-        object.__setattr__(self, "low_count",    sum(1 for i in all_issues if i.severity == "low"))
+        object.__setattr__(self, "total_candidate", len(self.candidate_issues))
+        object.__setattr__(self, "total_invalid", len(self.invalid_issues))
+        object.__setattr__(self, "high_count", sum(1 for i in all_issues if i.severity == "high"))
+        object.__setattr__(
+            self, "medium_count", sum(1 for i in all_issues if i.severity == "medium")
+        )
+        object.__setattr__(self, "low_count", sum(1 for i in all_issues if i.severity == "low"))

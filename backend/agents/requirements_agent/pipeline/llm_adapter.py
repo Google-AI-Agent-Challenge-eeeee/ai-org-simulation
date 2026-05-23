@@ -74,9 +74,7 @@ class LLMConfig:
         return {
             "mode": self.mode,
             "project_id_configured": bool(self.project_id),
-            "google_application_credentials_configured": bool(
-                self.google_application_credentials
-            ),
+            "google_application_credentials_configured": bool(self.google_application_credentials),
             "vertex_location": self.vertex_location,
             "vertex_model": self.vertex_model,
             "gemini_api_key_configured": bool(self.gemini_api_key),
@@ -198,9 +196,7 @@ def _call_vertex(prompt: str, config: LLMConfig) -> str:
     if config.google_application_credentials:
         credentials_path = Path(config.google_application_credentials)
         if not credentials_path.exists():
-            raise LLMConfigurationError(
-                "GOOGLE_APPLICATION_CREDENTIALS points to a missing file."
-            )
+            raise LLMConfigurationError("GOOGLE_APPLICATION_CREDENTIALS points to a missing file.")
 
     try:
         import vertexai

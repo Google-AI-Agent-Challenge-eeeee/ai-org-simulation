@@ -11,15 +11,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class LLMMode(StrEnum):
     """LLM 연동 모드."""
-    STUB   = "stub"    # 규칙 기반 결정적 생성 (기본)
+
+    STUB = "stub"  # 규칙 기반 결정적 생성 (기본)
     VERTEX = "vertex"  # Vertex AI 연동 (추후)
 
 
 class ValidationStatus(StrEnum):
-    VALID        = "valid"
-    INVALID      = "invalid"       # 4개 필드 중 비어있는 항목 존재
-    NEEDS_RETRY  = "needs_retry"   # evidence 미확보 concern 존재
-    WARNING      = "warning"       # concern/dependency 있으나 약한 근거
+    VALID = "valid"
+    INVALID = "invalid"  # 4개 필드 중 비어있는 항목 존재
+    NEEDS_RETRY = "needs_retry"  # evidence 미확보 concern 존재
+    WARNING = "warning"  # concern/dependency 있으나 약한 근거
 
 
 class ValidationResult(BaseModel):
@@ -46,9 +47,9 @@ class AgentTurn(BaseModel):
     assigned_role: str
 
     # guardrails §5 고정 발언 포맷
-    observation:     str = Field(description="현재 phase에서 이 역할이 관찰한 사실")
-    concern:         str = Field(description="발생 가능한 위험 — evidence_ref 근거 필요")
-    dependency:      str = Field(description="다른 역할/기능/API에 대한 의존성")
+    observation: str = Field(description="현재 phase에서 이 역할이 관찰한 사실")
+    concern: str = Field(description="발생 가능한 위험 — evidence_ref 근거 필요")
+    dependency: str = Field(description="다른 역할/기능/API에 대한 의존성")
     proposed_action: str = Field(description="완화 또는 해결 제안")
 
     # 이 발언에서 실제 참조된 evidence_refs
@@ -77,12 +78,12 @@ class PhaseRun(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    phase_name:     str
-    event_id:       str
-    event_desc:     str
+    phase_name: str
+    event_id: str
+    event_desc: str
     trigger_source: list[str]
-    turns:          list[AgentTurn]
-    flags:          list[OrchestratorFlag] = Field(default_factory=list)
+    turns: list[AgentTurn]
+    flags: list[OrchestratorFlag] = Field(default_factory=list)
 
     @property
     def valid_turns(self) -> list[AgentTurn]:
@@ -99,11 +100,11 @@ class OrchestratorOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     simulation_id: str
-    llm_mode:      LLMMode
-    phase_runs:    list[PhaseRun]
-    total_turns:   int = 0
+    llm_mode: LLMMode
+    phase_runs: list[PhaseRun]
+    total_turns: int = 0
     total_invalid: int = 0
 
     def model_post_init(self, __context) -> None:
-        object.__setattr__(self, "total_turns",   sum(len(r.turns) for r in self.phase_runs))
+        object.__setattr__(self, "total_turns", sum(len(r.turns) for r in self.phase_runs))
         object.__setattr__(self, "total_invalid", sum(r.invalid_count for r in self.phase_runs))

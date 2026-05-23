@@ -33,23 +33,23 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulati
 logger = logging.getLogger(__name__)
 
 # guardrails §2 허용 필드 목록 (고정)
-_ALLOWED_FIELDS: frozenset[str] = frozenset({
-    "employee_name",
-    "assigned_role",
-    "matched_skills",
-    "missing_skills",
-    "capacity_signal",
-    "communication_signal",
-    "delivery_signal",
-    "collaboration_signal",
-    "risk_tags",
-    "evidence_refs",
-})
+_ALLOWED_FIELDS: frozenset[str] = frozenset(
+    {
+        "employee_name",
+        "assigned_role",
+        "matched_skills",
+        "missing_skills",
+        "capacity_signal",
+        "communication_signal",
+        "delivery_signal",
+        "collaboration_signal",
+        "risk_tags",
+        "evidence_refs",
+    }
+)
 
 # EmployeeFitProfileSnapshot의 전체 필드 집합
-_ALL_SNAPSHOT_FIELDS: frozenset[str] = frozenset(
-    EmployeeFitProfileSnapshot.model_fields.keys()
-)
+_ALL_SNAPSHOT_FIELDS: frozenset[str] = frozenset(EmployeeFitProfileSnapshot.model_fields.keys())
 
 # 제거 대상 필드 = 전체 - 허용
 _REMOVED_FIELDS: frozenset[str] = _ALL_SNAPSHOT_FIELDS - _ALLOWED_FIELDS

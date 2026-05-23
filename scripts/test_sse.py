@@ -1,5 +1,7 @@
 """SSE 엔드포인트 빠른 연결 테스트 — 처음 20개 이벤트만 출력."""
-import http.client, json, sys
+
+import http.client
+import json
 
 conn = http.client.HTTPConnection("localhost", 8000, timeout=30)
 conn.request("GET", "/api/sessions/test-session/stream?mode=stub")

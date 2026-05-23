@@ -52,7 +52,7 @@ class RoleAgent:
     """
 
     def __init__(self, card: AgentCard, llm_mode: LLMMode = LLMMode.STUB) -> None:
-        self.card     = card
+        self.card = card
         self.llm_mode = llm_mode
 
     # ── 권장 인터페이스 ────────────────────────
@@ -90,7 +90,7 @@ class RoleAgent:
         from google import genai
         from google.genai import types
 
-        project  = os.environ.get("GCP_PROJECT_ID", "")
+        project = os.environ.get("GCP_PROJECT_ID", "")
         location = os.environ.get("VERTEX_LOCATION", "asia-northeast3")
         model_id = os.environ.get("VERTEX_MODEL", "gemini-2.5-flash")
 
@@ -101,7 +101,7 @@ class RoleAgent:
         client = genai.Client(vertexai=True, project=project, location=location)
 
         system_prompt = _build_system_prompt(self.card)
-        user_prompt   = _build_user_prompt(self.card, ctx)
+        user_prompt = _build_user_prompt(self.card, ctx)
 
         try:
             response = client.models.generate_content(
@@ -113,7 +113,7 @@ class RoleAgent:
                     response_mime_type="application/json",
                 ),
             )
-            raw  = response.text.strip()
+            raw = response.text.strip()
             data = json.loads(raw)
 
             return AgentTurn(
@@ -133,11 +133,11 @@ class RoleAgent:
 
     # ── Context 기반 Stub 발언 ─────────────────
     def _speak_context_stub(self, ctx: PhaseContext) -> AgentTurn:
-        card  = self.card
+        card = self.card
 
-        observation     = _ctx_observation(card, ctx)
+        observation = _ctx_observation(card, ctx)
         concern, ev_used = _ctx_concern(card, ctx)
-        dependency      = _ctx_dependency(card, ctx)
+        dependency = _ctx_dependency(card, ctx)
         proposed_action = _ctx_proposed_action(card, ctx)
 
         return AgentTurn(
@@ -156,9 +156,9 @@ class RoleAgent:
     def _speak_stub(self, event: ScenarioEvent, phase_name: str) -> AgentTurn:
         card = self.card
 
-        observation     = _build_observation(card, event, phase_name)
+        observation = _build_observation(card, event, phase_name)
         concern, ev_used = _build_concern(card, event)
-        dependency      = _build_dependency(card, event)
+        dependency = _build_dependency(card, event)
         proposed_action = _build_proposed_action(card, event)
 
         return AgentTurn(
@@ -178,6 +178,7 @@ class RoleAgent:
 # PhaseContext 기반 발언 생성 헬퍼
 # ──────────────────────────────────────────────
 
+
 def _ctx_observation(card: AgentCard, ctx: PhaseContext) -> str:
     """역할 관점에서 현재 phase + event 상황을 관찰한다.
 
@@ -185,10 +186,7 @@ def _ctx_observation(card: AgentCard, ctx: PhaseContext) -> str:
     - agenda에서 자신 담당 항목 추출
     - event 설명 요약
     """
-    my_agenda = [
-        a.topic for a in ctx.phase_agenda
-        if a.owner_role == card.assigned_role
-    ]
+    my_agenda = [a.topic for a in ctx.phase_agenda if a.owner_role == card.assigned_role]
     agenda_text = f" 담당 agenda: [{', '.join(my_agenda[:2])}]." if my_agenda else ""
 
     event_summary = ctx.current_event.description[:70]
@@ -200,24 +198,22 @@ def _ctx_observation(card: AgentCard, ctx: PhaseContext) -> str:
     )
 
 
-def _ctx_concern(
-    card: AgentCard, ctx: PhaseContext
-) -> tuple[str, list[str]]:
+def _ctx_concern(card: AgentCard, ctx: PhaseContext) -> tuple[str, list[str]]:
     """risk_tags + constraints 중 event trigger_source와 연관된 항목으로 우려를 표현한다."""
-    event    = ctx.current_event
+    event = ctx.current_event
     triggers = set(event.trigger_source)
 
     matched_risks = [r for r in card.risk_tags if r in triggers]
-    matched_evs   = [e for e in ctx.available_evidence_refs if e in triggers]
+    matched_evs = [e for e in ctx.available_evidence_refs if e in triggers]
     matched_consts = [
-        c for c in card.constraints
-        if any(kw in c.lower() for kw in
-               " ".join(triggers).replace("_", " ").split())
+        c
+        for c in card.constraints
+        if any(kw in c.lower() for kw in " ".join(triggers).replace("_", " ").split())
     ][:1]
 
     if matched_risks or matched_evs or matched_consts:
-        risk_text  = f" (risk: {matched_risks})" if matched_risks else ""
-        ev_text    = f" (evidence: {matched_evs})" if matched_evs else ""
+        risk_text = f" (risk: {matched_risks})" if matched_risks else ""
+        ev_text = f" (evidence: {matched_evs})" if matched_evs else ""
         const_text = f" | 제약: {matched_consts[0]}" if matched_consts else ""
         concern = (
             f"[{card.assigned_role}] 이 이벤트는 "
@@ -236,14 +232,10 @@ def _ctx_concern(
 
 def _ctx_dependency(card: AgentCard, ctx: PhaseContext) -> str:
     """peer_roles 중 자신 외 역할에 대한 의존성을 역할 + risk_tags와 함께 표현한다."""
-    others = [
-        p for p in ctx.peer_roles
-        if p.assigned_role != card.assigned_role
-    ]
+    others = [p for p in ctx.peer_roles if p.assigned_role != card.assigned_role]
     if not others:
         return (
-            f"[{card.assigned_role}] 이 이벤트 내 의존 역할 없음. "
-            f"단독 처리 가능한 항목으로 분류."
+            f"[{card.assigned_role}] 이 이벤트 내 의존 역할 없음. 단독 처리 가능한 항목으로 분류."
         )
 
     dep_parts = []
@@ -263,12 +255,10 @@ def _ctx_proposed_action(card: AgentCard, ctx: PhaseContext) -> str:
 
     # strengths 중 event 키워드와 가장 관련 있는 항목 선택
     event_words = set(
-        event.description.lower().replace(".", " ")
-        .replace("(", " ").replace(")", " ").split()[:8]
+        event.description.lower().replace(".", " ").replace("(", " ").replace(")", " ").split()[:8]
     )
     best_strength = next(
-        (s for s in card.strengths
-         if any(w in s.lower() for w in event_words)),
+        (s for s in card.strengths if any(w in s.lower() for w in event_words)),
         card.strengths[0] if card.strengths else None,
     )
 
@@ -293,19 +283,17 @@ def _ctx_proposed_action(card: AgentCard, ctx: PhaseContext) -> str:
 # 하위 호환 발언 생성 헬퍼 (context 없을 때)
 # ──────────────────────────────────────────────
 
+
 def _build_observation(card: AgentCard, event: ScenarioEvent, phase_name: str) -> str:
     relevant_resp = [r for r in card.responsibilities if "P0" in r or "P1" in r]
     resp_text = f" 담당 기능: {', '.join(relevant_resp[:2])}." if relevant_resp else ""
-    return (
-        f"[{card.assigned_role}] {phase_name} — "
-        f"'{event.description[:60]}...'.{resp_text}"
-    )
+    return f"[{card.assigned_role}] {phase_name} — '{event.description[:60]}...'.{resp_text}"
 
 
 def _build_concern(card: AgentCard, event: ScenarioEvent) -> tuple[str, list[str]]:
     matched_risks = [r for r in card.risk_tags if r in event.trigger_source]
-    matched_evs   = [e for e in card.evidence_refs if e in event.trigger_source]
-    trigger_kws   = set(" ".join(event.trigger_source).replace("_", " ").split())
+    matched_evs = [e for e in card.evidence_refs if e in event.trigger_source]
+    trigger_kws = set(" ".join(event.trigger_source).replace("_", " ").split())
     matched_consts = [c for c in card.constraints if any(kw in c.lower() for kw in trigger_kws)][:1]
 
     if matched_risks or matched_consts:
@@ -342,6 +330,7 @@ def _build_proposed_action(card: AgentCard, event: ScenarioEvent) -> str:
 # ──────────────────────────────────────────────
 # 발언 검증
 # ──────────────────────────────────────────────
+
 
 def _validate(turn: AgentTurn, card: AgentCard) -> ValidationResult:
     """guardrails §3 규칙을 기반으로 AgentTurn을 검증한다."""
@@ -396,15 +385,15 @@ def _validate(turn: AgentTurn, card: AgentCard) -> ValidationResult:
 # ── AgentCard 신호값 → 행동 성향 설명 변환 ──────────────
 
 _COLLAB_DESC: dict[str, str] = {
-    "rapid_responder":    "즉각적으로 반응하고 소통 속도가 빠른 편",
-    "review_hub":         "다른 팀원의 작업을 검토·연결하는 허브 역할",
+    "rapid_responder": "즉각적으로 반응하고 소통 속도가 빠른 편",
+    "review_hub": "다른 팀원의 작업을 검토·연결하는 허브 역할",
     "focused_individual": "독립적으로 깊이 집중하며 외부 소통이 적은 편",
-    "connector":          "팀 간 연결과 조율을 담당하는 브릿지 역할",
-    "async_deep_worker":  "비동기 방식으로 깊이 몰입하며 작업하는 편",
+    "connector": "팀 간 연결과 조율을 담당하는 브릿지 역할",
+    "async_deep_worker": "비동기 방식으로 깊이 몰입하며 작업하는 편",
 }
 
 _DELIVERY_DESC: dict[str, str] = {
-    "stable":   "납기 이력이 안정적",
+    "stable": "납기 이력이 안정적",
     "variable": "납기 일정이 불안정한 편 (재작업 발생 이력 있음)",
     "unstable": "납기 이력이 불안정하고 재작업이 잦음",
 }
@@ -423,16 +412,14 @@ def _persona_from_card(card: AgentCard) -> str:
       - strengths         : 자신 있는 영역 (자신감 표현)
       - missing_skills    : 모르는 영역 (솔직한 불안 표현)
     """
-    collab   = _COLLAB_DESC.get(card.collaboration_signal.value, card.collaboration_signal.value)
+    collab = _COLLAB_DESC.get(card.collaboration_signal.value, card.collaboration_signal.value)
     delivery = _DELIVERY_DESC.get(card.delivery_signal.value, card.delivery_signal.value)
 
     signal_constraints = [c for c in card.constraints if "signal" in c.lower()]
     signal_str = (" " + " ".join(signal_constraints) + ".") if signal_constraints else ""
 
     missing = [c.replace("스킬 부재: ", "") for c in card.constraints if c.startswith("스킬 부재:")]
-    missing_str = (
-        f" {', '.join(missing)} 쪽은 솔직히 자신 없다고 표현해도 된다." if missing else ""
-    )
+    missing_str = f" {', '.join(missing)} 쪽은 솔직히 자신 없다고 표현해도 된다." if missing else ""
 
     risk_hint = ""
     if card.risk_tags:
@@ -450,11 +437,11 @@ def _persona_from_card(card: AgentCard) -> str:
 
 
 def _build_system_prompt(card: AgentCard) -> str:
-    strengths_str     = ", ".join(card.strengths)
-    constraints_str   = ", ".join(card.constraints)
-    risk_tags_str     = ", ".join(card.risk_tags)
+    strengths_str = ", ".join(card.strengths)
+    constraints_str = ", ".join(card.constraints)
+    risk_tags_str = ", ".join(card.risk_tags)
     evidence_refs_str = ", ".join(card.evidence_refs)
-    responsibilities  = "\n  - ".join(card.responsibilities)
+    responsibilities = "\n  - ".join(card.responsibilities)
 
     persona_desc = _persona_from_card(card)
 
@@ -493,16 +480,17 @@ def _build_user_prompt(
     ctx: PhaseContext,
     prior_turns: list | None = None,
 ) -> str:
-    event      = ctx.current_event
-    peers_str  = (
+    event = ctx.current_event
+    peers_str = (
         ", ".join(f"{p.agent_id}({p.assigned_role})" for p in ctx.peer_roles)
-        if ctx.peer_roles else "none"
+        if ctx.peer_roles
+        else "none"
     )
     agenda_str = "; ".join(a.topic for a in ctx.phase_agenda)
     history_str = ""
     if prior_turns:
         lines = []
-        for t in (prior_turns[-4:]):
+        for t in prior_turns[-4:]:
             lines.append(
                 f"[{t.agent_id}] obs={t.observation[:60]}... / concern={t.concern[:60]}..."
             )

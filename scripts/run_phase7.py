@@ -3,6 +3,7 @@
 Phases 1-6을 재실행한 뒤 PhaseLogCollector로 Team_Simulation_Log.json을 생성하고
 기본 지표를 콘솔에 출력한다.
 """
+
 import json
 import sys
 from pathlib import Path
@@ -35,27 +36,25 @@ OUTPUTS = ROOT / "backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/out
 print("=== Phase 1: SimulationInputBuilder ===")
 builder = SimulationInputBuilder()
 packet, evidence_index = builder.build(
-    requirements     = SAMPLES / "sample_requirements_list.json",
-    team_record      = SAMPLES / "sample_selected_team_record.json",
-    snapshots        = SAMPLES / "sample_employee_fit_profile_snapshots.json",
-    risk_summary     = SAMPLES / "sample_team_risk_summary.json",
-    evidence_metadata= SAMPLES / "sample_evidence_metadata.json",
+    requirements=SAMPLES / "sample_requirements_list.json",
+    team_record=SAMPLES / "sample_selected_team_record.json",
+    snapshots=SAMPLES / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=SAMPLES / "sample_team_risk_summary.json",
+    evidence_metadata=SAMPLES / "sample_evidence_metadata.json",
 )
 print(f"  project_name = {packet.project_context.project_name}")
 
 # 이후 phase에서 직접 사용할 파싱 객체
-requirements  = packet.project_context  # RequirementsList는 project_context에 내포됨
-team          = SelectedTeamRecord.model_validate(
+requirements = packet.project_context  # RequirementsList는 project_context에 내포됨
+team = SelectedTeamRecord.model_validate(
     json.loads((SAMPLES / "sample_selected_team_record.json").read_text(encoding="utf-8"))
 )
-risk_summary  = TeamRiskSummary.model_validate(
+risk_summary = TeamRiskSummary.model_validate(
     json.loads((SAMPLES / "sample_team_risk_summary.json").read_text(encoding="utf-8"))
 )
 evidence_list = [
     EvidenceMetadata.model_validate(e)
-    for e in json.loads(
-        (SAMPLES / "sample_evidence_metadata.json").read_text(encoding="utf-8")
-    )
+    for e in json.loads((SAMPLES / "sample_evidence_metadata.json").read_text(encoding="utf-8"))
 ]
 # RequirementsList 직접 로드 (planner/collector용)
 requirements_full = RequirementsList.model_validate(
@@ -77,7 +76,9 @@ print(f"  agent cards: {len(agent_cards)}")
 # ── Phase 4 ───────────────────────────────────
 print("=== Phase 4: ScenarioPhasePlanner ===")
 planner = ScenarioPhasePlanner()
-plan = planner.plan(requirements_full, risk_summary, evidence_index, simulation_id="sim_phase7_test")
+plan = planner.plan(
+    requirements_full, risk_summary, evidence_index, simulation_id="sim_phase7_test"
+)
 total_events = sum(len(p.scenario_events) for p in plan.phases)
 print(f"  phases: {len(plan.phases)}, total events: {total_events}")
 
@@ -98,7 +99,7 @@ out_path = OUTPUTS / "Team_Simulation_Log.json"
 PhaseLogCollector.to_json(sim_log, out_path)
 
 # ── 출력 요약 ─────────────────────────────────
-print(f"\n[Team_Simulation_Log 요약]")
+print("\n[Team_Simulation_Log 요약]")
 print(f"  simulation_id : {sim_log.simulation_id}")
 print(f"  project_name  : {sim_log.project_name}")
 print(f"  team_id       : {sim_log.team_id}")

@@ -58,4 +58,3 @@ def test_finish_selected_columns_exist_in_local_csv_headers() -> None:
     )
 
     assert validation["status"] == "passed"
-

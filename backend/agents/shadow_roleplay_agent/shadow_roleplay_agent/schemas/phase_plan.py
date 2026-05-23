@@ -9,11 +9,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PhaseName(StrEnum):
-    KICKOFF     = "Kickoff Meeting"
-    DESIGN      = "Design Phase"
+    KICKOFF = "Kickoff Meeting"
+    DESIGN = "Design Phase"
     DEVELOPMENT = "Development Phase"
     INTEGRATION = "Integration Phase"
-    QA_RELEASE  = "QA / Release Phase"
+    QA_RELEASE = "QA / Release Phase"
 
 
 class AgendaItem(BaseModel):
@@ -41,12 +41,8 @@ class ScenarioEvent(BaseModel):
     trigger_source: list[str] = Field(
         description="근거가 되는 risk_tag 또는 evidence_ref 참조 키 목록"
     )
-    involved_roles: list[str] = Field(
-        description="이 이벤트에 직접 관여되는 역할 목록"
-    )
-    expected_issue_category: str = Field(
-        description="rules.md §2 issue/risk 지표 중 해당 카테고리"
-    )
+    involved_roles: list[str] = Field(description="이 이벤트에 직접 관여되는 역할 목록")
+    expected_issue_category: str = Field(description="rules.md §2 issue/risk 지표 중 해당 카테고리")
 
 
 class SimulationPhase(BaseModel):
@@ -58,9 +54,7 @@ class SimulationPhase(BaseModel):
     phase_objective: str
     agenda: list[AgendaItem]
     scenario_events: list[ScenarioEvent]
-    focus_risk_tags: list[str] = Field(
-        description="이 phase에서 집중 관찰할 risk_tag 목록"
-    )
+    focus_risk_tags: list[str] = Field(description="이 phase에서 집중 관찰할 risk_tag 목록")
 
 
 class SimulationPhasePlan(BaseModel):

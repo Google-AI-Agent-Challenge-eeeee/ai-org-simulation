@@ -58,4 +58,3 @@ def test_run_local_requirements_agent_writes_outputs_when_requested(tmp_path) ->
     assert len(result["written_files"]) == 10
     assert (output_dir / "Requirements_List.json").exists()
     assert build_run_summary(result)["written_file_count"] == 10
-

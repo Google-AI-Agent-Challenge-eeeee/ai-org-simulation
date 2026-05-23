@@ -14,25 +14,25 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 # ──────────────────────────────────────────────
 # 공용 Signal Enum
 # ──────────────────────────────────────────────
 
+
 class CapacitySignal(StrEnum):
-    LOW_RISK    = "low_risk"
+    LOW_RISK = "low_risk"
     MEDIUM_RISK = "medium_risk"
-    HIGH_RISK   = "high_risk"
+    HIGH_RISK = "high_risk"
 
 
 class CommunicationSignal(StrEnum):
-    LOW_DELAY    = "low_delay"    # avg_response_time < 30분
-    MEDIUM_DELAY = "medium_delay" # avg_response_time 30~90분
-    HIGH_DELAY   = "high_delay"   # avg_response_time > 90분
+    LOW_DELAY = "low_delay"  # avg_response_time < 30분
+    MEDIUM_DELAY = "medium_delay"  # avg_response_time 30~90분
+    HIGH_DELAY = "high_delay"  # avg_response_time > 90분
 
 
 class DeliverySignal(StrEnum):
-    STABLE   = "stable"    # sprint_completion_rate >= 0.7 and reopened_issue_count <= 1
+    STABLE = "stable"  # sprint_completion_rate >= 0.7 and reopened_issue_count <= 1
     VARIABLE = "variable"  # sprint_completion_rate 0.5~0.7 or reopened_issue_count 2~4
     UNSTABLE = "unstable"  # sprint_completion_rate < 0.5 or reopened_issue_count >= 5
 
@@ -40,11 +40,11 @@ class DeliverySignal(StrEnum):
 class CollaborationStyle(StrEnum):
     """slack.collaboration_style 컬럼 값과 1:1 대응."""
 
-    ASYNC_DEEP_WORKER  = "async_deep_worker"
-    CONNECTOR          = "connector"
+    ASYNC_DEEP_WORKER = "async_deep_worker"
+    CONNECTOR = "connector"
     FOCUSED_INDIVIDUAL = "focused_individual"
-    RAPID_RESPONDER    = "rapid_responder"
-    REVIEW_HUB         = "review_hub"
+    RAPID_RESPONDER = "rapid_responder"
+    REVIEW_HUB = "review_hub"
 
 
 class FeaturePriority(StrEnum):
@@ -56,6 +56,7 @@ class FeaturePriority(StrEnum):
 # ──────────────────────────────────────────────
 # Input 1: Requirements_List
 # ──────────────────────────────────────────────
+
 
 class Milestone(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -108,6 +109,7 @@ class RequirementsList(BaseModel):
 # Input 2: Selected_Team_Record
 # ──────────────────────────────────────────────
 
+
 class TeamMember(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -137,6 +139,7 @@ class SelectedTeamRecord(BaseModel):
 # ──────────────────────────────────────────────
 # Input 3: Employee_Fit_Profile_Snapshot
 # ──────────────────────────────────────────────
+
 
 class EmployeeFitProfileSnapshot(BaseModel):
     """팀원 1인의 업무 signal 요약 스냅샷.
@@ -172,6 +175,7 @@ class EmployeeFitProfileSnapshot(BaseModel):
 # Input 4: Team_Risk_Summary
 # ──────────────────────────────────────────────
 
+
 class TeamRiskSummary(BaseModel):
     """팀 단위 리스크 요약.
 
@@ -200,6 +204,7 @@ class TeamRiskSummary(BaseModel):
 # Input 5: Evidence_Metadata
 # ──────────────────────────────────────────────
 
+
 class EvidenceMetadata(BaseModel):
     """risk signal이 어떤 원천 컬럼에서 왔는지 추적하는 메타데이터.
 
@@ -226,6 +231,7 @@ class EvidenceMetadata(BaseModel):
 # ──────────────────────────────────────────────
 # Simulation Input Packet (Phase 1 산출물)
 # ──────────────────────────────────────────────
+
 
 class SimulationInputPacket(BaseModel):
     """Phase 1 Simulation_Input_Builder 산출물.

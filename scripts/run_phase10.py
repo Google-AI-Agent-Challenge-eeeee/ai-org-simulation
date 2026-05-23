@@ -3,6 +3,7 @@
 Phases 1-9를 재실행한 뒤 OutputBuilder로 Simulation_OUTPUT.json을 생성하고
 최종 결과를 콘솔에 출력한다.
 """
+
 import json
 import os
 import sys
@@ -26,8 +27,8 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules import (
     OutputBuilder,
     PhaseLogCollector,
     PrivacyColumnFilter,
-    ScoreCalculator,
     ScenarioPhasePlanner,
+    ScoreCalculator,
 )
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline import (
     SimulationInputBuilder,
@@ -47,11 +48,11 @@ OUTPUTS = ROOT / "backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/out
 print("=== Phase 1-6: Pipeline ===")
 builder = SimulationInputBuilder()
 packet, evidence_index = builder.build(
-    requirements      = SAMPLES / "sample_requirements_list.json",
-    team_record       = SAMPLES / "sample_selected_team_record.json",
-    snapshots         = SAMPLES / "sample_employee_fit_profile_snapshots.json",
-    risk_summary      = SAMPLES / "sample_team_risk_summary.json",
-    evidence_metadata = SAMPLES / "sample_evidence_metadata.json",
+    requirements=SAMPLES / "sample_requirements_list.json",
+    team_record=SAMPLES / "sample_selected_team_record.json",
+    snapshots=SAMPLES / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=SAMPLES / "sample_team_risk_summary.json",
+    evidence_metadata=SAMPLES / "sample_evidence_metadata.json",
 )
 requirements_full = RequirementsList.model_validate(
     json.loads((SAMPLES / "sample_requirements_list.json").read_text(encoding="utf-8"))
@@ -64,13 +65,11 @@ risk_summary = TeamRiskSummary.model_validate(
 )
 evidence_list = [
     EvidenceMetadata.model_validate(e)
-    for e in json.loads(
-        (SAMPLES / "sample_evidence_metadata.json").read_text(encoding="utf-8")
-    )
+    for e in json.loads((SAMPLES / "sample_evidence_metadata.json").read_text(encoding="utf-8"))
 ]
-result   = PrivacyColumnFilter().filter(packet)
-cards    = AgentCardBuilder().build(result.sanitized_snapshots, requirements_full)
-plan     = ScenarioPhasePlanner().plan(
+result = PrivacyColumnFilter().filter(packet)
+cards = AgentCardBuilder().build(result.sanitized_snapshots, requirements_full)
+plan = ScenarioPhasePlanner().plan(
     requirements_full, risk_summary, evidence_index, simulation_id="sim_final_test"
 )
 orch_out = SimulationOrchestrator(llm_mode="vertex").run(plan, cards)
@@ -87,9 +86,9 @@ for run in orch_out.phase_runs:
     phase_label = run.phase_name if hasattr(run, "phase_name") else ""
     if phase_label != current_phase:
         current_phase = phase_label
-        print(f"\n{'─'*60}")
+        print(f"\n{'─' * 60}")
         print(f"  PHASE: {current_phase}")
-        print(f"{'─'*60}")
+        print(f"{'─' * 60}")
     print(f"\n  [Event: {run.event_id}] {run.event_desc[:60]}...")
     for turn in run.turns:
         status = turn.validation.status if turn.validation else "?"
@@ -125,35 +124,37 @@ OutputBuilder.to_json(output, out_path)
 
 # ── 출력 ──────────────────────────────────────
 verdict_label = {
-    "proceed":                 "진행 가능",
+    "proceed": "진행 가능",
     "proceed_with_conditions": "조건부 진행",
-    "needs_rebalancing":       "재조정 필요",
-    "not_recommended":         "착수 비권장",
+    "needs_rebalancing": "재조정 필요",
+    "not_recommended": "착수 비권장",
 }
 
-print(f"\n{'='*60}")
-print(f"  [최종 Simulation_OUTPUT]")
-print(f"{'='*60}")
+print(f"\n{'=' * 60}")
+print("  [최종 Simulation_OUTPUT]")
+print(f"{'=' * 60}")
 print(f"  simulation_id       : {output.simulation_id}")
 print(f"  project_name        : {output.project_name}")
 print(f"  team_id             : {output.team_id}")
 print(f"  overall_project_fit : {output.overall_project_fit:.4f}")
-print(f"  verdict             : {output.simulation_verdict}  ({verdict_label.get(output.simulation_verdict, '')})")
+print(
+    f"  verdict             : {output.simulation_verdict}  ({verdict_label.get(output.simulation_verdict, '')})"
+)
 print()
-print(f"[Score Breakdown]")
+print("[Score Breakdown]")
 for d in output.score_breakdown:
     bar = "#" * int(d.raw_score * 20) + "." * (20 - int(d.raw_score * 20))
     print(f"  {d.dimension:<25} {d.raw_score:.3f}  [{bar}]  {d.status}")
 
 print()
-print(f"[Top Risks]")
+print("[Top Risks]")
 for r in output.top_risks:
     print(f"  #{r.rank} [{r.severity.upper():6s}|{r.status:<9s}] {r.issue_category}")
     print(f"       phases: {r.observed_in_phases}")
     print(f"       action: {r.suggested_action[:70]}")
 
 print()
-print(f"[Must Fix Before Start]")
+print("[Must Fix Before Start]")
 if output.must_fix_before_start:
     for m in output.must_fix_before_start:
         print(f"  [{m.severity.upper()}] {m.issue_category}")
@@ -163,7 +164,7 @@ else:
     print("  (없음)")
 
 print()
-print(f"[Evidence Summary]")
+print("[Evidence Summary]")
 print(f"  evidence refs used  : {output.evidence_summary.total_evidence_refs}")
 print(f"  confirmed issues    : {output.evidence_summary.total_confirmed_issues}")
 print(f"  candidate issues    : {output.evidence_summary.total_candidate_issues}")
@@ -171,13 +172,13 @@ print(f"  unresolved turns    : {output.evidence_summary.total_unresolved_turns}
 print(f"  high-risk phases    : {output.evidence_summary.phases_with_high_risk}")
 
 print()
-print(f"[Phase Stability]")
+print("[Phase Stability]")
 for ph, sc in output.phase_stability_summary.items():
     bar = "#" * int(sc * 20) + "." * (20 - int(sc * 20))
     print(f"  {ph:<25} {sc:.3f}  [{bar}]")
 
 print()
-print(f"[Score Note]")
+print("[Score Note]")
 print(f"  {output.score_note}")
 
 print(f"\n=> Simulation_OUTPUT.json saved: {out_path}")

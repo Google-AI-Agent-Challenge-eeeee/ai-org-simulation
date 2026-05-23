@@ -41,14 +41,10 @@ class AgentCard(BaseModel):
     assigned_role: str
 
     # 이번 프로젝트에서 이 Agent가 담당하는 기능/작업 목록
-    responsibilities: list[str] = Field(
-        description="프로젝트 기능 중 이 역할이 소유하는 항목"
-    )
+    responsibilities: list[str] = Field(description="프로젝트 기능 중 이 역할이 소유하는 항목")
 
     # matched_skills 기반 — 이 역할이 잘할 수 있는 영역
-    strengths: list[str] = Field(
-        description="matched_skills에서 파생된 강점 항목"
-    )
+    strengths: list[str] = Field(description="matched_skills에서 파생된 강점 항목")
 
     # missing_skills + signal 기반 — 이 역할의 제약 조건
     constraints: list[str] = Field(

@@ -1,31 +1,48 @@
 """Phase 6 Role Agent Execution 동작 검증."""
 
-import logging, pathlib
+import logging
+import pathlib
+
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import SimulationInputBuilder
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.privacy_column_filter import PrivacyColumnFilter
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.agent_card_builder import AgentCardBuilder
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.scenario_phase_planner import ScenarioPhasePlanner
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.phase_context_builder import PhaseContextBuilder
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_orchestrator import SimulationOrchestrator
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.orchestrator import LLMMode, ValidationStatus
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.agent_card_builder import (
+    AgentCardBuilder,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.phase_context_builder import (
+    PhaseContextBuilder,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.privacy_column_filter import (
+    PrivacyColumnFilter,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.scenario_phase_planner import (
+    ScenarioPhasePlanner,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import (
+    SimulationInputBuilder,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_orchestrator import (
+    SimulationOrchestrator,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.orchestrator import (
+    LLMMode,
+    ValidationStatus,
+)
 
 samples = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/samples")
 outputs = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/outputs")
 
 # Phase 1-4
 packet, index = SimulationInputBuilder().build(
-    requirements      = samples / "sample_requirements_list.json",
-    team_record       = samples / "sample_selected_team_record.json",
-    snapshots         = samples / "sample_employee_fit_profile_snapshots.json",
-    risk_summary      = samples / "sample_team_risk_summary.json",
-    evidence_metadata = samples / "sample_evidence_metadata.json",
-    simulation_id     = "sim_p6_demo",
+    requirements=samples / "sample_requirements_list.json",
+    team_record=samples / "sample_selected_team_record.json",
+    snapshots=samples / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=samples / "sample_team_risk_summary.json",
+    evidence_metadata=samples / "sample_evidence_metadata.json",
+    simulation_id="sim_p6_demo",
 )
 result = PrivacyColumnFilter().filter(packet)
-cards  = AgentCardBuilder().build(result.sanitized_snapshots, packet.project_context)
-plan   = ScenarioPhasePlanner().plan(
+cards = AgentCardBuilder().build(result.sanitized_snapshots, packet.project_context)
+plan = ScenarioPhasePlanner().plan(
     requirements=packet.project_context,
     risk_summary=packet.team_risk_summary,
     evidence_index=index,
@@ -38,7 +55,7 @@ all_ctxs = ctx_builder.build_all(plan)
 PhaseContextBuilder.to_json(all_ctxs, outputs / "Current_Phase_Context.json")
 
 # Phase 5/6: Orchestrator (PhaseContext 주입)
-orch   = SimulationOrchestrator(llm_mode=LLMMode.STUB)
+orch = SimulationOrchestrator(llm_mode=LLMMode.STUB)
 output = orch.run(plan, cards)
 SimulationOrchestrator.to_json(output, outputs / "Orchestrator_Output.json")
 
@@ -71,11 +88,7 @@ if target_run:
             print(f"  [!] {turn.validation.reason}")
 
 # Pass 기준
-p6_pass = (
-    len(all_ctxs) > 0
-    and output.total_turns > 0
-    and output.total_invalid == 0
-)
+p6_pass = len(all_ctxs) > 0 and output.total_turns > 0 and output.total_invalid == 0
 print()
 print(f">>> Phase 6 {'PASS' if p6_pass else 'FAIL'}")
 print(f"    contexts={len(all_ctxs)} turns={output.total_turns} invalid={output.total_invalid}")
