@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,8 +29,19 @@ export default function SimulatePage() {
       <header
         className="flex items-center justify-between px-8 py-4 border-b border-white/5 bg-[#0f0f13]/80 backdrop-blur-md"
       >
-        <Link href="/" className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-200 transition-colors">
-          HOME
+        <Link
+          href="/"
+          className="flex cursor-pointer items-center gap-2 text-xs text-zinc-100 transition-colors hover:text-indigo-300"
+        >
+          <Image
+            src="/brand/ai-org-logo-512.png"
+            alt=""
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
+            priority
+          />
+          <span className="hidden font-semibold tracking-wide sm:inline">AI Org Simulation</span>
         </Link>
         <div />
       </header>
