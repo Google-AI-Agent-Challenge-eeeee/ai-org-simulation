@@ -26,6 +26,71 @@ Cloud Run backend
 
 Cloud SQL은 비용이 발생한다. 데모 이후 필요 없으면 instance를 중지하거나 삭제한다.
 
+## 2026-05-23 smoke 결과
+
+이번 smoke는 비용과 복잡도를 줄이기 위해 Cloud SQL을 붙이지 않고 실행했다.
+팀 랭킹은 컨테이너 이미지에 포함된 `datasets/raw` CSV를 읽고, LLM은 `stub` 모드를 사용한다.
+
+- Project: `ai-org-simulation-497121`
+- Region: `asia-northeast3`
+- Service: `ai-org-backend`
+- Service URL: `https://ai-org-backend-206678464190.asia-northeast3.run.app`
+- Image: `asia-northeast3-docker.pkg.dev/ai-org-simulation-497121/ai-org-backend/api:b81b5a4`
+- Source branch: `service/refactor/team-ranking-adapter`
+- Source commit: `b81b5a4`
+- Cloud SQL: 미연결
+- Public access: `--allow-unauthenticated`
+
+검증한 endpoint:
+
+```text
+GET  /health
+POST /api/sessions
+GET  /api/sessions/{id}/requirements
+GET  /api/sessions/{id}/teams
+GET  /api/sessions/{id}/stream?mode=stub
+```
+
+확인한 동작:
+
+- `/health`가 `status=ok`, `env=staging`, `llm_mode=stub`을 반환한다.
+- session 생성, requirements 분석, Top 1 team 생성이 동작한다.
+- 최초 입력한 `pmPersona.name`이 팀 PM과 RolePlay packet에 유지된다.
+- SSE stream이 `status`, `backend_log` 이벤트를 반환한다.
+
+Cloud SQL 없이 재배포할 때는 아래 명령을 사용한다.
+
+```bash
+export PROJECT_ID="ai-org-simulation-497121"
+export REGION="asia-northeast3"
+export SERVICE_NAME="ai-org-backend"
+export AR_REPO="ai-org-backend"
+export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/api:b81b5a4"
+export SA_EMAIL="ai-org-backend-dev@${PROJECT_ID}.iam.gserviceaccount.com"
+
+gcloud config set project "${PROJECT_ID}"
+gcloud auth configure-docker "${REGION}-docker.pkg.dev"
+
+docker build -f backend/Dockerfile -t "${IMAGE}" .
+docker push "${IMAGE}"
+
+gcloud run deploy "${SERVICE_NAME}" \
+  --image="${IMAGE}" \
+  --region="${REGION}" \
+  --service-account="${SA_EMAIL}" \
+  --set-env-vars="ENV=staging,LOG_LEVEL=INFO,LLM_MODE=stub,GCP_PROJECT_ID=${PROJECT_ID},CORS_ALLOW_ORIGINS=[*]" \
+  --port=8080 \
+  --allow-unauthenticated
+```
+
+로컬 프론트에서 이 Cloud Run backend를 보려면 `frontend/.env.local`을 아래처럼 둔다.
+이 파일은 개인 로컬 설정이며 Git에 올리지 않는다.
+
+```env
+NEXT_PUBLIC_MOCK=false
+NEXT_PUBLIC_API_URL=https://ai-org-backend-206678464190.asia-northeast3.run.app
+```
+
 ## 1. Cloud Shell 변수
 
 ```bash
