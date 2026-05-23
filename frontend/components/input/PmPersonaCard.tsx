@@ -67,10 +67,10 @@ export function PmPersonaCard({
         </div>
       </div>
 
-      {/* 성격 및 이즈 */}
+      {/* 성격 및 어조 */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs text-zinc-400 font-medium">
-          성격 및 이즈 <span className="text-[10px] text-zinc-600">(Personality &amp; Tone)</span>
+          성격 및 어조 <span className="text-[10px] text-zinc-600">(Personality &amp; Tone)</span>
         </label>
         <Textarea
           value={persona}

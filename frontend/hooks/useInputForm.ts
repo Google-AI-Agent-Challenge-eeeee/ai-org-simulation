@@ -31,7 +31,7 @@ export function useInputForm() {
   const isValid =
     prd.trim().length >= 20 &&
     pmName.trim().length >= 1 &&
-    pmPersona.trim().length >= 10
+    pmPersona.trim().length >= 2
 
   function handleFileSelect(file: File) {
     const reader = new FileReader()
