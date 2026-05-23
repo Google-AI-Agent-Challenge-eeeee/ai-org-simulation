@@ -31,6 +31,29 @@ def test_requirements_review_contract_matches_frontend_shape() -> None:
     assert 0 <= body["confidence"] <= 100
 
 
+def test_requirements_review_uses_session_prd_input() -> None:
+    client = TestClient(app)
+    session_response = client.post(
+        "/api/sessions",
+        json={
+            "prd": (
+                "# Inventory Control MVP\n\n"
+                "Goal: Build an inventory control dashboard in 4 weeks.\n\n"
+                "## Functional Requirements\n"
+                "- Dashboard analytics\n"
+            )
+        },
+    )
+    session_id = session_response.json()["session_id"]
+
+    response = client.get(f"/api/sessions/{session_id}/requirements")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["project_name"] == "Inventory Control MVP"
+    assert "inventory control dashboard" in body["project_summary"]
+
+
 def test_requirements_accept_and_revise_contracts() -> None:
     client = TestClient(app)
 
