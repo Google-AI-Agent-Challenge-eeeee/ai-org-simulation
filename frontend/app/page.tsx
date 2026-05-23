@@ -22,15 +22,32 @@ function Navbar() {
       initial="hidden" animate="show" variants={fadeDown}
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b border-white/5 bg-[#0f0f13]/80 backdrop-blur-md"
     >
-      <div className="hidden md:flex items-center gap-6 text-xs text-zinc-400">
-        <button type="button" onClick={scrollHome} className="cursor-pointer hover:text-zinc-200 transition-colors">
-          HOME
+      <div className="flex items-center gap-6 text-xs text-zinc-400">
+        <button
+          type="button"
+          onClick={scrollHome}
+          className="flex cursor-pointer items-center gap-2 text-zinc-100 transition-colors hover:text-indigo-300"
+        >
+          <Image
+            src="/brand/ai-org-logo-512.png"
+            alt=""
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
+            priority
+          />
+          <span className="hidden font-semibold tracking-wide sm:inline">AI Org Simulation</span>
         </button>
-        <a href="#workflow" className="hover:text-zinc-200 transition-colors">분석 흐름</a>
-        <a href="#enterprise" className="hover:text-zinc-200 transition-colors">기업 솔루션</a>
+        <div className="hidden items-center gap-6 md:flex">
+          <button type="button" onClick={scrollHome} className="cursor-pointer hover:text-zinc-200 transition-colors">
+            HOME
+          </button>
+          <a href="#workflow" className="hover:text-zinc-200 transition-colors">분석 흐름</a>
+          <a href="#enterprise" className="hover:text-zinc-200 transition-colors">기업 솔루션</a>
+        </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <Link href="/simulate">
           <Button size="sm" className="gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">
             New Simulation
