@@ -96,6 +96,22 @@ def test_team_select_returns_ok() -> None:
     assert response.json() == {"ok": True}
 
 
+def test_selected_team_is_reflected_in_report() -> None:
+    client = TestClient(app)
+    session_id = client.post("/api/sessions", json={"prd": "sample"}).json()["session_id"]
+    teams = client.get(f"/api/sessions/{session_id}/teams").json()["teams"]
+
+    select_response = client.post(
+        f"/api/sessions/{session_id}/teams/select",
+        json={"teamId": teams[0]["team_id"]},
+    )
+    report_response = client.get(f"/api/sessions/{session_id}/report")
+
+    assert select_response.status_code == 200
+    assert report_response.status_code == 200
+    assert report_response.json()["selectedTeam"]["teamId"] == teams[0]["team_id"]
+
+
 def test_report_contract_returns_selected_session_id() -> None:
     client = TestClient(app)
 

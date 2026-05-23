@@ -91,6 +91,7 @@ class SessionRecord:
     pm_priority: str | None = None
     requirements_agent_result: dict[str, Any] | None = None
     requirements_summary: dict[str, Any] | None = None
+    team_candidates: list[dict[str, Any]] | None = None
     requirements_accepted: bool = False
     selected_team_id: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -136,46 +137,31 @@ def revise_requirements(session_id: str) -> dict[str, Any]:
 
 
 def get_team_candidates(session_id: str) -> dict[str, Any]:
-    teams = [
-        {
-            "team_id": "team_001",
-            "team_name": "알파 포메이션",
-            "team_rank": 1,
-            "team_fit_score": 84.0,
-            "role_coverage_score": 0.95,
-            "skill_coverage_score": 0.88,
-            "availability_score": 1.0,
-            "team_risk_flags": ["backend_workload_concentration", "pm_low_sprint_velocity"],
-            "badges": ["실제 시뮬레이션 팀", "Agent sample verified"],
-            "rationale": (
-                "실제 직원 데이터(sample) 기반 시뮬레이션 팀. backend workload와 "
-                "Cloud Run 경험 부족이 주요 리스크다."
-            ),
-            "skill_gaps": ["Payment API SDK", "GCP Cloud Run 실운영"],
-            "members": [
-                _team_member("E011", "권원솔", "PM"),
-                _team_member("E012", "안우빈", "Backend Developer"),
-                _team_member("E013", "심예린", "Frontend Developer"),
-                _team_member("E014", "송다원", "QA Engineer"),
-                _team_member("E015", "박라경", "DevOps Engineer"),
-            ],
-        }
-    ]
-    return {"totalCombinations": 1247, "teams": teams}
+    record = _get_or_create_session(session_id)
+    if record.team_candidates is None:
+        record.team_candidates = _load_sample_team_candidates()
+    return {"totalCombinations": 1247, "teams": record.team_candidates}
 
 
 def select_team(session_id: str, team_id: str | None = None) -> dict[str, bool]:
-    _get_or_create_session(session_id).selected_team_id = team_id
+    record = _get_or_create_session(session_id)
+    teams = get_team_candidates(session_id)["teams"]
+    selected_id = team_id or (teams[0]["team_id"] if teams else None)
+    if selected_id and any(team["team_id"] == selected_id for team in teams):
+        record.selected_team_id = selected_id
     return {"ok": True}
 
 
 def get_report(session_id: str) -> dict[str, Any]:
+    record = _get_or_create_session(session_id)
+    selected_team = _selected_team(record)
     overall, verdict, score_note, top_risks, must_fix = _load_simulation_output()
     risk_level = "High" if overall < 0.6 else ("Mid" if overall < 0.8 else "Low")
 
     return {
         "id": session_id,
         "createdAt": "2026-05-23T03:00:00Z",
+        **_selected_team_summary(selected_team),
         "team": [
             _persona("권원솔", "PM"),
             _persona("안우빈", "BE"),
@@ -366,6 +352,75 @@ def _load_simulation_output() -> tuple[float, str, str, list[dict[str, Any]], li
         data.get("top_risks", []),
         data.get("must_fix_before_start", []),
     )
+
+
+def _load_sample_team_candidates() -> list[dict[str, Any]]:
+    team = _load_json(SHADOW_AGENT_SAMPLES / "sample_selected_team_record.json")
+    snapshots = _load_json_list(SHADOW_AGENT_SAMPLES / "sample_employee_fit_profile_snapshots.json")
+    snapshot_by_employee_id = {snapshot.get("employee_id"): snapshot for snapshot in snapshots}
+    members = [
+        _team_member_from_sample(member, snapshot_by_employee_id.get(member.get("employee_id"), {}))
+        for member in team.get("members", [])
+    ]
+    skill_gaps = sorted(
+        {
+            skill
+            for snapshot in snapshot_by_employee_id.values()
+            for skill in snapshot.get("missing_skills", [])
+        }
+    )
+
+    return [
+        {
+            "team_id": team.get("team_id", "team_001"),
+            "team_name": "알파 포메이션",
+            "team_rank": team.get("team_rank", 1),
+            "team_fit_score": round(float(team.get("team_fit_score", 84.0)), 1),
+            "role_coverage_score": team.get("role_coverage_score", 0.0),
+            "skill_coverage_score": team.get("skill_coverage_score", 0.0),
+            "availability_score": team.get("availability_score", 0.0),
+            "team_risk_flags": team.get("team_risk_flags", []),
+            "badges": ["Shadow sample", "Session selectable"],
+            "rationale": "Shadow Roleplay sample team record를 프론트 팀 선택 계약으로 변환한 후보입니다.",
+            "skill_gaps": skill_gaps[:6],
+            "members": members,
+        }
+    ]
+
+
+def _team_member_from_sample(
+    member: dict[str, Any],
+    snapshot: dict[str, Any],
+) -> dict[str, str]:
+    assigned_role = str(
+        member.get("assigned_role") or snapshot.get("assigned_role") or "Team Member"
+    )
+    employee_name = str(member.get("employee_name") or snapshot.get("employee_name") or "Unknown")
+    return _team_member(
+        str(member.get("employee_id") or snapshot.get("employee_id") or ""),
+        employee_name,
+        assigned_role,
+    )
+
+
+def _selected_team(record: SessionRecord) -> dict[str, Any] | None:
+    teams = record.team_candidates or _load_sample_team_candidates()
+    record.team_candidates = teams
+    selected_id = record.selected_team_id or (teams[0]["team_id"] if teams else None)
+    return next((team for team in teams if team["team_id"] == selected_id), None)
+
+
+def _selected_team_summary(team: dict[str, Any] | None) -> dict[str, Any]:
+    if team is None:
+        return {}
+    return {
+        "selectedTeam": {
+            "rank": team.get("team_rank", 1),
+            "teamFitScore": team.get("team_fit_score", 0),
+            "teamId": team.get("team_id", ""),
+            "teamName": team.get("team_name", ""),
+        }
+    }
 
 
 def _get_or_create_session(session_id: str) -> SessionRecord:
@@ -562,6 +617,11 @@ def _initials(name: str) -> str:
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _load_json_list(path: Path) -> list[dict[str, Any]]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data if isinstance(data, list) else []
 
 
 def _load_env_file() -> None:
