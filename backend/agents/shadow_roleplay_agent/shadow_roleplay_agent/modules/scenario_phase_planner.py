@@ -224,6 +224,8 @@ class ScenarioPhasePlanner:
                 phase_name=phase_name,
                 focus_categories=focus_categories,
             )
+            if not active_risks:
+                active_risks = [_baseline_risk_pair(phase_name)]
             agenda = list(defn["base_agenda"]) + _feature_agenda(requirements, phase_name)
             events: list[ScenarioEvent] = []
 
@@ -303,6 +305,16 @@ def _active_risk_pairs(
         seen.add(marker)
         pairs.append((risk_tag, category))
     return pairs
+
+
+def _baseline_risk_pair(phase_name: PhaseName) -> tuple[str, str]:
+    return {
+        PhaseName.KICKOFF: ("unclear_ownership", "unclear_ownership"),
+        PhaseName.DESIGN: ("technical_dependency_risk", "technical_dependency_risk"),
+        PhaseName.DEVELOPMENT: ("schedule_risk", "schedule_risk"),
+        PhaseName.INTEGRATION: ("integration_risk", "integration_risk"),
+        PhaseName.QA_RELEASE: ("qa_coverage_gap", "qa_coverage_gap"),
+    }[phase_name]
 
 
 def _scenario_event_for_risk(
