@@ -404,6 +404,7 @@ def _get_or_build_team_ranking(record: SessionRecord) -> TeamRankingAdapterResul
         session_id=record.session_id,
         requirements_list=outputs["requirements_list"],
         roleplay_requirements_input=outputs["roleplay_requirements_input"],
+        requester_pm=record.pm_persona,
     )
     outputs["roleplay_requirements_input"] = result.roleplay_requirements_input
     outputs.update(result.ranking_result)

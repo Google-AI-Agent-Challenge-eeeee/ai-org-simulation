@@ -87,6 +87,29 @@ def test_team_selection_contract_matches_frontend_shape() -> None:
     assert 0 <= team["team_fit_score"] <= 100
 
 
+def test_team_selection_pins_session_pm_persona() -> None:
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={
+            "prd": "# Team Ops MVP\n\nGoal: Build a team ops dashboard in 2 weeks.",
+            "pmPersona": {
+                "name": "김PM",
+                "preset": "speed",
+                "persona": "Fast decision maker",
+            },
+            "pmPriority": "speed",
+        },
+    ).json()["session_id"]
+
+    response = client.get(f"/api/sessions/{session_id}/teams")
+
+    assert response.status_code == 200
+    team = response.json()["teams"][0]
+    assert team["members"][0]["employee_name"] == "김PM"
+    assert team["members"][0]["assigned_role"] == "PM"
+
+
 def test_team_selection_uses_requirements_agent_ranking(monkeypatch) -> None:
     from backend.services.team_ranking import TeamRankingAdapterResult
 

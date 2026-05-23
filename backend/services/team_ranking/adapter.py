@@ -90,6 +90,7 @@ class RequirementsAgentTeamRankingAdapter:
         session_id: str,
         requirements_list: Mapping[str, Any],
         roleplay_requirements_input: Mapping[str, Any],
+        requester_pm: Mapping[str, Any] | None = None,
     ) -> TeamRankingAdapterResult:
         roleplay_input = dict(roleplay_requirements_input)
         roleplay_input["project_id"] = session_id
@@ -103,6 +104,7 @@ class RequirementsAgentTeamRankingAdapter:
             simulation_id=session_id,
         )
         ranking_result["roleplay_requirements_input"] = roleplay_input
+        ranking_result = _pin_requester_pm(ranking_result, requester_pm)
         teams = _frontend_team_candidates_from_ranking(
             ranking_result,
             max_ranked_teams=self.max_ranked_teams,
@@ -114,9 +116,180 @@ class RequirementsAgentTeamRankingAdapter:
                 ranking_result,
                 team_count=len(teams),
                 top_candidates_per_role=self.top_candidates_per_role,
+                fixed_roles={"PM"} if _requester_pm_member(requester_pm) is not None else set(),
             ),
             teams=teams,
         )
+
+
+def _pin_requester_pm(
+    ranking_result: JsonObject,
+    requester_pm: Mapping[str, Any] | None,
+) -> JsonObject:
+    pm_member = _requester_pm_member(requester_pm)
+    if pm_member is None:
+        return ranking_result
+
+    result = dict(ranking_result)
+    for ranking_key, teams_key in (
+        ("team_composition_ranking", "team_rankings"),
+        ("team_composition_candidates", "team_candidates"),
+    ):
+        ranking = result.get(ranking_key)
+        if isinstance(ranking, Mapping):
+            ranking_copy = dict(ranking)
+            ranking_copy[teams_key] = [
+                _pin_pm_to_ranked_team(team, pm_member)
+                for team in ranking.get(teams_key, [])
+                if isinstance(team, Mapping)
+            ]
+            result[ranking_key] = ranking_copy
+
+    selected_team = result.get("roleplay_selected_team_record")
+    if isinstance(selected_team, Mapping):
+        result["roleplay_selected_team_record"] = _pin_pm_to_selected_team(
+            selected_team,
+            pm_member,
+        )
+
+    pm_snapshot = _requester_pm_snapshot(pm_member, requester_pm)
+    snapshots = result.get("roleplay_employee_fit_profile_snapshots")
+    if isinstance(snapshots, list):
+        result["roleplay_employee_fit_profile_snapshots"] = _pin_pm_snapshot(
+            snapshots,
+            pm_snapshot,
+        )
+
+    packet = result.get("roleplay_simulation_input_packet")
+    if isinstance(packet, Mapping):
+        packet_copy = dict(packet)
+        selected_from_packet = packet_copy.get("selected_team")
+        if isinstance(selected_from_packet, Mapping):
+            packet_copy["selected_team"] = _pin_pm_to_selected_team(
+                selected_from_packet,
+                pm_member,
+            )
+        elif isinstance(result.get("roleplay_selected_team_record"), Mapping):
+            packet_copy["selected_team"] = result["roleplay_selected_team_record"]
+
+        packet_snapshots = packet_copy.get("member_snapshots")
+        if isinstance(packet_snapshots, list):
+            packet_copy["member_snapshots"] = _pin_pm_snapshot(
+                packet_snapshots,
+                pm_snapshot,
+            )
+        else:
+            packet_copy["member_snapshots"] = result.get(
+                "roleplay_employee_fit_profile_snapshots",
+                [pm_snapshot],
+            )
+        result["roleplay_simulation_input_packet"] = packet_copy
+
+    return result
+
+
+def _requester_pm_member(requester_pm: Mapping[str, Any] | None) -> JsonObject | None:
+    if requester_pm is None:
+        return None
+    name = str(requester_pm.get("name") or "").strip()
+    if not name:
+        return None
+    return {
+        "employee_id": str(requester_pm.get("employee_id") or "requester_pm"),
+        "employee_name": name,
+        "assigned_role": "PM",
+        "fit_score": 100.0,
+        "matched_skills": _requester_pm_skills(requester_pm),
+        "missing_skills": [],
+    }
+
+
+def _requester_pm_skills(requester_pm: Mapping[str, Any] | None) -> list[str]:
+    skills = ["project ownership", "requirements clarification", "stakeholder alignment"]
+    if requester_pm is None:
+        return skills
+    preset = str(requester_pm.get("preset") or "").strip()
+    if preset:
+        skills.append(f"{preset} PM style")
+    return _unique_strings(skills)
+
+
+def _pin_pm_to_ranked_team(team: Mapping[str, Any], pm_member: Mapping[str, Any]) -> JsonObject:
+    team_copy = dict(team)
+    team_copy["members"] = _pin_pm_member(team.get("members", []), pm_member)
+    return team_copy
+
+
+def _pin_pm_to_selected_team(
+    selected_team: Mapping[str, Any],
+    pm_member: Mapping[str, Any],
+) -> JsonObject:
+    team_copy = dict(selected_team)
+    team_copy["members"] = [
+        {
+            "employee_id": member["employee_id"],
+            "employee_name": member["employee_name"],
+            "assigned_role": member["assigned_role"],
+        }
+        for member in _pin_pm_member(selected_team.get("members", []), pm_member)
+    ]
+    return team_copy
+
+
+def _pin_pm_member(
+    members: Any,
+    pm_member: Mapping[str, Any],
+) -> list[JsonObject]:
+    normalized = [dict(member) for member in members if isinstance(member, Mapping)]
+    pinned = False
+    result = []
+    for member in normalized:
+        if _is_pm_role(member.get("assigned_role")):
+            result.append({**member, **pm_member})
+            pinned = True
+        else:
+            result.append(member)
+    if not pinned:
+        result.insert(0, dict(pm_member))
+    return result
+
+
+def _requester_pm_snapshot(
+    pm_member: Mapping[str, Any],
+    requester_pm: Mapping[str, Any] | None,
+) -> JsonObject:
+    return {
+        "employee_id": pm_member["employee_id"],
+        "employee_name": pm_member["employee_name"],
+        "assigned_role": "PM",
+        "matched_skills": list(pm_member.get("matched_skills", [])),
+        "missing_skills": [],
+        "capacity_signal": "low_risk",
+        "communication_signal": "low_delay",
+        "delivery_signal": "stable",
+        "collaboration_signal": "connector",
+        "risk_tags": [],
+        "evidence_refs": ["session.pmPersona"],
+    }
+
+
+def _pin_pm_snapshot(snapshots: list[Any], pm_snapshot: Mapping[str, Any]) -> list[JsonObject]:
+    normalized = [dict(snapshot) for snapshot in snapshots if isinstance(snapshot, Mapping)]
+    pinned = False
+    result = []
+    for snapshot in normalized:
+        if _is_pm_role(snapshot.get("assigned_role")):
+            result.append({**snapshot, **pm_snapshot})
+            pinned = True
+        else:
+            result.append(snapshot)
+    if not pinned:
+        result.insert(0, dict(pm_snapshot))
+    return result
+
+
+def _is_pm_role(role: Any) -> bool:
+    return str(role or "").strip() in {"PM", "Product Manager", "Product Lead"}
 
 
 def _frontend_team_candidates_from_ranking(
@@ -190,6 +363,7 @@ def _ranking_total_combinations(
     *,
     team_count: int,
     top_candidates_per_role: int,
+    fixed_roles: set[str],
 ) -> int:
     role_counts = (
         ranking_result.get("employee_fit_ranking", {})
@@ -197,7 +371,9 @@ def _ranking_total_combinations(
         .get("role_candidate_counts", {})
     )
     total = 1
-    for raw_count in role_counts.values():
+    for role, raw_count in role_counts.items():
+        if role in fixed_roles:
+            continue
         try:
             count = int(raw_count)
         except (TypeError, ValueError):
