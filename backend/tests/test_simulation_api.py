@@ -127,7 +127,8 @@ def test_report_contract_returns_selected_session_id() -> None:
 
 
 def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
-    def fake_stream(llm_mode: str) -> Iterator[str]:
+    def fake_stream(session_id: str, llm_mode: str) -> Iterator[str]:
+        assert session_id == "sim_test"
         assert llm_mode == "stub"
         yield session_flow.sse("status", {"stage": "done", "text": "ok"})
         yield session_flow.sse("done", {})
@@ -142,3 +143,55 @@ def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
 
     assert "event: status" in body
     assert "event: done" in body
+
+
+def test_shadow_requirements_payload_uses_session_prd_input() -> None:
+    client = TestClient(app)
+    session_response = client.post(
+        "/api/sessions",
+        json={
+            "prd": (
+                "# Billing Automation MVP\n\n"
+                "Goal: Build a billing automation dashboard in 3 weeks.\n\n"
+                "## Functional Requirements\n"
+                "- Invoice workflow\n"
+            )
+        },
+    )
+    session_id = session_response.json()["session_id"]
+    session_flow.get_requirements_summary(session_id)
+
+    record = session_flow._get_or_create_session(session_id)
+    payload = session_flow._shadow_requirements_payload(record)
+
+    assert payload["project_id"] == session_id
+    assert payload["project_name"] == "Billing Automation MVP"
+    assert "billing automation dashboard" in payload["project_summary"]
+    assert payload["features"][0]["tech_requirements"]
+    assert payload["timeline"]["total_sprint_days"] > 0
+
+
+def test_shadow_stream_payloads_build_simulation_input_packet() -> None:
+    from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline import (
+        SimulationInputBuilder,
+    )
+
+    client = TestClient(app)
+    session_id = client.post("/api/sessions", json={"prd": "# Team Ops MVP"}).json()["session_id"]
+    client.get(f"/api/sessions/{session_id}/requirements")
+    client.get(f"/api/sessions/{session_id}/teams")
+
+    record = session_flow._get_or_create_session(session_id)
+    team_record = session_flow._shadow_selected_team_record(record)
+    packet, _ = SimulationInputBuilder().build(
+        requirements=session_flow._shadow_requirements_payload(record),
+        team_record=team_record,
+        snapshots=session_flow.SHADOW_AGENT_SAMPLES / "sample_employee_fit_profile_snapshots.json",
+        risk_summary=session_flow._shadow_team_risk_summary_payload(team_record["team_id"]),
+        evidence_metadata=session_flow.SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
+        simulation_id=session_id,
+    )
+
+    assert packet.simulation_id == session_id
+    assert packet.project_context.project_id == session_id
+    assert packet.selected_team.team_id == team_record["team_id"]
