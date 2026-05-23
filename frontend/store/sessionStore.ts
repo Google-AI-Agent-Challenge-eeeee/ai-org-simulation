@@ -13,6 +13,7 @@ interface SessionStore {
   statusText: string
   messages: Message[]
   elapsed: number
+  isPaused: boolean
   currentPhase: SimulationPhase | null
   backendLogs: string[]
   pmPersona: PmPersona | null
@@ -26,6 +27,8 @@ interface SessionStore {
   setStreaming: (messageId: string, isStreaming: boolean) => void
   setEventDone: (eventId: string) => void
   tickElapsed: () => void
+  setPaused: (v: boolean) => void
+  togglePaused: () => void
   setCurrentPhase: (phase: SimulationPhase) => void
   appendBackendLog: (text: string) => void
   clearBackendLogs: () => void
@@ -41,6 +44,7 @@ const INITIAL_STATE = {
   statusText: "",
   messages: [],
   elapsed: 0,
+  isPaused: false,
   currentPhase: null,
   backendLogs: [],
   pmPersona: null,
@@ -57,7 +61,11 @@ export const useSessionStore = create<SessionStore>((set) => ({
     set((s) => ({ stage, statusText: text ?? s.statusText })),
 
   appendMessage: (msg) =>
-    set((s) => ({ messages: [...s.messages, msg] })),
+    set((s) =>
+      s.messages.some((m) => m.id === msg.id)
+        ? s
+        : { messages: [...s.messages, msg] },
+    ),
 
   appendToken: (messageId, token) =>
     set((s) => ({
@@ -83,7 +91,12 @@ export const useSessionStore = create<SessionStore>((set) => ({
       ),
     })),
 
-  tickElapsed: () => set((s) => ({ elapsed: s.elapsed + 1 })),
+  tickElapsed: () =>
+    set((s) => ({ elapsed: s.isPaused ? s.elapsed : s.elapsed + 1 })),
+
+  setPaused: (v) => set({ isPaused: v }),
+
+  togglePaused: () => set((s) => ({ isPaused: !s.isPaused })),
 
   setCurrentPhase: (phase) => set({ currentPhase: phase }),
 

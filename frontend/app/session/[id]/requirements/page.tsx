@@ -5,15 +5,12 @@ import { motion } from "framer-motion"
 import { ArrowLeft, FileText, Layers, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ProgressStepper } from "@/components/layout/ProgressStepper"
-import { BackendStatusStrip } from "@/components/layout/BackendStatusStrip"
 import { FeaturePriorityBoard } from "@/components/requirements/FeaturePriorityBoard"
 import { MilestoneTimeline } from "@/components/requirements/MilestoneTimeline"
-import { RiskFlagsPanel } from "@/components/requirements/RiskFlagsPanel"
 import { PmReviewPanel } from "@/components/requirements/PmReviewPanel"
 import { SectionHeader } from "@/components/ui/section-header"
 import { useRequirementsReview } from "@/hooks/useRequirementsReview"
-import { useSessionStore } from "@/store/sessionStore"
-import { fadeDown, fadeUp, staggerContainer } from "@/lib/motion"
+import { fadeUp, staggerContainer } from "@/lib/motion"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -22,7 +19,6 @@ interface Props {
 export default function RequirementsPage({ params }: Props) {
   const { id: sessionId } = use(params)
   const router = useRouter()
-  const { backendLogs } = useSessionStore()
 
   const {
     requirements,
@@ -34,30 +30,27 @@ export default function RequirementsPage({ params }: Props) {
     handleAccept,
     handleRevise,
   } = useRequirementsReview(sessionId)
+  const projectName = requirements?.project_name.replace(/^PDF 첨부:\s*/, "")
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0f0f13] pb-10">
+    <div className="min-h-screen flex flex-col bg-[#0f0f13]">
       {/* 헤더 */}
-      <motion.header
-        initial="hidden" animate="show" variants={fadeDown}
-        className="flex items-center justify-between px-5 py-3 border-b border-zinc-800 bg-[#0f0f13]/95 sticky top-0 z-20"
+      <header
+        className="flex items-center justify-between px-8 py-4 border-b border-white/5 bg-[#0f0f13]/80 backdrop-blur-md"
       >
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition-colors"
+          className="flex cursor-pointer items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">뒤로</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          뒤로
         </button>
-        <h1 className="text-sm font-semibold text-zinc-100">요구사항 분석 결과</h1>
-        <span className="font-mono text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded">
-          #{sessionId.slice(-8).toUpperCase()}
-        </span>
-      </motion.header>
+        <div />
+      </header>
 
       {/* 스텝퍼 */}
-      <div className="border-b border-zinc-800 py-3 px-4">
+      <div className="pt-6 pb-3 px-4">
         <ProgressStepper currentStep="requirements" />
       </div>
 
@@ -88,7 +81,7 @@ export default function RequirementsPage({ params }: Props) {
             {/* 프로젝트 개요 */}
             <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-5">
               <div className="flex items-start justify-between gap-3 mb-2">
-                <h2 className="text-lg font-bold text-zinc-100">{requirements.project_name}</h2>
+                <h2 className="text-lg font-bold text-zinc-100">{projectName}</h2>
                 <FileText className="w-4 h-4 text-zinc-500 shrink-0 mt-1" />
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed mb-3">{requirements.project_summary}</p>
@@ -148,9 +141,6 @@ export default function RequirementsPage({ params }: Props) {
               <SectionHeader icon={FileText} title="일정 & 마일스톤" />
               <MilestoneTimeline milestones={requirements.milestones} />
             </div>
-
-            {/* 리스크 플래그 */}
-            <RiskFlagsPanel flags={requirements.risk_flags} />
           </motion.div>
 
           {/* ─── Right (sticky review panel) ─── */}
@@ -168,10 +158,6 @@ export default function RequirementsPage({ params }: Props) {
         </motion.div>
       )}
 
-      {/* 하단 백엔드 로그 */}
-      <div className="fixed bottom-0 left-0 right-0 z-30">
-        <BackendStatusStrip logs={backendLogs} isActive={loading || actionLoading} />
-      </div>
     </div>
   )
 }

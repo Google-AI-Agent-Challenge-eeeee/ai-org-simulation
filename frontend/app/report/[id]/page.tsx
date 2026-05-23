@@ -11,7 +11,7 @@ import { RequirementsSummarySection } from "@/components/report/RequirementsSumm
 import { PhaseSimulationSection } from "@/components/report/PhaseSimulationSection"
 import { RoleplayOutputSection } from "@/components/report/RoleplayOutputSection"
 import { useReport } from "@/hooks/useReport"
-import { fadeDown, fadeUp, staggerContainer } from "@/lib/motion"
+import { fadeUp, staggerContainer } from "@/lib/motion"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -61,16 +61,14 @@ export default function ReportPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f13] print-surface">
-      <motion.div initial="hidden" animate="show" variants={fadeDown}>
-        <AppHeader
-          reportTitle="시뮬레이션 리포트"
-          reportCreatedAt={formatDate(report.createdAt)}
-          reportId={`SIM-${sessionId.slice(-6).toUpperCase()}`}
-          projectName={report.selectedTeam?.teamName ?? "Project Alpha"}
-          onCopyLink={handleCopyLink}
-          onDownloadPdf={handleDownloadPdf}
-        />
-      </motion.div>
+      <AppHeader
+        reportTitle="시뮬레이션 리포트"
+        reportCreatedAt={formatDate(report.createdAt)}
+        reportId={`SIM-${sessionId.slice(-6).toUpperCase()}`}
+        projectName={report.selectedTeam?.teamName ?? "Project Alpha"}
+        onCopyLink={handleCopyLink}
+        onDownloadPdf={handleDownloadPdf}
+      />
 
       <motion.main
         initial="hidden"

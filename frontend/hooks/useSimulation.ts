@@ -7,7 +7,6 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
 import { useSessionStore } from "@/store/sessionStore"
 import { getStreamUrl } from "@/lib/api"
 import { consumeSse } from "@/lib/sse"
@@ -47,7 +46,6 @@ const SYSTEM_PERSONA = {
 }
 
 export function useSimulation(sessionId: string) {
-  const router = useRouter()
   const {
     setStage,
     appendMessage,
@@ -58,6 +56,7 @@ export function useSimulation(sessionId: string) {
     setCurrentPhase,
     appendBackendLog,
     clearBackendLogs,
+    setPaused,
     messages,
     pmPersona,
   } = useSessionStore()
@@ -74,11 +73,14 @@ export function useSimulation(sessionId: string) {
 
   async function runMock(_sessionId: string, signal: AbortSignal) {
     const { buildMockEvents } = await import("@/lib/mock/scenario")
+    if (signal.aborted) return
+
     const events = buildMockEvents(pmPersona)
     const activeMessages = new Set<string>()
 
     for (const ev of events) {
       if (signal.aborted) break
+      await waitWhilePaused(signal)
 
       if (ev.event === "status") {
         const d = ev.data as SseStatusData
@@ -123,8 +125,6 @@ export function useSimulation(sessionId: string) {
       } else if (ev.event === "done") {
         messages.forEach((m) => setStreaming(m.id, false))
         setStage("done", STAGE_STATUS_TEXT.done)
-        await delay(800)
-        router.push(`/report/${_sessionId}`)
       }
     }
   }
@@ -136,6 +136,8 @@ export function useSimulation(sessionId: string) {
     await consumeSse(
       url,
       async (ev) => {
+        await waitWhilePaused(signal)
+
         if (ev.event === "status") {
           const d = ev.data as SseStatusData
           setStage(d.stage, d.text)
@@ -172,7 +174,6 @@ export function useSimulation(sessionId: string) {
           appendToken(d.messageId, d.token)
         } else if (ev.event === "done") {
           setStage("done", STAGE_STATUS_TEXT.done)
-          router.push(`/report/${sessionId}`)
         }
       },
       signal,
@@ -182,6 +183,7 @@ export function useSimulation(sessionId: string) {
   useEffect(() => {
     if (!sessionId) return
     clearBackendLogs()
+    setPaused(false)
     abortRef.current = new AbortController()
     const { signal } = abortRef.current
 
@@ -202,4 +204,10 @@ export function useSimulation(sessionId: string) {
 
 function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms))
+}
+
+async function waitWhilePaused(signal: AbortSignal) {
+  while (useSessionStore.getState().isPaused && !signal.aborted) {
+    await delay(100)
+  }
 }

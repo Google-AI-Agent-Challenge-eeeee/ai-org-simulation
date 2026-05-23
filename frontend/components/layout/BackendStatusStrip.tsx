@@ -20,7 +20,7 @@ export function BackendStatusStrip({
   return (
     <div
       className={cn(
-        "border-t border-zinc-800 bg-zinc-950/95 px-4 py-2 flex items-center gap-3 min-h-[36px]",
+        "border-t border-zinc-200 bg-white/90 px-4 py-2 flex items-center gap-3 min-h-[36px] backdrop-blur-md",
         className,
       )}
     >
@@ -29,11 +29,11 @@ export function BackendStatusStrip({
           const isCurrent = i === display.length - 1
           return (
             <span key={`${line}-${i}`} className="flex items-center gap-2 shrink-0">
-              {i > 0 && <span className="text-zinc-700 select-none">·</span>}
+              {i > 0 && <span className="text-zinc-300 select-none">·</span>}
               <span
                 className={cn(
                   "font-mono text-[11px] truncate transition-colors",
-                  isCurrent ? "text-zinc-400" : "text-zinc-600",
+                  isCurrent ? "text-zinc-600" : "text-zinc-400",
                 )}
               >
                 {line}
@@ -46,10 +46,10 @@ export function BackendStatusStrip({
         <span
           className={cn(
             "w-1.5 h-1.5 rounded-full",
-            isActive ? "bg-emerald-500 animate-pulse" : "bg-zinc-600",
+            isActive ? "bg-emerald-500 animate-pulse" : "bg-zinc-300",
           )}
         />
-        <span className="font-mono text-[10px] text-zinc-600">
+        <span className="font-mono text-[10px] text-zinc-400">
           {isActive ? "Active" : "Idle"}
         </span>
       </div>
