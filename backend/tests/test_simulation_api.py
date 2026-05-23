@@ -2,8 +2,8 @@ from collections.abc import Iterator
 
 from fastapi.testclient import TestClient
 
-from backend.api import simulation
 from backend.main import app
+from backend.orchestration import session_flow
 
 
 def test_create_session_returns_generated_session_id() -> None:
@@ -90,10 +90,10 @@ def test_report_contract_returns_selected_session_id() -> None:
 def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
     def fake_stream(llm_mode: str) -> Iterator[str]:
         assert llm_mode == "stub"
-        yield simulation._sse("status", {"stage": "done", "text": "ok"})
-        yield simulation._sse("done", {})
+        yield session_flow.sse("status", {"stage": "done", "text": "ok"})
+        yield session_flow.sse("done", {})
 
-    monkeypatch.setattr(simulation, "_pipeline_stream", fake_stream)
+    monkeypatch.setattr(session_flow, "iter_pipeline_sse", fake_stream)
     client = TestClient(app)
 
     with client.stream("GET", "/api/sessions/sim_test/stream?mode=stub") as response:
