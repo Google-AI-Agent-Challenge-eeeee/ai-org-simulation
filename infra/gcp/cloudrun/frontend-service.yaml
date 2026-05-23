@@ -1,0 +1,25 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ai-org-frontend
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "2"
+    spec:
+      serviceAccountName: ai-org-frontend-dev@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: asia-northeast3-docker.pkg.dev/PROJECT_ID/ai-org-frontend/web:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: NEXT_PUBLIC_MOCK
+              value: "false"
+            - name: NEXT_PUBLIC_API_URL
+              value: https://BACKEND_CLOUD_RUN_URL
