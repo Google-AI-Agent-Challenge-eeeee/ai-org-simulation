@@ -88,8 +88,10 @@ def test_team_selection_contract_matches_frontend_shape() -> None:
 
 
 def test_team_selection_uses_requirements_agent_ranking(monkeypatch) -> None:
-    def fake_ranking_result(_record: object) -> dict:
-        return {
+    from backend.services.team_ranking import TeamRankingAdapterResult
+
+    def fake_team_ranking(_record: object) -> TeamRankingAdapterResult:
+        ranking_result = {
             "employee_fit_ranking": {
                 "_meta": {
                     "role_candidate_counts": {
@@ -126,8 +128,43 @@ def test_team_selection_uses_requirements_agent_ranking(monkeypatch) -> None:
                 ]
             },
         }
+        return TeamRankingAdapterResult(
+            ranking_result=ranking_result,
+            roleplay_requirements_input={"project_id": "sim_ranked"},
+            total_combinations=6,
+            teams=[
+                {
+                    "team_id": "team_001",
+                    "team_name": "Recommended Team #1",
+                    "team_rank": 1,
+                    "team_fit_score": 91.2,
+                    "role_coverage_score": 1.0,
+                    "skill_coverage_score": 0.8,
+                    "availability_score": 0.9,
+                    "team_risk_flags": ["integration_risk"],
+                    "badges": ["Requirements Agent", "Rule-based", "Top 1"],
+                    "skill_gaps": ["Backend Developer: API contract sync"],
+                    "members": [
+                        {
+                            "employee_id": "E_RA_001",
+                            "employee_name": "Ranked Member",
+                            "assigned_role": "Backend Developer",
+                            "initials": "RM",
+                            "color": "bg-blue-600",
+                        },
+                        {
+                            "employee_id": "E_RA_002",
+                            "employee_name": "Ranked PM",
+                            "assigned_role": "PM",
+                            "initials": "RP",
+                            "color": "bg-purple-500",
+                        },
+                    ],
+                }
+            ],
+        )
 
-    monkeypatch.setattr(session_flow, "_get_or_build_ranking_result", fake_ranking_result)
+    monkeypatch.setattr(session_flow, "_get_or_build_team_ranking", fake_team_ranking)
     client = TestClient(app)
 
     response = client.get("/api/sessions/sim_ranked/teams")
