@@ -5,9 +5,6 @@ import pathlib
 
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
 
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import (
-    SimulationInputBuilder,
-)
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.agent_card_builder import (
     AgentCardBuilder,
 )
@@ -17,6 +14,9 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.privacy_
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.scenario_phase_planner import (
     ScenarioPhasePlanner,
 )
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import (
+    SimulationInputBuilder,
+)
 
 samples = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/samples")
 outputs = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/outputs")
@@ -25,12 +25,12 @@ outputs = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_age
 # Phase 1: Simulation Input Builder
 # ──────────────────────────────────────────────
 packet, index = SimulationInputBuilder().build(
-    requirements      = samples / "sample_requirements_list.json",
-    team_record       = samples / "sample_selected_team_record.json",
-    snapshots         = samples / "sample_employee_fit_profile_snapshots.json",
-    risk_summary      = samples / "sample_team_risk_summary.json",
-    evidence_metadata = samples / "sample_evidence_metadata.json",
-    simulation_id     = "sim_full_check",
+    requirements=samples / "sample_requirements_list.json",
+    team_record=samples / "sample_selected_team_record.json",
+    snapshots=samples / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=samples / "sample_team_risk_summary.json",
+    evidence_metadata=samples / "sample_evidence_metadata.json",
+    simulation_id="sim_full_check",
 )
 SimulationInputBuilder.to_json(packet, outputs / "Simulation_Input_Packet.json")
 
@@ -42,7 +42,9 @@ p1_pass = (
     and len(uncovered) == 0
 )
 status = "PASS" if p1_pass else "FAIL"
-print(f"Phase 1 | InputBuilder   | members={len(packet.selected_team.members)} evidence={len(packet.evidence_metadata)} uncovered={uncovered} | {status}")
+print(
+    f"Phase 1 | InputBuilder   | members={len(packet.selected_team.members)} evidence={len(packet.evidence_metadata)} uncovered={uncovered} | {status}"
+)
 
 # ──────────────────────────────────────────────
 # Phase 2: Privacy & Column Filter
@@ -54,10 +56,12 @@ p2_pass = all(
     "employee_id" not in s.model_dump() and len(s.model_dump()) == 10
     for s in result.sanitized_snapshots
 )
-removed  = PrivacyColumnFilter.removed_fields()
+removed = PrivacyColumnFilter.removed_fields()
 retained = PrivacyColumnFilter.retained_fields()
 status = "PASS" if p2_pass else "FAIL"
-print(f"Phase 2 | PrivacyFilter  | sanitized={len(result.sanitized_snapshots)} removed={removed} retained={len(retained)} fields | {status}")
+print(
+    f"Phase 2 | PrivacyFilter  | sanitized={len(result.sanitized_snapshots)} removed={removed} retained={len(retained)} fields | {status}"
+)
 
 # ──────────────────────────────────────────────
 # Phase 3: Agent Card Builder
@@ -73,16 +77,18 @@ p3_pass = (
     and all(len(c.constraints) > 0 for c in cards)
 )
 status = "PASS" if p3_pass else "FAIL"
-print(f"Phase 3 | AgentCardBuild | cards={len(cards)} agent_ids={[c.agent_id for c in cards]} | {status}")
+print(
+    f"Phase 3 | AgentCardBuild | cards={len(cards)} agent_ids={[c.agent_id for c in cards]} | {status}"
+)
 
 # ──────────────────────────────────────────────
 # Phase 4: Scenario Phase Planner
 # ──────────────────────────────────────────────
 plan = ScenarioPhasePlanner().plan(
-    requirements   = packet.project_context,
-    risk_summary   = packet.team_risk_summary,
-    evidence_index = index,
-    simulation_id  = packet.simulation_id,
+    requirements=packet.project_context,
+    risk_summary=packet.team_risk_summary,
+    evidence_index=index,
+    simulation_id=packet.simulation_id,
 )
 ScenarioPhasePlanner.to_json(plan, outputs / "Simulation_Phase_Plan.json")
 
@@ -94,7 +100,9 @@ p4_pass = (
     and all(len(p.scenario_events) > 0 for p in plan.phases)
 )
 status = "PASS" if p4_pass else "FAIL"
-print(f"Phase 4 | PhasePlanner   | phases={len(plan.phases)} total_events={total_events} | {status}")
+print(
+    f"Phase 4 | PhasePlanner   | phases={len(plan.phases)} total_events={total_events} | {status}"
+)
 
 # ──────────────────────────────────────────────
 # 상세 리포트
@@ -105,7 +113,9 @@ print("Phase 1  Simulation Input Packet")
 print("=" * 60)
 print(f"  sim_id    : {packet.simulation_id}")
 print(f"  project   : {packet.project_context.project_name}")
-print(f"  team_id   : {packet.selected_team.team_id}  fit_score={packet.selected_team.team_fit_score}")
+print(
+    f"  team_id   : {packet.selected_team.team_id}  fit_score={packet.selected_team.team_fit_score}"
+)
 for m in packet.selected_team.members:
     print(f"    {m.employee_id}  {m.employee_name:5s}  {m.assigned_role}")
 print(f"  risk_tags : {packet.team_risk_summary.risk_tags}")

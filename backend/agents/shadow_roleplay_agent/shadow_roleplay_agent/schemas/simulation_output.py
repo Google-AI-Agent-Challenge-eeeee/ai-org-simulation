@@ -24,11 +24,11 @@ class DimensionSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    dimension:      str
-    raw_score:      float
+    dimension: str
+    raw_score: float
     weighted_score: float
-    weight:         float
-    status:         str   # good / warning / critical
+    weight: float
+    status: str  # good / warning / critical
 
 
 class TopRisk(BaseModel):
@@ -36,13 +36,13 @@ class TopRisk(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    rank:               int
-    issue_category:     str
-    severity:           str
-    status:             str   # confirmed / candidate
+    rank: int
+    issue_category: str
+    severity: str
+    status: str  # confirmed / candidate
     observed_in_phases: list[str]
-    suggested_action:   str
-    evidence_refs:      list[str] = Field(default_factory=list)
+    suggested_action: str
+    evidence_refs: list[str] = Field(default_factory=list)
 
 
 class MustFixItem(BaseModel):
@@ -50,10 +50,10 @@ class MustFixItem(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    issue_category:  str
-    severity:        str
+    issue_category: str
+    severity: str
     suggested_action: str
-    affected_roles:  list[str] = Field(default_factory=list)
+    affected_roles: list[str] = Field(default_factory=list)
 
 
 class EvidenceSummary(BaseModel):
@@ -61,11 +61,11 @@ class EvidenceSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    total_evidence_refs:     int = 0
-    total_confirmed_issues:  int = 0
-    total_candidate_issues:  int = 0
-    total_unresolved_turns:  int = 0
-    phases_with_high_risk:   list[str] = Field(default_factory=list)
+    total_evidence_refs: int = 0
+    total_confirmed_issues: int = 0
+    total_candidate_issues: int = 0
+    total_unresolved_turns: int = 0
+    phases_with_high_risk: list[str] = Field(default_factory=list)
 
 
 class SimulationOutput(BaseModel):
@@ -77,26 +77,24 @@ class SimulationOutput(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    simulation_id:        str
-    team_id:              str
-    project_name:         str
+    simulation_id: str
+    team_id: str
+    project_name: str
 
     # 핵심 결과
-    simulation_verdict:   Verdict
-    overall_project_fit:  float = Field(ge=0.0, le=1.0)
-    score_note:           str   = Field(
-        description="guardrails §6 권장 표현 준수 진단 요약"
-    )
+    simulation_verdict: Verdict
+    overall_project_fit: float = Field(ge=0.0, le=1.0)
+    score_note: str = Field(description="guardrails §6 권장 표현 준수 진단 요약")
 
     # 차원별 점수
-    score_breakdown:      list[DimensionSummary]
+    score_breakdown: list[DimensionSummary]
 
     # 리스크 요약
-    top_risks:            list[TopRisk]
+    top_risks: list[TopRisk]
     must_fix_before_start: list[MustFixItem]
 
     # evidence 통계
-    evidence_summary:     EvidenceSummary
+    evidence_summary: EvidenceSummary
 
     # phase 안정성 요약
     phase_stability_summary: dict[str, float] = Field(

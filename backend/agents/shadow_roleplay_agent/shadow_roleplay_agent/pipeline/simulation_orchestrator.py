@@ -15,7 +15,6 @@ guardrails §3 준수:
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 
@@ -37,7 +36,6 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.orchestr
     ValidationStatus,
 )
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.phase_plan import (
-    PhaseName,
     ScenarioEvent,
     SimulationPhase,
     SimulationPhasePlan,
@@ -150,9 +148,9 @@ class SimulationOrchestrator:
                         "role": turn.assigned_role,
                         "validation": turn.validation.status if turn.validation else "valid",
                         "turn": {
-                            "observation":     turn.observation,
-                            "concern":         turn.concern,
-                            "dependency":      turn.dependency,
+                            "observation": turn.observation,
+                            "concern": turn.concern,
+                            "dependency": turn.dependency,
                             "proposed_action": turn.proposed_action,
                             "evidence_refs_used": turn.evidence_refs_used,
                         },
@@ -183,53 +181,62 @@ class SimulationOrchestrator:
             card = card_by_role.get(role)
             if card is None:
                 logger.warning("[Orchestrator] role=%s Agent Card 없음 (스킵)", role)
-                flags.append(OrchestratorFlag(
-                    flag_type="invalid_skip",
-                    agent_id=role,
-                    event_id=event.event_id,
-                    message=f"Agent Card 없음 — role={role}",
-                ))
+                flags.append(
+                    OrchestratorFlag(
+                        flag_type="invalid_skip",
+                        agent_id=role,
+                        event_id=event.event_id,
+                        message=f"Agent Card 없음 — role={role}",
+                    )
+                )
                 continue
 
             # Phase 6: PhaseContext 생성 후 speak_with_context 호출
-            ctx   = ctx_builder.build(phase, event, role)
+            ctx = ctx_builder.build(phase, event, role)
             agent = RoleAgent(card, self.llm_mode)
-            turn  = agent.speak_with_context(ctx)
+            turn = agent.speak_with_context(ctx)
 
             # 검증 실패 시 재질문 (최대 1회)
             if turn.validation.status in (ValidationStatus.INVALID, ValidationStatus.NEEDS_RETRY):
                 flag_type = (
-                    "re_question" if turn.validation.status == ValidationStatus.NEEDS_RETRY
+                    "re_question"
+                    if turn.validation.status == ValidationStatus.NEEDS_RETRY
                     else "invalid_skip"
                 )
-                flags.append(OrchestratorFlag(
-                    flag_type=flag_type,
-                    agent_id=card.agent_id,
-                    event_id=event.event_id,
-                    message=(
-                        f"[{turn.validation.status}] {turn.validation.reason} "
-                        f"checks={turn.validation.failed_checks}"
-                    ),
-                ))
+                flags.append(
+                    OrchestratorFlag(
+                        flag_type=flag_type,
+                        agent_id=card.agent_id,
+                        event_id=event.event_id,
+                        message=(
+                            f"[{turn.validation.status}] {turn.validation.reason} "
+                            f"checks={turn.validation.failed_checks}"
+                        ),
+                    )
+                )
 
                 if flag_type == "re_question":
                     # NEEDS_RETRY: 재질문 1회 — PhaseContext 재주입
                     logger.info(
                         "[Orchestrator] re_question agent=%s event=%s",
-                        card.agent_id, event.event_id,
+                        card.agent_id,
+                        event.event_id,
                     )
                     turn = agent.speak_with_context(ctx)
 
                 if turn.validation.status == ValidationStatus.INVALID:
                     logger.warning(
                         "[Orchestrator] invalid_skip agent=%s event=%s reason=%s",
-                        card.agent_id, event.event_id, turn.validation.reason,
+                        card.agent_id,
+                        event.event_id,
+                        turn.validation.reason,
                     )
 
             turns.append(turn)
             logger.debug(
                 "[Orchestrator] turn added agent=%s status=%s",
-                card.agent_id, turn.validation.status,
+                card.agent_id,
+                turn.validation.status,
             )
 
         return PhaseRun(

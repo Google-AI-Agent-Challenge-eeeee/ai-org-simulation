@@ -53,6 +53,11 @@ ignore = [
     "E501", # line too long (handled by formatter)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = [
+    "E402", # dev scripts load env/sys.path before importing project modules
+]
+
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI 표준 패턴: `param: T = Query(...)`, `db: Session = Depends(...)` 같이
 # 함수 호출을 기본값으로 두는 것이 의도된 API. B008이 이걸 잡지 않도록 화이트리스트.

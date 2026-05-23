@@ -41,30 +41,32 @@ logger = logging.getLogger(__name__)
 # ── 상수 ───────────────────────────────────────────────────────────────
 
 # rules.md §2 9개 공식 카테고리
-_OFFICIAL_CATEGORIES = frozenset({
-    "role_conflict",
-    "unclear_ownership",
-    "schedule_risk",
-    "workload_concentration",
-    "technical_dependency_risk",
-    "integration_risk",
-    "communication_delay",
-    "qa_coverage_gap",
-    "release_blocker",
-})
+_OFFICIAL_CATEGORIES = frozenset(
+    {
+        "role_conflict",
+        "unclear_ownership",
+        "schedule_risk",
+        "workload_concentration",
+        "technical_dependency_risk",
+        "integration_risk",
+        "communication_delay",
+        "qa_coverage_gap",
+        "release_blocker",
+    }
+)
 
 # Team_Risk_Summary risk_tag → 공식 카테고리 매핑
 _TAG_TO_CATEGORY: dict[str, str] = {
     "backend_workload_concentration": "workload_concentration",
-    "pm_low_sprint_velocity":         "schedule_risk",
-    "fe_scope_instability":           "schedule_risk",
-    "fe_be_api_dependency":           "integration_risk",
-    "payment_api_integration_risk":   "integration_risk",
-    "devops_gcp_experience_gap":      "technical_dependency_risk",
-    "qa_communication_gap":           "communication_delay",
-    "qa_coverage_gap":                "qa_coverage_gap",
-    "schedule_risk":                  "schedule_risk",
-    "integration_risk":               "integration_risk",
+    "pm_low_sprint_velocity": "schedule_risk",
+    "fe_scope_instability": "schedule_risk",
+    "fe_be_api_dependency": "integration_risk",
+    "payment_api_integration_risk": "integration_risk",
+    "devops_gcp_experience_gap": "technical_dependency_risk",
+    "qa_communication_gap": "communication_delay",
+    "qa_coverage_gap": "qa_coverage_gap",
+    "schedule_risk": "schedule_risk",
+    "integration_risk": "integration_risk",
 }
 
 # 공식 카테고리 → 분석 템플릿 (rules.md §4)
@@ -122,15 +124,17 @@ _CONFIRM_THRESHOLD = 0.50
 
 # ── 평가 내부 집계 구조 ────────────────────────────────────────────────
 
+
 @dataclass
 class _CategoryAccumulator:
     """카테고리별 수집 데이터."""
-    candidates:        list[IssueCandidate] = field(default_factory=list)
-    phases_observed:   set[str]             = field(default_factory=set)
-    all_evidence_refs: set[str]             = field(default_factory=set)
-    all_affected_roles:set[str]             = field(default_factory=set)
-    unresolved_ids:    list[str]            = field(default_factory=list)
-    source_risk_tags:  set[str]             = field(default_factory=set)
+
+    candidates: list[IssueCandidate] = field(default_factory=list)
+    phases_observed: set[str] = field(default_factory=set)
+    all_evidence_refs: set[str] = field(default_factory=set)
+    all_affected_roles: set[str] = field(default_factory=set)
+    unresolved_ids: list[str] = field(default_factory=list)
+    source_risk_tags: set[str] = field(default_factory=set)
 
 
 class IssueRiskEvaluator:
@@ -144,8 +148,8 @@ class IssueRiskEvaluator:
 
     def evaluate(
         self,
-        sim_log:       TeamSimulationLog,
-        risk_summary:  TeamRiskSummary,
+        sim_log: TeamSimulationLog,
+        risk_summary: TeamRiskSummary,
         evidence_list: list[EvidenceMetadata],
     ) -> IssueRiskSummary:
         """교차 검증 후 IssueRiskSummary를 반환한다."""
@@ -218,9 +222,9 @@ class IssueRiskEvaluator:
                         accum["release_blocker"].unresolved_ids.append(uq.question_id)
 
         # ── 4. 카테고리별 점수 계산 + 상태 판정 ──────────────────────
-        confirmed:  list[ConfirmedIssue] = []
+        confirmed: list[ConfirmedIssue] = []
         candidates: list[ConfirmedIssue] = []
-        invalids:   list[ConfirmedIssue] = []
+        invalids: list[ConfirmedIssue] = []
         issue_counter = 1
 
         for cat in sorted(_OFFICIAL_CATEGORIES):
@@ -229,23 +233,29 @@ class IssueRiskEvaluator:
 
             # 근거(evidence) 확인
             has_prior_risk = cat in pre_scores and pre_scores[cat] > 0.0
-            has_evidence   = bool(a.all_evidence_refs & evidence_ids) or bool(a.source_risk_tags & set(risk_summary.risk_tags))
+            has_evidence = bool(a.all_evidence_refs & evidence_ids) or bool(
+                a.source_risk_tags & set(risk_summary.risk_tags)
+            )
             has_observation = len(a.candidates) > 0 or len(a.unresolved_ids) > 0
 
             if not has_observation and not has_prior_risk:
                 # 관찰도 없고 prior risk도 없음 → INVALID
-                invalids.append(_make_issue(
-                    issue_counter, cat, tmpl,
-                    pre_simulation_risk=0.0,
-                    observed_simulation_risk=0.0,
-                    final_score=0.0,
-                    status=EvaluationStatus.INVALID,
-                    evidence_refs=[],
-                    phases=[],
-                    roles=[],
-                    source_tags=[],
-                    unresolved_ids=[],
-                ))
+                invalids.append(
+                    _make_issue(
+                        issue_counter,
+                        cat,
+                        tmpl,
+                        pre_simulation_risk=0.0,
+                        observed_simulation_risk=0.0,
+                        final_score=0.0,
+                        status=EvaluationStatus.INVALID,
+                        evidence_refs=[],
+                        phases=[],
+                        roles=[],
+                        source_tags=[],
+                        unresolved_ids=[],
+                    )
+                )
                 issue_counter += 1
                 continue
 
@@ -268,10 +278,12 @@ class IssueRiskEvaluator:
             affected = sorted(a.all_affected_roles) or _default_roles(cat)
             sev = _determine_severity(cat, final_score, a)
             root_cause = _enrich_root_cause(tmpl["root_cause"], cat, a)
-            suggested  = _enrich_suggested_action(tmpl["suggested_action"], a)
+            suggested = _enrich_suggested_action(tmpl["suggested_action"], a)
 
             issue = _make_issue(
-                issue_counter, cat, tmpl,
+                issue_counter,
+                cat,
+                tmpl,
                 pre_simulation_risk=round(pre_risk, 4),
                 observed_simulation_risk=round(observed_risk, 4),
                 final_score=final_score,
@@ -291,13 +303,16 @@ class IssueRiskEvaluator:
                 confirmed.append(issue)
                 logger.info(
                     "[Evaluator] CONFIRMED  %-30s score=%.3f phases=%s",
-                    cat, final_score, sorted(a.phases_observed),
+                    cat,
+                    final_score,
+                    sorted(a.phases_observed),
                 )
             elif status == EvaluationStatus.CANDIDATE:
                 candidates.append(issue)
                 logger.info(
                     "[Evaluator] CANDIDATE  %-30s score=%.3f (below threshold or no prior)",
-                    cat, final_score,
+                    cat,
+                    final_score,
                 )
             else:
                 invalids.append(issue)
@@ -312,13 +327,15 @@ class IssueRiskEvaluator:
         )
         logger.info(
             "[IssueRiskEvaluator] 완료 | confirmed=%d candidate=%d invalid=%d high=%d",
-            summary.total_confirmed, summary.total_candidate,
-            summary.total_invalid, summary.high_count,
+            summary.total_confirmed,
+            summary.total_candidate,
+            summary.total_invalid,
+            summary.high_count,
         )
         return summary
 
     @staticmethod
-    def to_json(summary: IssueRiskSummary, path: "Path | str") -> None:
+    def to_json(summary: IssueRiskSummary, path: Path | str) -> None:
         """Issue_Risk_Summary.json으로 저장한다."""
         out = Path(path)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -329,6 +346,7 @@ class IssueRiskEvaluator:
 # ──────────────────────────────────────────────
 # 헬퍼
 # ──────────────────────────────────────────────
+
 
 def _normalize_category(raw: str) -> str:
     """비공식 카테고리명을 공식 카테고리로 변환한다."""
@@ -397,15 +415,15 @@ def _enrich_suggested_action(base: str, a: _CategoryAccumulator) -> str:
 def _default_roles(cat: str) -> list[str]:
     """카테고리에 따른 기본 affected_roles."""
     _defaults: dict[str, list[str]] = {
-        "role_conflict":           ["PM", "Backend Developer", "Frontend Developer"],
-        "unclear_ownership":       ["PM"],
-        "schedule_risk":           ["PM", "Backend Developer"],
-        "workload_concentration":  ["Backend Developer"],
+        "role_conflict": ["PM", "Backend Developer", "Frontend Developer"],
+        "unclear_ownership": ["PM"],
+        "schedule_risk": ["PM", "Backend Developer"],
+        "workload_concentration": ["Backend Developer"],
         "technical_dependency_risk": ["Backend Developer", "DevOps"],
-        "integration_risk":        ["Backend Developer", "Frontend Developer"],
-        "communication_delay":     ["QA Engineer", "Backend Developer"],
-        "qa_coverage_gap":         ["QA Engineer"],
-        "release_blocker":         ["PM", "QA Engineer"],
+        "integration_risk": ["Backend Developer", "Frontend Developer"],
+        "communication_delay": ["QA Engineer", "Backend Developer"],
+        "qa_coverage_gap": ["QA Engineer"],
+        "release_blocker": ["PM", "QA Engineer"],
     }
     return _defaults.get(cat, ["PM"])
 

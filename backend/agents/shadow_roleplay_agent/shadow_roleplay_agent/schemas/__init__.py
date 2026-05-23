@@ -1,15 +1,3 @@
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_output import (
-    DimensionSummary,
-    EvidenceSummary,
-    MustFixItem,
-    SimulationOutput,
-    TopRisk,
-)
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.score_breakdown import (
-    ScoreBreakdown,
-    ScoreDimension,
-    Verdict,
-)
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.issue_risk_summary import (
     ConfirmedIssue,
     EvaluationStatus,
@@ -27,6 +15,11 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.phase_lo
     TeamSimulationLog,
     UnresolvedQuestion,
 )
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.score_breakdown import (
+    ScoreBreakdown,
+    ScoreDimension,
+    Verdict,
+)
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_input import (
     CapacitySignal,
     CollaborationStyle,
@@ -43,6 +36,13 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulati
     SimulationInputPacket,
     TeamMember,
     TeamRiskSummary,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_output import (
+    DimensionSummary,
+    EvidenceSummary,
+    MustFixItem,
+    SimulationOutput,
+    TopRisk,
 )
 
 __all__ = [

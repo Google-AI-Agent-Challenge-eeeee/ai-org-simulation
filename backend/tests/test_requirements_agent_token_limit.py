@@ -4,7 +4,6 @@ from backend.agents.requirements_agent.pipeline.section_splitter import (
     prepare_document_sections,
 )
 
-
 OUTPUT_DIR = Path("backend/agents/requirements_agent/outputs")
 
 

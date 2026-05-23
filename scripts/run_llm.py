@@ -6,6 +6,7 @@ Kickoff 단계의 첫 번째 에이전트 1턴만 Gemini로 실행한다.
 실행:
     uv run python scripts/run_llm.py
 """
+
 import json
 import os
 import sys
@@ -57,11 +58,11 @@ print()
 print("[Phase 1] Building simulation input packet...")
 builder = SimulationInputBuilder()
 packet, evidence_index = builder.build(
-    requirements      = SAMPLES / "sample_requirements_list.json",
-    team_record       = SAMPLES / "sample_selected_team_record.json",
-    snapshots         = SAMPLES / "sample_employee_fit_profile_snapshots.json",
-    risk_summary      = SAMPLES / "sample_team_risk_summary.json",
-    evidence_metadata = SAMPLES / "sample_evidence_metadata.json",
+    requirements=SAMPLES / "sample_requirements_list.json",
+    team_record=SAMPLES / "sample_selected_team_record.json",
+    snapshots=SAMPLES / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=SAMPLES / "sample_team_risk_summary.json",
+    evidence_metadata=SAMPLES / "sample_evidence_metadata.json",
 )
 print(f"  members={len(packet.member_snapshots)}, evidence_items={len(evidence_index.by_id)}")
 
@@ -91,18 +92,18 @@ print(f"  Kickoff events={len(kickoff.scenario_events)}")
 # Phase 6 — LLM 모드 에이전트 발언 (Kickoff 첫 번째 이벤트, 첫 번째 에이전트)
 print()
 print("[Phase 6] LLM agent turn — calling Gemini...")
-first_card  = cards[0]
+first_card = cards[0]
 first_event = kickoff.scenario_events[0]
 
 ctx_builder = PhaseContextBuilder(cards)
 ctx = ctx_builder.build(
-    phase       = kickoff,
-    event       = first_event,
-    agent_role  = first_card.assigned_role,
+    phase=kickoff,
+    event=first_event,
+    agent_role=first_card.assigned_role,
 )
 
 agent = RoleAgent(card=first_card, llm_mode=LLMMode.VERTEX)
-turn  = agent.speak_with_context(ctx)
+turn = agent.speak_with_context(ctx)
 
 print()
 print(f"  Agent      : {turn.agent_id}")

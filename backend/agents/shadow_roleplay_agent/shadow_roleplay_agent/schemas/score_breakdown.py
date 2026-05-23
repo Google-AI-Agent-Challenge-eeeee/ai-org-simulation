@@ -26,10 +26,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class Verdict(StrEnum):
-    PROCEED                = "proceed"
+    PROCEED = "proceed"
     PROCEED_WITH_CONDITIONS = "proceed_with_conditions"
-    NEEDS_REBALANCING      = "needs_rebalancing"
-    NOT_RECOMMENDED        = "not_recommended"
+    NEEDS_REBALANCING = "needs_rebalancing"
+    NOT_RECOMMENDED = "not_recommended"
 
 
 class ScoreDimension(BaseModel):
@@ -37,13 +37,13 @@ class ScoreDimension(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    dimension:      str                    # e.g. "schedule_stability"
-    weight:         float = Field(ge=0.0, le=1.0)
-    raw_score:      float = Field(ge=0.0, le=1.0)
+    dimension: str  # e.g. "schedule_stability"
+    weight: float = Field(ge=0.0, le=1.0)
+    raw_score: float = Field(ge=0.0, le=1.0)
     weighted_score: float = Field(ge=0.0, le=1.0)
 
     # 점수 근거 추적
-    deducted_by:    list[str] = Field(
+    deducted_by: list[str] = Field(
         default_factory=list,
         description="이 차원 점수를 낮춘 issue_id 목록",
     )
@@ -51,7 +51,7 @@ class ScoreDimension(BaseModel):
         default_factory=list,
         description="페널티 설명 (issue_category + status + severity)",
     )
-    phase_signal:   str = ""
+    phase_signal: str = ""
 
 
 class ScoreBreakdown(BaseModel):
@@ -63,19 +63,19 @@ class ScoreBreakdown(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    simulation_id:       str
-    team_id:             str
+    simulation_id: str
+    team_id: str
 
-    dimensions:          list[ScoreDimension]
+    dimensions: list[ScoreDimension]
     overall_project_fit: float = Field(ge=0.0, le=1.0)
-    verdict:             Verdict
+    verdict: Verdict
 
     # Phase 9 진단 요약
-    top_risk_dimensions:  list[str] = Field(
+    top_risk_dimensions: list[str] = Field(
         default_factory=list,
         description="raw_score 하위 3개 차원",
     )
-    must_fix_categories:  list[str] = Field(
+    must_fix_categories: list[str] = Field(
         default_factory=list,
         description="CONFIRMED HIGH issue의 issue_category 목록 (릴리즈 전 필수 해결)",
     )

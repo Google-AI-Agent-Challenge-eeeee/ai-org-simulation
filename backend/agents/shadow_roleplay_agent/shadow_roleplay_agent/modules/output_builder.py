@@ -14,11 +14,9 @@ import logging
 from pathlib import Path
 
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.issue_risk_summary import (
-    EvaluationStatus,
     IssueRiskSummary,
 )
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.phase_log import (
-    IssueSeverity,
     TeamSimulationLog,
 )
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.score_breakdown import (
@@ -33,6 +31,7 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulati
 )
 
 logger = logging.getLogger(__name__)
+
 
 # raw_score → status 매핑
 def _dim_status(score: float) -> str:
@@ -54,10 +53,10 @@ class OutputBuilder:
 
     def build(
         self,
-        breakdown:     ScoreBreakdown,
+        breakdown: ScoreBreakdown,
         issue_summary: IssueRiskSummary,
-        sim_log:       TeamSimulationLog,
-        project_name:  str,
+        sim_log: TeamSimulationLog,
+        project_name: str,
     ) -> SimulationOutput:
         """3개 중간 산출물을 조합해 SimulationOutput을 반환한다."""
 
@@ -82,15 +81,17 @@ class OutputBuilder:
 
         top_risks: list[TopRisk] = []
         for rank, issue in enumerate(all_issues[:5], start=1):
-            top_risks.append(TopRisk(
-                rank=rank,
-                issue_category=issue.issue_category,
-                severity=issue.severity,
-                status=issue.status.value,
-                observed_in_phases=issue.observed_in_phases,
-                suggested_action=issue.suggested_action,
-                evidence_refs=issue.evidence_refs[:5],
-            ))
+            top_risks.append(
+                TopRisk(
+                    rank=rank,
+                    issue_category=issue.issue_category,
+                    severity=issue.severity,
+                    status=issue.status.value,
+                    observed_in_phases=issue.observed_in_phases,
+                    suggested_action=issue.suggested_action,
+                    evidence_refs=issue.evidence_refs[:5],
+                )
+            )
 
         # ── 3. must_fix_before_start — CONFIRMED issues ───────────────
         must_fix: list[MustFixItem] = [
@@ -154,7 +155,7 @@ class OutputBuilder:
         return output
 
     @staticmethod
-    def to_json(output: SimulationOutput, path: "Path | str") -> None:
+    def to_json(output: SimulationOutput, path: Path | str) -> None:
         """Simulation_OUTPUT.json으로 저장한다."""
         out = Path(path)
         out.parent.mkdir(parents=True, exist_ok=True)

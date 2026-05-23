@@ -50,13 +50,13 @@ logger = logging.getLogger(__name__)
 
 # (dimension_name, weight, related_categories)
 _DIMENSIONS: list[tuple[str, float, list[str]]] = [
-    ("schedule_stability",     0.20, ["schedule_risk"]),
-    ("role_clarity",           0.15, ["role_conflict", "unclear_ownership"]),
+    ("schedule_stability", 0.20, ["schedule_risk"]),
+    ("role_clarity", 0.15, ["role_conflict", "unclear_ownership"]),
     ("technical_risk_control", 0.15, ["technical_dependency_risk"]),
-    ("integration_readiness",  0.15, ["integration_risk"]),
-    ("collaboration_quality",  0.15, ["communication_delay"]),
-    ("qa_release_readiness",   0.10, ["qa_coverage_gap", "release_blocker"]),
-    ("workload_balance",       0.10, ["workload_concentration"]),
+    ("integration_readiness", 0.15, ["integration_risk"]),
+    ("collaboration_quality", 0.15, ["communication_delay"]),
+    ("qa_release_readiness", 0.10, ["qa_coverage_gap", "release_blocker"]),
+    ("workload_balance", 0.10, ["workload_concentration"]),
 ]
 
 # issue status × severity 감점표
@@ -67,10 +67,10 @@ _PENALTY: dict[str, dict[str, float]] = {
 
 # phase_name → 관련 차원 (phase_stability_score 반영)
 _PHASE_DIMENSION_MAP: dict[str, list[str]] = {
-    "Kickoff Meeting":    ["schedule_stability", "role_clarity"],
-    "Design Phase":       ["role_clarity", "technical_risk_control"],
-    "Development Phase":  ["workload_balance", "technical_risk_control"],
-    "Integration Phase":  ["integration_readiness"],
+    "Kickoff Meeting": ["schedule_stability", "role_clarity"],
+    "Design Phase": ["role_clarity", "technical_risk_control"],
+    "Development Phase": ["workload_balance", "technical_risk_control"],
+    "Integration Phase": ["integration_readiness"],
     "QA / Release Phase": ["qa_release_readiness"],
 }
 
@@ -114,10 +114,8 @@ class ScoreCalculator:
         dimensions: list[ScoreDimension] = []
         overall = 0.0
 
-        for dim_name, weight, related_cats in _DIMENSIONS:
-            raw_score, deducted_by, penalty_detail = _calc_dim_score(
-                dim_name, dim_issues[dim_name]
-            )
+        for dim_name, weight, _related_cats in _DIMENSIONS:
+            raw_score, deducted_by, penalty_detail = _calc_dim_score(dim_name, dim_issues[dim_name])
 
             # phase_stability 조정
             phase_signal = ""
@@ -138,18 +136,23 @@ class ScoreCalculator:
             weighted = round(raw_score * weight, 4)
             overall += weighted
 
-            dimensions.append(ScoreDimension(
-                dimension=dim_name,
-                weight=weight,
-                raw_score=raw_score,
-                weighted_score=weighted,
-                deducted_by=deducted_by,
-                penalty_detail=penalty_detail,
-                phase_signal=phase_signal,
-            ))
+            dimensions.append(
+                ScoreDimension(
+                    dimension=dim_name,
+                    weight=weight,
+                    raw_score=raw_score,
+                    weighted_score=weighted,
+                    deducted_by=deducted_by,
+                    penalty_detail=penalty_detail,
+                    phase_signal=phase_signal,
+                )
+            )
             logger.info(
                 "[ScoreCalc] %-25s raw=%.3f weight=%.2f weighted=%.3f",
-                dim_name, raw_score, weight, weighted,
+                dim_name,
+                raw_score,
+                weight,
+                weighted,
             )
 
         overall_fit = round(min(1.0, max(0.0, overall)), 4)
@@ -162,14 +165,10 @@ class ScoreCalculator:
         top_risk_dims = [d.dimension for d in top_risk]
 
         must_fix = [
-            i.issue_category
-            for i in issue_summary.confirmed_issues
-            if i.severity == "high"
+            i.issue_category for i in issue_summary.confirmed_issues if i.severity == "high"
         ]
 
-        score_note = _build_score_note(
-            sim_log.project_name, overall_fit, verdict, must_fix
-        )
+        score_note = _build_score_note(sim_log.project_name, overall_fit, verdict, must_fix)
 
         breakdown = ScoreBreakdown(
             simulation_id=issue_summary.simulation_id,
@@ -184,12 +183,14 @@ class ScoreCalculator:
 
         logger.info(
             "[ScoreCalculator] 완료 | overall=%.3f verdict=%s must_fix=%d",
-            overall_fit, verdict, len(must_fix),
+            overall_fit,
+            verdict,
+            len(must_fix),
         )
         return breakdown
 
     @staticmethod
-    def to_json(breakdown: ScoreBreakdown, path: "Path | str") -> None:
+    def to_json(breakdown: ScoreBreakdown, path: Path | str) -> None:
         """Score_Breakdown.json으로 저장한다."""
         out = Path(path)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -200,6 +201,7 @@ class ScoreCalculator:
 # ──────────────────────────────────────────────
 # 헬퍼
 # ──────────────────────────────────────────────
+
 
 def _calc_dim_score(
     dim_name: str,
@@ -230,8 +232,7 @@ def _determine_verdict(
     overall: float,
 ) -> Verdict:
     """rules.md §6 Verdict Rule을 적용한다."""
-    confirmed_high = [i for i in summary.confirmed_issues if i.severity == "high"]
-    confirmed_cats  = {i.issue_category for i in summary.confirmed_issues}
+    confirmed_cats = {i.issue_category for i in summary.confirmed_issues}
 
     # not_recommended: release_blocker 확정 HIGH 또는 overall 매우 낮음
     release_blocker_confirmed = any(
@@ -262,10 +263,10 @@ def _build_score_note(
 ) -> str:
     """guardrails §6 권장 표현에 맞는 진단 요약 문장을 생성한다."""
     verdict_phrases = {
-        Verdict.PROCEED:                 "이 팀 조합은 주어진 요구사항에 대해 안정적인 진행이 가능하다.",
+        Verdict.PROCEED: "이 팀 조합은 주어진 요구사항에 대해 안정적인 진행이 가능하다.",
         Verdict.PROCEED_WITH_CONDITIONS: "이 팀 조합은 진행 가능하나, 시작 전 해결이 필요한 항목이 존재한다.",
-        Verdict.NEEDS_REBALANCING:       "이 팀 조합은 역할·workload·ownership 재조정 후 진행을 권장한다.",
-        Verdict.NOT_RECOMMENDED:         "이 팀 조합은 현재 상태에서 프로젝트 착수를 권장하지 않는다.",
+        Verdict.NEEDS_REBALANCING: "이 팀 조합은 역할·workload·ownership 재조정 후 진행을 권장한다.",
+        Verdict.NOT_RECOMMENDED: "이 팀 조합은 현재 상태에서 프로젝트 착수를 권장하지 않는다.",
     }
     base = verdict_phrases.get(verdict, "")
     parts = [

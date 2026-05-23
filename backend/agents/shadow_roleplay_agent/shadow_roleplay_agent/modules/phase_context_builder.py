@@ -56,11 +56,9 @@ class PhaseContextBuilder:
 
         peer_roles = [
             PeerRoleSummary(
-                agent_id=self._card_by_role[role].agent_id
-                if role in self._card_by_role else role,
+                agent_id=self._card_by_role[role].agent_id if role in self._card_by_role else role,
                 assigned_role=role,
-                risk_tags=self._card_by_role[role].risk_tags
-                if role in self._card_by_role else [],
+                risk_tags=self._card_by_role[role].risk_tags if role in self._card_by_role else [],
             )
             for role in event.involved_roles
             if role != agent_role
@@ -76,9 +74,7 @@ class PhaseContextBuilder:
             available_evidence_refs=card.evidence_refs,
         )
 
-    def build_all(
-        self, plan: SimulationPhasePlan
-    ) -> list[dict]:
+    def build_all(self, plan: SimulationPhasePlan) -> list[dict]:
         """계획 전체 (모든 phase × event × role)의 PhaseContext 목록을 반환한다."""
         all_ctxs: list[dict] = []
         for phase in plan.phases:
@@ -88,12 +84,14 @@ class PhaseContextBuilder:
                         logger.warning("[ContextBuilder] 카드 없음: role=%s (스킵)", role)
                         continue
                     ctx = self.build(phase, event, role)
-                    all_ctxs.append({
-                        "phase_name":    ctx.phase_name.value,
-                        "event_id":      event.event_id,
-                        "speaking_role": role,
-                        "context":       ctx.model_dump(),
-                    })
+                    all_ctxs.append(
+                        {
+                            "phase_name": ctx.phase_name.value,
+                            "event_id": event.event_id,
+                            "speaking_role": role,
+                            "context": ctx.model_dump(),
+                        }
+                    )
         logger.info("[ContextBuilder] 총 %d개 PhaseContext 생성", len(all_ctxs))
         return all_ctxs
 

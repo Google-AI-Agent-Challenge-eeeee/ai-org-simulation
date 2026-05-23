@@ -17,7 +17,6 @@ import logging
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Union
 
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_input import (
     EmployeeFitProfileSnapshot,
@@ -33,6 +32,7 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────
 # Evidence Index — risk / evidence 역추적
 # ──────────────────────────────────────────────
+
 
 @dataclass
 class EvidenceIndex:
@@ -52,7 +52,7 @@ class EvidenceIndex:
     by_id: dict[str, EvidenceMetadata] = field(default_factory=dict)
 
     @classmethod
-    def build(cls, evidence_list: list[EvidenceMetadata]) -> "EvidenceIndex":
+    def build(cls, evidence_list: list[EvidenceMetadata]) -> EvidenceIndex:
         idx = cls()
         for ev in evidence_list:
             idx.by_id[ev.evidence_id] = ev
@@ -66,14 +66,8 @@ class EvidenceIndex:
     def for_employee(self, employee_name: str) -> list[EvidenceMetadata]:
         return self.by_employee.get(employee_name, [])
 
-    def for_employee_and_risk(
-        self, employee_name: str, risk_tag: str
-    ) -> list[EvidenceMetadata]:
-        return [
-            ev
-            for ev in self.by_employee.get(employee_name, [])
-            if ev.risk_tag == risk_tag
-        ]
+    def for_employee_and_risk(self, employee_name: str, risk_tag: str) -> list[EvidenceMetadata]:
+        return [ev for ev in self.by_employee.get(employee_name, []) if ev.risk_tag == risk_tag]
 
     def has_evidence_for(self, risk_tag: str) -> bool:
         return bool(self.by_risk_tag.get(risk_tag))
@@ -83,7 +77,7 @@ class EvidenceIndex:
 # 입력 타입 — 파일 경로 또는 파싱된 모델 모두 허용
 # ──────────────────────────────────────────────
 
-InputSource = Union[Path, str, dict]
+InputSource = Path | str | dict
 
 
 def _load(source: InputSource) -> dict:
@@ -96,6 +90,7 @@ def _load(source: InputSource) -> dict:
 # ──────────────────────────────────────────────
 # Simulation Input Builder
 # ──────────────────────────────────────────────
+
 
 class SimulationInputBuilder:
     """5개 input을 하나의 SimulationInputPacket으로 병합한다.
@@ -122,11 +117,11 @@ class SimulationInputBuilder:
     ) -> tuple[SimulationInputPacket, EvidenceIndex]:
         """5개 input을 로드·검증 후 SimulationInputPacket과 EvidenceIndex를 반환한다."""
 
-        req   = RequirementsList.model_validate(_load(requirements))
-        team  = SelectedTeamRecord.model_validate(_load(team_record))
+        req = RequirementsList.model_validate(_load(requirements))
+        team = SelectedTeamRecord.model_validate(_load(team_record))
         snaps = self._load_snapshots(snapshots)
-        risk  = TeamRiskSummary.model_validate(_load(risk_summary))
-        evs   = self._load_evidence(evidence_metadata)
+        risk = TeamRiskSummary.model_validate(_load(risk_summary))
+        evs = self._load_evidence(evidence_metadata)
 
         self._validate(req, team, snaps, risk, evs)
 
@@ -193,9 +188,7 @@ class SimulationInputBuilder:
 
         extra_snaps = snap_names - team_names
         if extra_snaps:
-            logger.warning(
-                "[InputBuilder] 팀 멤버에 없는 snapshot 발견 (무시됨): %s", extra_snaps
-            )
+            logger.warning("[InputBuilder] 팀 멤버에 없는 snapshot 발견 (무시됨): %s", extra_snaps)
 
         # 2. team_id 일치 검증
         if risk.team_id != team.team_id:
@@ -226,9 +219,7 @@ class SimulationInputBuilder:
         assigned_roles = {m.assigned_role for m in team.members}
         uncovered_roles = required_roles - assigned_roles
         if uncovered_roles:
-            logger.warning(
-                "[InputBuilder] 요구사항 역할 미충족: %s", uncovered_roles
-            )
+            logger.warning("[InputBuilder] 요구사항 역할 미충족: %s", uncovered_roles)
 
         logger.info("[InputBuilder] 정합성 검증 통과")
 

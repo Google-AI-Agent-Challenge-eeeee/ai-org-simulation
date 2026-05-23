@@ -31,7 +31,11 @@ CONSTRAINT_RULE_MAPPING = {
         "delivery_reliability",
         "risk_stability",
     ],
-    "external_dependency": ["collaboration_communication", "delivery_reliability", "risk_stability"],
+    "external_dependency": [
+        "collaboration_communication",
+        "delivery_reliability",
+        "risk_stability",
+    ],
     "open_question": ["collaboration_communication", "delivery_reliability"],
     "scope_exclusion": ["delivery_reliability"],
     "priority_requirement": ["delivery_reliability"],

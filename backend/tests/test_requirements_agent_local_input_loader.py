@@ -92,4 +92,3 @@ def test_build_local_project_fields_reuses_pipeline_inference() -> None:
 def test_missing_prd_input_reports_clear_error(tmp_path) -> None:
     with pytest.raises(LocalInputError):
         load_local_prd_input(tmp_path / "missing.md")
-

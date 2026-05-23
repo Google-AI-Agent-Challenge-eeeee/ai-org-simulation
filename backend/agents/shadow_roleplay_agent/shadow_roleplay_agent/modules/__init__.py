@@ -7,9 +7,6 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.issue_ri
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.output_builder import (
     OutputBuilder,
 )
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.score_calculator import (
-    ScoreCalculator,
-)
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.phase_context_builder import (
     PhaseContextBuilder,
 )
@@ -22,6 +19,9 @@ from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.privacy_
 )
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.scenario_phase_planner import (
     ScenarioPhasePlanner,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.score_calculator import (
+    ScoreCalculator,
 )
 
 __all__ = [

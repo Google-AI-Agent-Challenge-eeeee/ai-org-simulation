@@ -5,28 +5,41 @@ import pathlib
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import SimulationInputBuilder
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.privacy_column_filter import PrivacyColumnFilter
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.agent_card_builder import AgentCardBuilder
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.scenario_phase_planner import ScenarioPhasePlanner
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_orchestrator import SimulationOrchestrator
-from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.orchestrator import LLMMode, ValidationStatus
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.agent_card_builder import (
+    AgentCardBuilder,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.privacy_column_filter import (
+    PrivacyColumnFilter,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules.scenario_phase_planner import (
+    ScenarioPhasePlanner,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_input_builder import (
+    SimulationInputBuilder,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.simulation_orchestrator import (
+    SimulationOrchestrator,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.orchestrator import (
+    LLMMode,
+    ValidationStatus,
+)
 
 samples = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/samples")
 outputs = pathlib.Path("backend/agents/shadow_roleplay_agent/shadow_roleplay_agent/outputs")
 
 # Phase 1–4
 packet, index = SimulationInputBuilder().build(
-    requirements      = samples / "sample_requirements_list.json",
-    team_record       = samples / "sample_selected_team_record.json",
-    snapshots         = samples / "sample_employee_fit_profile_snapshots.json",
-    risk_summary      = samples / "sample_team_risk_summary.json",
-    evidence_metadata = samples / "sample_evidence_metadata.json",
-    simulation_id     = "sim_orch_demo",
+    requirements=samples / "sample_requirements_list.json",
+    team_record=samples / "sample_selected_team_record.json",
+    snapshots=samples / "sample_employee_fit_profile_snapshots.json",
+    risk_summary=samples / "sample_team_risk_summary.json",
+    evidence_metadata=samples / "sample_evidence_metadata.json",
+    simulation_id="sim_orch_demo",
 )
 result = PrivacyColumnFilter().filter(packet)
-cards  = AgentCardBuilder().build(result.sanitized_snapshots, packet.project_context)
-plan   = ScenarioPhasePlanner().plan(
+cards = AgentCardBuilder().build(result.sanitized_snapshots, packet.project_context)
+plan = ScenarioPhasePlanner().plan(
     requirements=packet.project_context,
     risk_summary=packet.team_risk_summary,
     evidence_index=index,
@@ -34,7 +47,7 @@ plan   = ScenarioPhasePlanner().plan(
 )
 
 # Phase 5/6
-orch   = SimulationOrchestrator(llm_mode=LLMMode.STUB)
+orch = SimulationOrchestrator(llm_mode=LLMMode.STUB)
 output = orch.run(plan, cards)
 SimulationOrchestrator.to_json(output, outputs / "Orchestrator_Output.json")
 
@@ -60,7 +73,7 @@ current_phase = None
 for run in output.phase_runs:
     if run.phase_name != current_phase:
         current_phase = run.phase_name
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"[{run.phase_name}]")
 
     print(f"\n  <{run.event_id}> trigger={run.trigger_source}")
@@ -80,7 +93,7 @@ for run in output.phase_runs:
             print(f"  [FLAG/{flag.flag_type}] {flag.agent_id}: {flag.message[:80]}")
 
 # 최종 검증
-total_events  = sum(len(p.scenario_events) for p in plan.phases)
+total_events = sum(len(p.scenario_events) for p in plan.phases)
 p5_pass = (
     output.total_turns > 0
     and len(output.phase_runs) == total_events
