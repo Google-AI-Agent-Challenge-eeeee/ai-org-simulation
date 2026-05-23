@@ -78,6 +78,10 @@ gcloud run deploy "${SERVICE_NAME}" \
   --image="${IMAGE}" \
   --region="${REGION}" \
   --service-account="${SA_EMAIL}" \
+  --memory=1Gi \
+  --cpu=1 \
+  --min-instances=1 \
+  --max-instances=1 \
   --set-env-vars="ENV=staging,LOG_LEVEL=INFO,LLM_MODE=stub,GCP_PROJECT_ID=${PROJECT_ID},CORS_ALLOW_ORIGINS=[*]" \
   --port=8080 \
   --allow-unauthenticated
@@ -186,6 +190,10 @@ gcloud run deploy "${SERVICE_NAME}" \
   --region="${REGION}" \
   --service-account="${SA_EMAIL}" \
   --add-cloudsql-instances="${INSTANCE_CONNECTION_NAME}" \
+  --memory=1Gi \
+  --cpu=1 \
+  --min-instances=1 \
+  --max-instances=1 \
   --set-env-vars="ENV=staging,LOG_LEVEL=INFO,LLM_MODE=stub,GCP_PROJECT_ID=${PROJECT_ID}" \
   --set-secrets="DATABASE_URL=backend-database-url:latest,VERTEX_LOCATION=vertex-location:latest,VERTEX_MODEL=vertex-model:latest" \
   --allow-unauthenticated

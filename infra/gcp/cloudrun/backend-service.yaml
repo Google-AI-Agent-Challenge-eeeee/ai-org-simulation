@@ -8,7 +8,8 @@ spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/maxScale: "2"
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "1"
         run.googleapis.com/cloudsql-instances: PROJECT_ID:asia-northeast3:ai-org-postgres-dev
     spec:
       serviceAccountName: ai-org-backend-dev@PROJECT_ID.iam.gserviceaccount.com
@@ -17,6 +18,10 @@ spec:
           ports:
             - name: http1
               containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
           env:
             - name: ENV
               value: staging
