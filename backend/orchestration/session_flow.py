@@ -217,8 +217,9 @@ def sse(event: str, data: dict[str, Any]) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-def iter_pipeline_sse(llm_mode: str) -> Iterator[str]:
+def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
     _load_env_file()
+    record = _get_or_create_session(session_id)
 
     from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules import (
         AgentCardBuilder,
@@ -237,21 +238,22 @@ def iter_pipeline_sse(llm_mode: str) -> Iterator[str]:
     yield sse("status", {"stage": "analyzing", "text": "시뮬레이션 입력 데이터 구성 중"})
     yield sse("backend_log", {"text": "Simulation_Input_Packet 병합 중"})
 
+    requirements_payload = _shadow_requirements_payload(record)
+    team_record = _shadow_selected_team_record(record)
+    risk_summary_payload = _shadow_team_risk_summary_payload(team_record["team_id"])
+
     builder = SimulationInputBuilder()
     packet, evidence_index = builder.build(
-        requirements=SHADOW_AGENT_SAMPLES / "sample_requirements_list.json",
-        team_record=SHADOW_AGENT_SAMPLES / "sample_selected_team_record.json",
+        requirements=requirements_payload,
+        team_record=team_record,
         snapshots=SHADOW_AGENT_SAMPLES / "sample_employee_fit_profile_snapshots.json",
-        risk_summary=SHADOW_AGENT_SAMPLES / "sample_team_risk_summary.json",
+        risk_summary=risk_summary_payload,
         evidence_metadata=SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
+        simulation_id=session_id,
     )
 
-    requirements_full = RequirementsList.model_validate(
-        _load_json(SHADOW_AGENT_SAMPLES / "sample_requirements_list.json")
-    )
-    risk_summary = TeamRiskSummary.model_validate(
-        _load_json(SHADOW_AGENT_SAMPLES / "sample_team_risk_summary.json")
-    )
+    requirements_full = RequirementsList.model_validate(requirements_payload)
+    risk_summary = TeamRiskSummary.model_validate(risk_summary_payload)
 
     yield sse("backend_log", {"text": "PrivacyColumnFilter · PII 컬럼 제거 완료"})
     result = PrivacyColumnFilter().filter(packet)
@@ -266,7 +268,7 @@ def iter_pipeline_sse(llm_mode: str) -> Iterator[str]:
         requirements_full,
         risk_summary,
         evidence_index,
-        simulation_id="sim_stream",
+        simulation_id=session_id,
     )
     total_events = sum(len(p.scenario_events) for p in plan.phases)
     yield sse(
@@ -421,6 +423,168 @@ def _selected_team_summary(team: dict[str, Any] | None) -> dict[str, Any]:
             "teamName": team.get("team_name", ""),
         }
     }
+
+
+def _shadow_requirements_payload(record: SessionRecord) -> dict[str, Any]:
+    summary = record.requirements_summary or get_requirements_summary(record.session_id)
+    sample = _load_json(SHADOW_AGENT_SAMPLES / "sample_requirements_list.json")
+    required_roles = summary.get("required_roles") or sample.get("required_roles", [])
+    required_skills = summary.get("required_skills") or sample.get("required_skills", [])
+    features = _shadow_feature_payloads(summary, required_skills, sample)
+
+    return {
+        "project_id": record.session_id,
+        "project_name": summary.get("project_name") or sample.get("project_name", "Untitled"),
+        "project_summary": summary.get("project_summary")
+        or sample.get("project_summary", "No project summary."),
+        "required_roles": required_roles,
+        "required_skills": required_skills,
+        "features": features,
+        "timeline": _shadow_timeline_payload(summary, required_roles, sample),
+        "constraints": _shadow_constraints(record, sample),
+        "risk_flags": summary.get("risk_flags") or sample.get("risk_flags", []),
+    }
+
+
+def _shadow_feature_payloads(
+    summary: dict[str, Any],
+    required_skills: list[str],
+    sample: dict[str, Any],
+) -> list[dict[str, Any]]:
+    sample_features = sample.get("features", [])
+    features = summary.get("features") or sample_features
+    payloads = []
+    for index, feature in enumerate(features):
+        sample_feature = sample_features[index] if index < len(sample_features) else {}
+        payloads.append(
+            {
+                "feature_id": str(
+                    feature.get("feature_id")
+                    or sample_feature.get("feature_id")
+                    or f"feat_{index + 1:03d}"
+                ),
+                "feature_name": str(
+                    feature.get("feature_name")
+                    or sample_feature.get("feature_name")
+                    or f"Feature {index + 1}"
+                ),
+                "priority": _shadow_priority(feature, sample_feature),
+                "assigned_role": str(
+                    feature.get("assigned_role")
+                    or sample_feature.get("assigned_role")
+                    or "Team Member"
+                ),
+                "tech_requirements": _shadow_tech_requirements(
+                    feature,
+                    sample_feature,
+                    required_skills,
+                ),
+                "dependencies": [str(item) for item in feature.get("dependencies", [])],
+                "estimated_days": max(
+                    1,
+                    int(feature.get("estimated_days") or sample_feature.get("estimated_days") or 1),
+                ),
+                "risk_notes": str(
+                    feature.get("risk_notes") or sample_feature.get("risk_notes") or ""
+                ),
+            }
+        )
+    return payloads
+
+
+def _shadow_priority(feature: dict[str, Any], sample_feature: dict[str, Any]) -> str:
+    priority = feature.get("priority") or sample_feature.get("priority") or "P1"
+    return priority if priority in {"P0", "P1", "P2"} else "P1"
+
+
+def _shadow_tech_requirements(
+    feature: dict[str, Any],
+    sample_feature: dict[str, Any],
+    required_skills: list[str],
+) -> list[str]:
+    tech_requirements = feature.get("tech_requirements") or sample_feature.get("tech_requirements")
+    if isinstance(tech_requirements, list) and tech_requirements:
+        return [str(item) for item in tech_requirements]
+    return [str(skill) for skill in required_skills[:3]] or ["General implementation"]
+
+
+def _shadow_timeline_payload(
+    summary: dict[str, Any],
+    required_roles: list[str],
+    sample: dict[str, Any],
+) -> dict[str, Any]:
+    sample_timeline = sample.get("timeline", {})
+    timeline_days = int(
+        summary.get("timeline_days") or sample_timeline.get("total_sprint_days") or 14
+    )
+    owner_role = required_roles[0] if required_roles else "PM"
+    milestones = [
+        {
+            "name": str(milestone.get("label") or milestone.get("name") or "Milestone"),
+            "due_day": max(1, int(milestone.get("day") or milestone.get("due_day") or 1)),
+            "owner_role": str(milestone.get("owner_role") or owner_role),
+        }
+        for milestone in summary.get("milestones", [])
+    ]
+    if not milestones:
+        milestones = sample_timeline.get("milestones", [])
+    return {"total_sprint_days": max(1, timeline_days), "milestones": milestones}
+
+
+def _shadow_constraints(record: SessionRecord, sample: dict[str, Any]) -> list[str]:
+    requirements = (
+        (record.requirements_agent_result or {})
+        .get("outputs", {})
+        .get(
+            "requirements_list",
+            {},
+        )
+    )
+    constraints = requirements.get("constraints")
+    if isinstance(constraints, list) and constraints:
+        return [str(item) for item in constraints]
+    return sample.get("constraints", [])
+
+
+def _shadow_selected_team_record(record: SessionRecord) -> dict[str, Any]:
+    selected_team = _selected_team(record) or _load_sample_team_candidates()[0]
+    sample = _load_json(SHADOW_AGENT_SAMPLES / "sample_selected_team_record.json")
+    members = [
+        {
+            "employee_id": str(member.get("employee_id", "")),
+            "employee_name": str(member.get("employee_name", "")),
+            "assigned_role": str(member.get("assigned_role", "Team Member")),
+        }
+        for member in selected_team.get("members", [])
+    ]
+    if len(members) < 2:
+        members = sample.get("members", [])
+
+    return {
+        "team_id": str(selected_team.get("team_id") or sample.get("team_id", "team_001")),
+        "team_rank": int(selected_team.get("team_rank") or sample.get("team_rank") or 1),
+        "team_fit_score": float(
+            selected_team.get("team_fit_score") or sample.get("team_fit_score") or 0
+        ),
+        "members": members,
+        "role_coverage_score": float(
+            selected_team.get("role_coverage_score") or sample.get("role_coverage_score") or 0
+        ),
+        "skill_coverage_score": float(
+            selected_team.get("skill_coverage_score") or sample.get("skill_coverage_score") or 0
+        ),
+        "availability_score": float(
+            selected_team.get("availability_score") or sample.get("availability_score") or 0
+        ),
+        "team_risk_flags": selected_team.get("team_risk_flags")
+        or sample.get("team_risk_flags", []),
+    }
+
+
+def _shadow_team_risk_summary_payload(team_id: str) -> dict[str, Any]:
+    risk_summary = _load_json(SHADOW_AGENT_SAMPLES / "sample_team_risk_summary.json")
+    risk_summary["team_id"] = team_id
+    return risk_summary
 
 
 def _get_or_create_session(session_id: str) -> SessionRecord:

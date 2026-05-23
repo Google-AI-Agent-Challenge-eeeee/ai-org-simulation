@@ -55,7 +55,7 @@ async def simulation_stream(session_id: str, mode: str | None = None) -> Streami
 
     async def event_generator():
         loop = asyncio.get_event_loop()
-        chunks = session_flow.iter_pipeline_sse(llm_mode)
+        chunks = session_flow.iter_pipeline_sse(session_id, llm_mode)
         stop = object()
 
         def next_or_stop(iterator: Iterator[str]) -> str | object:
