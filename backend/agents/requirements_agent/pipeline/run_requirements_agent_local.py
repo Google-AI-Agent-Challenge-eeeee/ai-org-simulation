@@ -10,10 +10,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from backend.agents.requirements_agent.modules.employee_team_ranking import (
+    build_employee_team_rankings,
+)
 from backend.agents.requirements_agent.modules.taxonomy_matcher import load_json
 from backend.agents.requirements_agent.pipeline.llm_adapter import (
     SUPPORTED_LLM_MODES,
     LLMConfig,
+    build_mapping_suggester,
     build_section_extractor,
 )
 from backend.agents.requirements_agent.pipeline.local_input_loader import (
@@ -32,9 +36,31 @@ from backend.agents.requirements_agent.pipeline.requirements_pipeline import (
     load_references,
     run_requirements_pipeline,
 )
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.run_shadow_roleplay_local import (
+    DEFAULT_OUTPUT_DIR as DEFAULT_ROLEPLAY_OUTPUT_DIR,
+)
+from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.pipeline.run_shadow_roleplay_local import (
+    SUPPORTED_ROLEPLAY_LLM_MODES,
+    run_local_shadow_roleplay_from_packet,
+)
 
 JsonObject = dict[str, Any]
 ProgressLogger = Callable[[str, Mapping[str, Any]], None]
+
+LOCAL_RANKING_OUTPUT_FILENAMES = {
+    "employee_feature_matrix": "Employee_Feature_Matrix.json",
+    "employee_feature_metadata": "Employee_Feature_Metadata.json",
+    "requirements_employee_compare": "Requirements_Employee_Compare.json",
+    "employee_fit_ranking": "Employee_Fit_Ranking.json",
+    "team_composition_candidates": "Team_Composition_Candidates.json",
+    "team_composition_ranking": "Team_Composition_Ranking.json",
+    "roleplay_selected_team_record": "Roleplay_Selected_Team_Record.json",
+    "roleplay_employee_fit_profile_snapshots": "Roleplay_Employee_Fit_Profile_Snapshots.json",
+    "roleplay_team_risk_summary": "Roleplay_Team_Risk_Summary.json",
+    "roleplay_evidence_metadata": "Roleplay_Evidence_Metadata.json",
+    "roleplay_simulation_input_packet": "Roleplay_Simulation_Input_Packet.json",
+    "roleplay_handoff_manifest": "Roleplay_Handoff_Manifest.json",
+}
 
 
 class LocalRunnerError(RuntimeError):
@@ -50,6 +76,12 @@ def run_local_requirements_agent(
     project_fields_path: str | Path | None = None,
     write_outputs: bool = False,
     output_dir: str | Path = DEFAULT_OUTPUT_DIR,
+    mapping_mode: str = "auto",
+    run_roleplay: bool = False,
+    roleplay_llm_mode: str = "stub",
+    roleplay_strict_llm: bool = False,
+    roleplay_output_dir: str | Path = DEFAULT_ROLEPLAY_OUTPUT_DIR,
+    roleplay_write_outputs: bool | None = None,
     progress_logger: ProgressLogger | None = None,
 ) -> JsonObject:
     """Run Requirements Agent locally from PRD and datasets/raw inputs."""
@@ -82,6 +114,12 @@ def run_local_requirements_agent(
         config=llm_config,
         rulebase=references["rulebase"],
     )
+    resolved_mapping_mode = _resolve_mapping_mode(mapping_mode, llm_config.mode)
+    mapping_suggester = (
+        build_mapping_suggester(config=llm_config)
+        if resolved_mapping_mode == "llm_assisted"
+        else None
+    )
 
     result = run_requirements_pipeline(
         prd_input.raw_text,
@@ -91,8 +129,32 @@ def run_local_requirements_agent(
         project_fields=project_fields,
         human_confirm_decisions=human_confirm_decisions,
         extractor=extractor,
+        mapping_mode=resolved_mapping_mode,
+        mapping_suggester=mapping_suggester,
         config=config,
     )
+    ranking_outputs = _run_local_ranking_bridge(
+        result,
+        employee_data_dir=employee_data_dir,
+        output_dir=output_dir,
+        write_outputs=write_outputs,
+        progress_logger=progress_logger,
+    )
+    result["outputs"].update(ranking_outputs)
+    if run_roleplay:
+        roleplay_result = _run_local_roleplay_bridge(
+            result,
+            roleplay_llm_mode=roleplay_llm_mode,
+            strict_llm=roleplay_strict_llm,
+            roleplay_output_dir=roleplay_output_dir,
+            write_outputs=write_outputs if roleplay_write_outputs is None else roleplay_write_outputs,
+            progress_logger=progress_logger,
+        )
+        result["roleplay_run"] = {
+            "summary": roleplay_result["summary"],
+            "written_files": roleplay_result["written_files"],
+        }
+        result["outputs"]["shadow_roleplay_outputs"] = roleplay_result["outputs"]
     result["local_run"] = {
         "prd_input": {
             "document_id": prd_input.document_id,
@@ -104,6 +166,7 @@ def run_local_requirements_agent(
         "employee_data_dir": str(Path(employee_data_dir)),
         "column_validation": column_validation,
         "llm": llm_config.safe_summary(),
+        "mapping_mode": resolved_mapping_mode,
         "summary": build_run_summary(result),
     }
     return result
@@ -115,6 +178,15 @@ def build_run_summary(result: Mapping[str, Any]) -> JsonObject:
     human_confirm = outputs.get("human_confirm_result", {})
     validation = outputs.get("validation_result", {})
     mapped = outputs.get("mapped_requirements", {})
+    roleplay_requirements = outputs.get("roleplay_requirements_input", {})
+    feature_matrix = outputs.get("employee_feature_matrix", {})
+    feature_metadata = outputs.get("employee_feature_metadata", {})
+    compare = outputs.get("requirements_employee_compare", {})
+    employee_fit = outputs.get("employee_fit_ranking", {})
+    team_candidates = outputs.get("team_composition_candidates", {})
+    team_ranking = outputs.get("team_composition_ranking", {})
+    selected_team = outputs.get("roleplay_selected_team_record", {})
+    roleplay_summary = result.get("roleplay_run", {}).get("summary", {})
     written_files = list(result.get("written_files", []))
     selected_columns = requirements_list.get("selected_employee_columns", [])
 
@@ -132,6 +204,33 @@ def build_run_summary(result: Mapping[str, Any]) -> JsonObject:
         "invalid_item_count": len(validation.get("invalid_items", [])),
         "low_confidence_count": len(validation.get("low_confidence_items", [])),
         "human_confirm_complete": human_confirm.get("human_confirm_complete"),
+        "roleplay_feature_count": len(roleplay_requirements.get("features", [])),
+        "roleplay_required_role_count": len(roleplay_requirements.get("required_roles", [])),
+        "roleplay_risk_flag_count": len(roleplay_requirements.get("risk_flags", [])),
+        "feature_preprocessing_ready": bool(feature_matrix.get("feature_profiles")),
+        "feature_profile_count": len(feature_matrix.get("feature_profiles", [])),
+        "feature_key_count": feature_matrix.get("_meta", {}).get("feature_key_count")
+        or feature_metadata.get("_meta", {}).get("feature_key_count"),
+        "compare_result_count": len(compare.get("compare_results", [])),
+        "employee_fit_candidate_count": len(employee_fit.get("employee_rankings", [])),
+        "team_composition_candidate_count": len(team_candidates.get("team_candidates", [])),
+        "team_candidate_count": len(team_ranking.get("team_rankings", [])),
+        "selected_team_id": selected_team.get("team_id"),
+        "selected_team_fit_score": selected_team.get("team_fit_score"),
+        "roleplay_simulation_input_ready": bool(
+            outputs.get("roleplay_simulation_input_packet")
+        ),
+        "shadow_roleplay_executed": bool(roleplay_summary),
+        "shadow_roleplay_status": roleplay_summary.get("roleplay_status"),
+        "shadow_roleplay_output_ready": bool(
+            outputs.get("shadow_roleplay_outputs", {}).get("simulation_output")
+        ),
+        "shadow_roleplay_overall_project_fit": roleplay_summary.get("overall_project_fit"),
+        "shadow_roleplay_verdict": roleplay_summary.get("verdict"),
+        "shadow_roleplay_written_file_count": roleplay_summary.get("written_file_count", 0),
+        "shadow_roleplay_actual_llm_mode": roleplay_summary.get("actual_llm_mode"),
+        "shadow_roleplay_vertex_turn_count": roleplay_summary.get("vertex_turn_count", 0),
+        "shadow_roleplay_fallback_count": roleplay_summary.get("fallback_count", 0),
     }
 
 
@@ -172,6 +271,33 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Output directory used when --write-outputs is set.",
     )
     parser.add_argument(
+        "--mapping-mode",
+        default="auto",
+        choices=["auto", "rule", "llm_assisted"],
+        help="Taxonomy mapping mode. auto uses LLM-assisted mapping for remote LLM modes.",
+    )
+    parser.add_argument(
+        "--run-roleplay",
+        action="store_true",
+        help="Run Shadow RolePlay immediately after Requirements Agent handoff packet creation.",
+    )
+    parser.add_argument(
+        "--roleplay-llm-mode",
+        default="stub",
+        choices=sorted(SUPPORTED_ROLEPLAY_LLM_MODES),
+        help="Shadow RolePlay mode used with --run-roleplay.",
+    )
+    parser.add_argument(
+        "--roleplay-strict-llm",
+        action="store_true",
+        help="Fail RolePlay when remote LLM mode falls back instead of silently using stub.",
+    )
+    parser.add_argument(
+        "--roleplay-output-dir",
+        default=str(DEFAULT_ROLEPLAY_OUTPUT_DIR),
+        help="Shadow RolePlay output directory used with --run-roleplay and --write-outputs.",
+    )
+    parser.add_argument(
         "--quiet",
         action="store_true",
         help="Suppress progress logs. The final JSON summary is still printed.",
@@ -190,6 +316,11 @@ def main(argv: list[str] | None = None) -> int:
             project_fields_path=args.project_fields,
             write_outputs=args.write_outputs,
             output_dir=args.output_dir,
+            mapping_mode=args.mapping_mode,
+            run_roleplay=args.run_roleplay,
+            roleplay_llm_mode=args.roleplay_llm_mode,
+            roleplay_strict_llm=args.roleplay_strict_llm,
+            roleplay_output_dir=args.roleplay_output_dir,
             progress_logger=None if args.quiet else _make_cli_progress_logger(),
         )
     except (LocalInputError, LocalRunnerError) as exc:
@@ -206,6 +337,137 @@ def _load_optional_json(path: str | Path | None) -> JsonObject:
     if path is None:
         return {}
     return load_json(path)
+
+
+def _resolve_mapping_mode(mapping_mode: str, llm_mode: str) -> str:
+    if mapping_mode != "auto":
+        return mapping_mode
+    return "rule" if llm_mode == "stub" else "llm_assisted"
+
+
+def _log_progress(
+    progress_logger: ProgressLogger | None,
+    event: str,
+    **details: Any,
+) -> None:
+    if progress_logger is not None:
+        progress_logger(event, details)
+
+
+def _run_local_ranking_bridge(
+    result: JsonObject,
+    *,
+    employee_data_dir: str | Path,
+    output_dir: str | Path,
+    write_outputs: bool,
+    progress_logger: ProgressLogger | None,
+) -> JsonObject:
+    outputs = result["outputs"]
+    _log_progress(
+        progress_logger,
+        "local_ranking_bridge_start",
+        employee_data_dir=str(Path(employee_data_dir)),
+    )
+    ranking_outputs = build_employee_team_rankings(
+        outputs["requirements_list"],
+        outputs["roleplay_requirements_input"],
+        employee_data_dir=employee_data_dir,
+    )
+    if write_outputs:
+        written_files = _write_local_ranking_outputs(ranking_outputs, output_dir)
+        existing = list(result.get("written_files", []))
+        existing_paths = {str(path) for path in existing}
+        for path in written_files:
+            if str(path) not in existing_paths:
+                existing.append(path)
+                existing_paths.add(str(path))
+        result["written_files"] = existing
+    _log_progress(
+        progress_logger,
+        "local_ranking_bridge_done",
+        feature_profile_count=len(
+            ranking_outputs["employee_feature_matrix"].get("feature_profiles", [])
+        ),
+        compare_result_count=len(
+            ranking_outputs["requirements_employee_compare"].get("compare_results", [])
+        ),
+        employee_count=len(ranking_outputs["employee_fit_ranking"].get("employee_rankings", [])),
+        team_candidate_count=len(
+            ranking_outputs["team_composition_candidates"].get("team_candidates", [])
+        ),
+        team_count=len(ranking_outputs["team_composition_ranking"].get("team_rankings", [])),
+        selected_team_id=ranking_outputs["roleplay_selected_team_record"].get("team_id"),
+    )
+    return ranking_outputs
+
+
+def _run_local_roleplay_bridge(
+    result: JsonObject,
+    *,
+    roleplay_llm_mode: str,
+    strict_llm: bool,
+    roleplay_output_dir: str | Path,
+    write_outputs: bool,
+    progress_logger: ProgressLogger | None,
+) -> JsonObject:
+    packet = result["outputs"].get("roleplay_simulation_input_packet")
+    if not packet:
+        raise LocalRunnerError("RolePlay input packet is missing from Requirements Agent outputs.")
+    _log_progress(
+        progress_logger,
+        "shadow_roleplay_start",
+        llm_mode=roleplay_llm_mode,
+        output_dir=str(Path(roleplay_output_dir)),
+        write_outputs=write_outputs,
+    )
+    roleplay_result = run_local_shadow_roleplay_from_packet(
+        packet,
+        input_packet_label="memory://requirements_agent/roleplay_simulation_input_packet",
+        output_dir=roleplay_output_dir,
+        llm_mode=roleplay_llm_mode,
+        strict_llm=strict_llm,
+        write_outputs=write_outputs,
+    )
+    if write_outputs:
+        existing = list(result.get("written_files", []))
+        existing_paths = {str(path) for path in existing}
+        for path in roleplay_result.get("written_files", []):
+            if str(path) not in existing_paths:
+                existing.append(path)
+                existing_paths.add(str(path))
+        result["written_files"] = existing
+    summary = roleplay_result["summary"]
+    _log_progress(
+        progress_logger,
+        "shadow_roleplay_done",
+        status=summary.get("roleplay_status"),
+        phase_count=summary.get("phase_count"),
+        scenario_event_count=summary.get("scenario_event_count"),
+        verdict=summary.get("verdict"),
+        overall_project_fit=summary.get("overall_project_fit"),
+        actual_llm_mode=summary.get("actual_llm_mode"),
+        fallback_count=summary.get("fallback_count"),
+    )
+    return roleplay_result
+
+
+def _write_local_ranking_outputs(
+    ranking_outputs: Mapping[str, Any],
+    output_dir: str | Path,
+) -> list[str]:
+    root = Path(output_dir)
+    root.mkdir(parents=True, exist_ok=True)
+    written_files = []
+    for output_key, filename in LOCAL_RANKING_OUTPUT_FILENAMES.items():
+        payload = ranking_outputs.get(output_key)
+        if payload is None:
+            continue
+        path = root / filename
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+        written_files.append(str(path))
+    return written_files
 
 
 def _make_cli_progress_logger() -> ProgressLogger:

@@ -17,6 +17,7 @@ import logging
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.schemas.simulation_input import (
     EmployeeFitProfileSnapshot,
@@ -77,11 +78,11 @@ class EvidenceIndex:
 # 입력 타입 — 파일 경로 또는 파싱된 모델 모두 허용
 # ──────────────────────────────────────────────
 
-InputSource = Path | str | dict
+InputSource = Path | str | dict | list[dict[str, Any]]
 
 
-def _load(source: InputSource) -> dict:
-    if isinstance(source, dict):
+def _load(source: InputSource) -> dict | list[dict[str, Any]]:
+    if isinstance(source, (dict, list)):
         return source
     path = Path(source)
     return json.loads(path.read_text(encoding="utf-8"))

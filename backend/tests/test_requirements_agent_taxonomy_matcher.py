@@ -4,6 +4,7 @@ from pathlib import Path
 from backend.agents.requirements_agent.modules.taxonomy_matcher import (
     load_json,
     match_requirements,
+    normalize_requirement_candidates,
 )
 
 ROOT = Path("backend/agents/requirements_agent")
@@ -209,3 +210,76 @@ def test_match_requirements_keeps_unstandardized_skill_as_unknown() -> None:
     assert result["required_skills"] == []
     assert result["unknown_requirements"][0]["item_type"] == "skill"
     assert "did not match taxonomy standard names" in result["unknown_requirements"][0]["reason"]
+
+
+def test_normalize_requirement_candidates_expands_short_fragments_from_evidence() -> None:
+    candidate = _candidate("feature_short", "feature", "실패율")
+    candidate["source_evidence"][0]["text"] = "푸시 발송 실패율 ≤ 0.3%"
+
+    normalized, trace = normalize_requirement_candidates([candidate])
+
+    assert normalized[0]["text"] == "푸시 발송 실패율"
+    assert normalized[0]["original_text"] == "실패율"
+    assert trace[0]["candidate_id"] == "feature_short"
+
+
+def test_match_requirements_accepts_high_confidence_llm_suggested_mapping() -> None:
+    taxonomy, rulebase = _references()
+
+    def suggester(payload):
+        assert payload["policy"]["auto_extend_taxonomy"] is False
+        return {
+            "suggested_mappings": [
+                {
+                    "candidate_id": "feature_ai",
+                    "suggested_target_type": "feature",
+                    "suggested_target_key": "ai_llm_feature",
+                    "confidence": 0.94,
+                    "reason": "Candidate explicitly asks for an LLM chatbot feature.",
+                    "evidence_ids": ["feature_ai_ev_001"],
+                }
+            ]
+        }
+
+    result = match_requirements(
+        _draft([_candidate("feature_ai", "feature", "Answer grounding review")]),
+        taxonomy,
+        rulebase,
+        mapping_mode="llm_assisted",
+        mapping_suggester=suggester,
+    )
+
+    assert any(feature["feature_key"] == "ai_llm_feature" for feature in result["mapped_features"])
+    assert result["unknown_requirements"] == []
+    assert result["suggested_mapping_trace"][0]["accepted"] is True
+
+
+def test_match_requirements_rejects_llm_suggestion_for_missing_taxonomy_key() -> None:
+    taxonomy, rulebase = _references()
+
+    def suggester(_payload):
+        return {
+            "suggested_mappings": [
+                {
+                    "candidate_id": "feature_fake",
+                    "suggested_target_type": "feature",
+                    "suggested_target_key": "invented_feature",
+                    "confidence": 0.99,
+                    "reason": "Bad test suggestion.",
+                    "evidence_ids": ["feature_fake_ev_001"],
+                }
+            ]
+        }
+
+    result = match_requirements(
+        _draft([_candidate("feature_fake", "feature", "Quantum workflow preview")]),
+        taxonomy,
+        rulebase,
+        mapping_mode="llm_assisted",
+        mapping_suggester=suggester,
+    )
+
+    assert result["mapped_features"] == []
+    assert result["unknown_requirements"][0]["suggested_mapping"]["rejected_reason"] == (
+        "target_key_not_found"
+    )

@@ -224,6 +224,7 @@ def _required_roles(mapped_requirements: Mapping[str, Any]) -> list[JsonObject]:
             {
                 "role": role.get("name", ""),
                 "job_category_codes": list(role.get("job_category_codes", [])),
+                "role_type": role.get("role_type", "staffing"),
                 "source_feature_keys": source_feature_keys,
                 "reason": role.get("reason", ""),
             }

@@ -33,6 +33,9 @@ from backend.agents.requirements_agent.pipeline.requirements_pipeline import (
     load_references,
     run_requirements_pipeline,
 )
+from backend.db.repositories import EmployeeRepository
+from backend.db.session import get_session_factory
+from backend.services.team_selector import TeamSelectionResult, TopTeamSelector
 
 ROLE_MAP: dict[str, str] = {
     "PM": "PM",
@@ -95,6 +98,7 @@ class SessionRecord:
     requirements_agent_result: dict[str, Any] | None = None
     requirements_summary: dict[str, Any] | None = None
     team_candidates: list[dict[str, Any]] | None = None
+    team_candidates_total: int | None = None
     requirements_accepted: bool = False
     selected_team_id: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -142,8 +146,14 @@ def revise_requirements(session_id: str) -> dict[str, Any]:
 def get_team_candidates(session_id: str) -> dict[str, Any]:
     record = _get_or_create_session(session_id)
     if record.team_candidates is None:
-        record.team_candidates = _load_sample_team_candidates()
-    return {"totalCombinations": 1247, "teams": record.team_candidates}
+        db_result = _load_db_team_candidates(record)
+        if db_result is None:
+            record.team_candidates = _load_sample_team_candidates()
+            record.team_candidates_total = 1247
+        else:
+            record.team_candidates = db_result.teams
+            record.team_candidates_total = db_result.total_combinations
+    return {"totalCombinations": record.team_candidates_total or 0, "teams": record.team_candidates}
 
 
 def select_team(session_id: str, team_id: str | None = None) -> dict[str, bool]:
@@ -173,13 +183,7 @@ def get_report(session_id: str) -> dict[str, Any]:
         "id": session_id,
         "createdAt": "2026-05-23T03:00:00Z",
         **_selected_team_summary(selected_team),
-        "team": [
-            _persona("권원솔", "PM"),
-            _persona("안우빈", "BE"),
-            _persona("심예린", "WEB"),
-            _persona("송다원", "QA"),
-            _persona("박라경", "Infra"),
-        ],
+        "team": _team_personas(selected_team),
         "metrics": {
             "teamFitScore": round(overall * 100, 1),
             "riskIndex": round((1 - overall) * 100, 1),
@@ -263,7 +267,7 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
     packet, evidence_index = builder.build(
         requirements=requirements_payload,
         team_record=team_record,
-        snapshots=SHADOW_AGENT_SAMPLES / "sample_employee_fit_profile_snapshots.json",
+        snapshots=_shadow_member_snapshots_payload(team_record),
         risk_summary=risk_summary_payload,
         evidence_metadata=SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
         simulation_id=session_id,
@@ -479,6 +483,21 @@ def _load_sample_team_candidates() -> list[dict[str, Any]]:
     ]
 
 
+def _load_db_team_candidates(record: SessionRecord) -> TeamSelectionResult | None:
+    try:
+        factory = get_session_factory()
+        with factory() as db:
+            employees = EmployeeRepository(db).list_all()
+    except Exception:
+        return None
+
+    required_roles = []
+    if record.requirements_summary is not None:
+        required_roles = record.requirements_summary.get("required_roles", [])
+
+    return TopTeamSelector().select(employees, required_roles=required_roles)
+
+
 def _team_member_from_sample(
     member: dict[str, Any],
     snapshot: dict[str, Any],
@@ -512,6 +531,26 @@ def _selected_team_summary(team: dict[str, Any] | None) -> dict[str, Any]:
             "teamName": team.get("team_name", ""),
         }
     }
+
+
+def _team_personas(team: dict[str, Any] | None) -> list[dict[str, str]]:
+    if team is None:
+        return [
+            _persona("권원솔", "PM"),
+            _persona("안우빈", "BE"),
+            _persona("심예린", "WEB"),
+            _persona("송다원", "QA"),
+            _persona("박라경", "Infra"),
+        ]
+    return [
+        _persona(
+            str(member.get("employee_name", "")),
+            ROLE_MAP.get(
+                str(member.get("assigned_role", "")), str(member.get("assigned_role", ""))
+            ),
+        )
+        for member in team.get("members", [])
+    ]
 
 
 def _shadow_requirements_payload(record: SessionRecord) -> dict[str, Any]:
@@ -668,6 +707,74 @@ def _shadow_selected_team_record(record: SessionRecord) -> dict[str, Any]:
         "team_risk_flags": selected_team.get("team_risk_flags")
         or sample.get("team_risk_flags", []),
     }
+
+
+def _shadow_member_snapshots_payload(team_record: dict[str, Any]) -> list[dict[str, Any]]:
+    risk_flags = team_record.get("team_risk_flags", [])
+    return [
+        {
+            "employee_id": str(member.get("employee_id", "")),
+            "employee_name": str(member.get("employee_name", "")),
+            "assigned_role": str(member.get("assigned_role", "Team Member")),
+            "matched_skills": _shadow_matched_skills(str(member.get("assigned_role", ""))),
+            "missing_skills": _shadow_missing_skills(
+                str(member.get("assigned_role", "")), risk_flags
+            ),
+            "capacity_signal": _shadow_capacity_signal(index, risk_flags),
+            "communication_signal": "medium_delay",
+            "delivery_signal": "variable" if risk_flags else "stable",
+            "collaboration_signal": _shadow_collaboration_signal(
+                str(member.get("assigned_role", ""))
+            ),
+            "risk_tags": risk_flags[:2],
+            "evidence_refs": [
+                "employee.job_category_code",
+                "employee.performance_score",
+                "employee.engagement_score",
+            ],
+        }
+        for index, member in enumerate(team_record.get("members", []))
+    ]
+
+
+def _shadow_matched_skills(assigned_role: str) -> list[str]:
+    role_key = ROLE_MAP.get(assigned_role, assigned_role)
+    return {
+        "PM": ["planning", "stakeholder alignment"],
+        "BE": ["api design", "backend implementation"],
+        "WEB": ["frontend implementation", "api integration"],
+        "Infra": ["deployment", "ci/cd"],
+        "QA": ["test planning", "quality validation"],
+        "DS": ["analysis", "requirements interpretation"],
+    }.get(role_key, ["general execution"])
+
+
+def _shadow_missing_skills(assigned_role: str, risk_flags: list[str]) -> list[str]:
+    if "role_gap" in risk_flags:
+        return [f"{assigned_role} exact job-category coverage"]
+    if "workload_risk" in risk_flags:
+        return ["workload buffer"]
+    return []
+
+
+def _shadow_capacity_signal(index: int, risk_flags: list[str]) -> str:
+    if "workload_risk" in risk_flags and index == 0:
+        return "high_risk"
+    if "availability_risk" in risk_flags:
+        return "medium_risk"
+    return "low_risk"
+
+
+def _shadow_collaboration_signal(assigned_role: str) -> str:
+    role_key = ROLE_MAP.get(assigned_role, assigned_role)
+    return {
+        "PM": "connector",
+        "BE": "review_hub",
+        "WEB": "focused_individual",
+        "Infra": "connector",
+        "QA": "review_hub",
+        "DS": "async_deep_worker",
+    }.get(role_key, "async_deep_worker")
 
 
 def _shadow_team_risk_summary_payload(team_id: str) -> dict[str, Any]:

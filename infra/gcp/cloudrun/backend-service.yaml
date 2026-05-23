@@ -1,0 +1,43 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ai-org-backend
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "2"
+        run.googleapis.com/cloudsql-instances: PROJECT_ID:asia-northeast3:ai-org-postgres-dev
+    spec:
+      serviceAccountName: ai-org-backend-dev@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: asia-northeast3-docker.pkg.dev/PROJECT_ID/ai-org-backend/api:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: ENV
+              value: staging
+            - name: LOG_LEVEL
+              value: INFO
+            - name: LLM_MODE
+              value: stub
+            - name: GCP_PROJECT_ID
+              value: PROJECT_ID
+            - name: VERTEX_LOCATION
+              valueFrom:
+                secretKeyRef:
+                  name: vertex-location
+                  key: latest
+            - name: VERTEX_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: vertex-model
+                  key: latest
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-database-url
+                  key: latest

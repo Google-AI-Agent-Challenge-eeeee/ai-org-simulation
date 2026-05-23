@@ -57,6 +57,28 @@ PROJECT_FIELD_PREFIXES = (
     "goal",
     "objective",
     "purpose",
+    "제목",
+    "목표",
+)
+GENERIC_PROJECT_NAME_LINES = {
+    "prd",
+    "prd:",
+    "product requirements document",
+    "document meta",
+    "0. document meta",
+    "문서",
+    "문서 메타",
+}
+NO_ADDITIONAL_BUDGET_MARKERS = (
+    "별도 추가 인프라 비용 없음",
+    "추가 인프라 비용 없음",
+    "별도 추가 비용 없음",
+    "추가 비용 없음",
+    "예산 없음",
+    "no additional budget",
+    "no additional cost",
+    "within existing plan",
+    "within existing budget",
 )
 
 
@@ -144,8 +166,8 @@ def build_validation_payload(
                 "project_name",
                 "project_goal",
                 "duration_weeks",
-                "budget",
             ],
+            "optional_project_fields": ["budget"],
         },
         "phase_boundaries": {
             "delete_items": False,
@@ -187,11 +209,13 @@ def build_prd_evidence_map(prepared_document: Mapping[str, Any]) -> JsonObject:
 def extract_project_fields(raw_text: str) -> JsonObject:
     """Extract simple project fields without summarizing source text."""
 
+    budget_value, budget_status = _budget_with_status(raw_text)
     return {
         "project_name": _project_name(raw_text),
         "project_goal": _project_goal(raw_text),
         "duration_weeks": _duration_weeks(raw_text),
-        "budget": _budget(raw_text),
+        "budget": budget_value,
+        "budget_status": budget_status,
     }
 
 
@@ -557,6 +581,8 @@ def _missing_fields(project_fields: Mapping[str, Any]) -> list[JsonObject]:
     ]
     missing = []
     for field, reason, severity, question in fields:
+        if field == "budget" and _budget_is_validly_absent(project_fields):
+            continue
         value = project_fields.get(field)
         if value not in ("", None):
             continue
@@ -569,6 +595,13 @@ def _missing_fields(project_fields: Mapping[str, Any]) -> list[JsonObject]:
             }
         )
     return missing
+
+
+def _budget_is_validly_absent(project_fields: Mapping[str, Any]) -> bool:
+    return str(project_fields.get("budget_status") or "") in {
+        "explicit_no_additional_budget",
+        "not_specified_but_allowed",
+    }
 
 
 def _has_review_items(validation_result: Mapping[str, Any]) -> bool:
@@ -866,14 +899,38 @@ def _unique_strings(values: Iterable[str]) -> list[str]:
 
 
 def _project_name(raw_text: str) -> str:
+    flattened = _flatten_project_text(raw_text)
+    meta_match = re.search(
+        r"(?:^|\s)(?:제목|title)\s*[:：|]?\s+(.+?)\s+(?:작성자|author|dri|상태|status|버전|version)",
+        flattened,
+        re.I,
+    )
+    if meta_match:
+        title = _clean_project_field_value(meta_match.group(1))
+        if _is_meaningful_project_name(title):
+            return title
+
     for line in raw_text.splitlines():
         clean = line.strip().strip("# ")
         if not clean:
             continue
-        label_match = re.match(r"^(project|name|title)\s*[:：]\s*(.+)$", clean, re.I)
+        label_match = re.match(r"^(project|name|title|제목)\s*[:：|]\s*(.+)$", clean, re.I)
         if label_match:
-            return label_match.group(2).strip()
-        if len(clean) <= 80:
+            title = _clean_project_field_value(label_match.group(2))
+            if _is_meaningful_project_name(title):
+                return title
+        if clean.startswith("#"):
+            title = _clean_project_field_value(clean)
+            if _is_meaningful_project_name(title):
+                return title
+
+    header_title = _title_after_prd_marker(raw_text)
+    if header_title:
+        return header_title
+
+    for line in raw_text.splitlines():
+        clean = _clean_project_field_value(line.strip().strip("# "))
+        if _is_meaningful_project_name(clean):
             return clean
     return ""
 
@@ -881,23 +938,81 @@ def _project_name(raw_text: str) -> str:
 def _project_goal(raw_text: str) -> str:
     for line in raw_text.splitlines():
         clean = line.strip()
-        match = re.match(r"^(goal|objective|purpose)\s*[:：]\s*(.+)$", clean, re.I)
+        match = re.match(r"^(goal|objective|purpose|목표|목적)\s*[:：]\s*(.+)$", clean, re.I)
         if match:
-            return match.group(2).strip()
+            return _clean_project_field_value(match.group(2))
+    tl_dr = _section_after_heading(raw_text, ("tl;dr", "tldr", "요약"), max_chars=700)
+    if tl_dr:
+        goal_sentence = _first_goal_sentence(tl_dr)
+        if goal_sentence:
+            return goal_sentence
+    business_goal = _section_after_heading(
+        raw_text,
+        ("비즈니스 목표", "business goal", "business goals", "목표와"),
+        max_chars=900,
+    )
+    if business_goal:
+        lines = [
+            _clean_project_field_value(line)
+            for line in business_goal.splitlines()
+            if re.search(r"(^|\s)G\d+\.|목표|달성|개선|감소|증가|target|goal", line, re.I)
+        ]
+        if lines:
+            return _join_goal_lines(lines[:3])
     return ""
 
 
 def _duration_weeks(raw_text: str) -> int | None:
-    match = re.search(r"(\d+(?:\.\d+)?)\s*(week|weeks|wk|wks)", raw_text, re.I)
+    search_text = re.sub(r"\s+", " ", raw_text)
+    labelled_week_match = re.search(
+        r"(?:기간|일정|duration|timeline|schedule)"
+        r"(?:\s+(?:기간|일정|duration|timeline|schedule))?"
+        r"\s*[:：]?\s*(\d+(?:\.\d+)?)\s*(?:주|week|weeks|wk|wks)",
+        search_text,
+        re.I,
+    )
+    if labelled_week_match:
+        return int(float(labelled_week_match.group(1)))
+
+    range_match = re.search(r"\bW\s*(\d+)\s*[-~–]\s*W\s*(\d+)\b", search_text, re.I)
+    if range_match:
+        return max(1, int(range_match.group(2)) - int(range_match.group(1)) + 1)
+
+    sprint_week = re.search(
+        r"1\s*(?:스프린트|sprint)\s*=\s*(\d+(?:\.\d+)?)\s*(?:주|week|weeks)",
+        search_text,
+        re.I,
+    )
+    sprint_counts = re.findall(
+        r"(\d+(?:\.\d+)?)\s*(?:스프린트|sprints?)(?!\s*=)",
+        search_text,
+        re.I,
+    )
+    if sprint_counts and sprint_week:
+        return max(1, int(float(sprint_counts[-1]) * float(sprint_week.group(1))))
+
+    korean_match = re.search(r"(\d+(?:\.\d+)?)\s*주\b", search_text)
+    if korean_match:
+        return int(float(korean_match.group(1)))
+
+    match = re.search(r"(\d+(?:\.\d+)?)\s*(week|weeks|wk|wks)", search_text, re.I)
     if match:
         return int(float(match.group(1)))
-    match = re.search(r"(\d+(?:\.\d+)?)\s*(month|months)", raw_text, re.I)
+    match = re.search(r"(\d+(?:\.\d+)?)\s*(month|months)", search_text, re.I)
     if match:
         return int(float(match.group(1)) * 4)
     return None
 
 
 def _budget(raw_text: str) -> float | None:
+    value, _status = _budget_with_status(raw_text)
+    return value
+
+
+def _budget_with_status(raw_text: str) -> tuple[float | None, str]:
+    normalized = _normalize_text(raw_text)
+    if any(marker in normalized for marker in NO_ADDITIONAL_BUDGET_MARKERS):
+        return None, "explicit_no_additional_budget"
     for match in re.finditer(
         r"\$?\s*(\d+(?:,\d{3})*(?:\.\d+)?)\s*(usd|krw|won)?",
         raw_text,
@@ -907,10 +1022,99 @@ def _budget(raw_text: str) -> float | None:
         if re.match(r"\s*(week|weeks|wk|wks|month|months)\b", following_unit):
             continue
         if _budget_context(raw_text, match.start()):
-            return float(match.group(1).replace(",", ""))
-    return None
+            return float(match.group(1).replace(",", "")), "explicit_budget"
+    return None, "not_specified_but_allowed"
 
 
 def _budget_context(raw_text: str, start: int) -> bool:
     context = raw_text[max(0, start - 40) : start + 40].casefold()
+    if any(word in context for word in ("절감", "saving", "savings", "처리비용")):
+        return False
     return any(word in context for word in ("budget", "cost", "usd", "krw", "won"))
+
+
+def _flatten_project_text(raw_text: str) -> str:
+    return _clean_project_field_value(raw_text.replace("|", " "))
+
+
+def _clean_project_field_value(value: str) -> str:
+    clean = re.sub(r"^#{1,6}\s*", "", value or "").strip()
+    clean = re.sub(r"\s+", " ", clean)
+    clean = clean.strip(" -:：|")
+    return _dedupe_adjacent_tokens(clean)
+
+
+def _dedupe_adjacent_tokens(value: str) -> str:
+    tokens = value.split()
+    deduped: list[str] = []
+    for token in tokens:
+        if deduped and normalize_for_project_token(deduped[-1]) == normalize_for_project_token(token):
+            continue
+        deduped.append(token)
+    return " ".join(deduped).strip()
+
+
+def normalize_for_project_token(token: str) -> str:
+    return re.sub(r"[^\w가-힣]+", "", token.casefold())
+
+
+def _is_meaningful_project_name(value: str) -> bool:
+    normalized = _normalize_text(value).strip(" :：")
+    if not normalized or normalized in GENERIC_PROJECT_NAME_LINES:
+        return False
+    if len(normalized) < 3 or len(normalized) > 120:
+        return False
+    return bool(re.search(r"[a-zA-Z가-힣]", normalized))
+
+
+def _title_after_prd_marker(raw_text: str) -> str:
+    lines = [_clean_project_field_value(line) for line in raw_text.splitlines()]
+    for index, line in enumerate(lines):
+        if _normalize_text(line).strip(" :：") != "prd":
+            continue
+        fragments = []
+        for next_line in lines[index + 1 : index + 12]:
+            if not next_line:
+                continue
+            if re.match(r"^\d+(\.\d+)*\b", next_line) or next_line.casefold() in {
+                "document meta",
+                "tl;dr",
+            }:
+                break
+            if _is_meaningful_project_name(next_line):
+                fragments.append(next_line)
+        title = _clean_project_field_value(" ".join(fragments[:5]))
+        if _is_meaningful_project_name(title):
+            return title
+    return ""
+
+
+def _section_after_heading(raw_text: str, headings: tuple[str, ...], *, max_chars: int) -> str:
+    lines = raw_text.splitlines()
+    for index, line in enumerate(lines):
+        clean = _clean_project_field_value(line).casefold()
+        if not any(heading in clean for heading in headings):
+            continue
+        collected = []
+        for next_line in lines[index + 1 :]:
+            if re.match(r"^\s*\d+(\.\d+)*\s+\S+", next_line) and collected:
+                break
+            collected.append(next_line)
+            if len("\n".join(collected)) >= max_chars:
+                break
+        return "\n".join(collected)[:max_chars]
+    return ""
+
+
+def _first_goal_sentence(text: str) -> str:
+    cleaned = _clean_project_field_value(text)
+    sentences = re.split(r"(?<=[.!?。])\s+|(?<=합니다)\s*", cleaned)
+    for sentence in sentences:
+        sentence = _clean_project_field_value(sentence)
+        if any(marker in sentence for marker in ("목표", "달성", "해결", "개선", "감소")):
+            return sentence
+    return _clean_project_field_value(sentences[0]) if sentences else ""
+
+
+def _join_goal_lines(lines: list[str]) -> str:
+    return " ".join(line for line in lines if line).strip()

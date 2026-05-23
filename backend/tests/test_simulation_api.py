@@ -87,6 +87,53 @@ def test_team_selection_contract_matches_frontend_shape() -> None:
     assert 0 <= team["team_fit_score"] <= 100
 
 
+def test_team_selection_prefers_db_candidates(monkeypatch) -> None:
+    from backend.services.team_selector import TeamSelectionResult
+
+    def fake_db_candidates(_record: object) -> TeamSelectionResult:
+        return TeamSelectionResult(
+            total_combinations=5,
+            teams=[
+                {
+                    "team_id": "team_db_top_001",
+                    "team_name": "DB Top Recommendation",
+                    "team_rank": 1,
+                    "team_fit_score": 91.2,
+                    "role_coverage_score": 1.0,
+                    "skill_coverage_score": 1.0,
+                    "availability_score": 0.9,
+                    "team_risk_flags": [],
+                    "members": [
+                        {
+                            "employee_id": "E_DB_001",
+                            "employee_name": "DB Member",
+                            "assigned_role": "Backend Developer",
+                            "initials": "DB",
+                            "color": "bg-blue-600",
+                        },
+                        {
+                            "employee_id": "E_DB_002",
+                            "employee_name": "DB QA",
+                            "assigned_role": "QA Engineer",
+                            "initials": "DQ",
+                            "color": "bg-amber-600",
+                        },
+                    ],
+                }
+            ],
+        )
+
+    monkeypatch.setattr(session_flow, "_load_db_team_candidates", fake_db_candidates)
+    client = TestClient(app)
+
+    response = client.get("/api/sessions/sim_db/teams")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["totalCombinations"] == 5
+    assert body["teams"][0]["team_id"] == "team_db_top_001"
+
+
 def test_team_select_returns_ok() -> None:
     client = TestClient(app)
 
@@ -190,7 +237,7 @@ def test_shadow_stream_payloads_build_simulation_input_packet() -> None:
     packet, _ = SimulationInputBuilder().build(
         requirements=session_flow._shadow_requirements_payload(record),
         team_record=team_record,
-        snapshots=session_flow.SHADOW_AGENT_SAMPLES / "sample_employee_fit_profile_snapshots.json",
+        snapshots=session_flow._shadow_member_snapshots_payload(team_record),
         risk_summary=session_flow._shadow_team_risk_summary_payload(team_record["team_id"]),
         evidence_metadata=session_flow.SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
         simulation_id=session_id,
