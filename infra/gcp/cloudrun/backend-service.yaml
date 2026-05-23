@@ -13,6 +13,7 @@ spec:
         run.googleapis.com/cloudsql-instances: PROJECT_ID:asia-northeast3:ai-org-postgres-dev
     spec:
       serviceAccountName: ai-org-backend-dev@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 2
       containers:
         - image: asia-northeast3-docker.pkg.dev/PROJECT_ID/ai-org-backend/api:latest
           ports:

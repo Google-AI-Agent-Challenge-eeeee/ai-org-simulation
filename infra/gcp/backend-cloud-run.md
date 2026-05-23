@@ -80,6 +80,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --service-account="${SA_EMAIL}" \
   --memory=1Gi \
   --cpu=1 \
+  --concurrency=2 \
   --min-instances=1 \
   --max-instances=1 \
   --set-env-vars="ENV=staging,LOG_LEVEL=INFO,LLM_MODE=stub,GCP_PROJECT_ID=${PROJECT_ID},CORS_ALLOW_ORIGINS=[*]" \
@@ -192,6 +193,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --add-cloudsql-instances="${INSTANCE_CONNECTION_NAME}" \
   --memory=1Gi \
   --cpu=1 \
+  --concurrency=2 \
   --min-instances=1 \
   --max-instances=1 \
   --set-env-vars="ENV=staging,LOG_LEVEL=INFO,LLM_MODE=stub,GCP_PROJECT_ID=${PROJECT_ID}" \
