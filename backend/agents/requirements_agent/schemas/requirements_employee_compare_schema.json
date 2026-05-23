@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "requirements_employee_compare_schema.json",
+  "title": "Requirements Employee Compare",
+  "type": "object",
+  "required": ["_meta", "compare_policy", "role_slots", "required_skills", "compare_results"],
+  "additionalProperties": true,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "required": ["artifact_type", "compare_result_count"],
+      "additionalProperties": true,
+      "properties": {
+        "artifact_type": { "const": "requirements_employee_compare" },
+        "created_at": { "type": "string" },
+        "source_requirements_list_id": { "type": ["string", "null"] },
+        "source_feature_matrix_id": { "type": ["string", "null"] },
+        "compare_result_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "compare_policy": {
+      "type": "object",
+      "required": ["purpose", "algorithm", "score_components"],
+      "additionalProperties": true
+    },
+    "role_slots": { "type": "array", "items": { "type": "string" } },
+    "required_skills": { "type": "array", "items": { "type": "string" } },
+    "project_risk_flags": { "type": "array", "items": { "type": "string" } },
+    "compare_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "employee_id",
+          "employee_name",
+          "job_category_code",
+          "candidate_roles",
+          "best_role",
+          "best_role_score",
+          "role_comparisons"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "employee_id": { "type": "string" },
+          "employee_name": { "type": "string" },
+          "job_category_code": { "type": "string" },
+          "candidate_roles": { "type": "array", "items": { "type": "string" } },
+          "best_role": { "type": "string" },
+          "best_role_score": { "type": "number", "minimum": 0, "maximum": 100 },
+          "role_comparisons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "role",
+                "fit_score",
+                "matched_skills",
+                "missing_skills",
+                "score_breakdown",
+                "signals",
+                "risk_tags",
+                "evidence_refs",
+                "feature_values_used"
+              ],
+              "additionalProperties": true,
+              "properties": {
+                "role": { "type": "string" },
+                "fit_score": { "type": "number", "minimum": 0, "maximum": 100 },
+                "fit_interpretation": { "type": "string" },
+                "matched_skills": { "type": "array", "items": { "type": "string" } },
+                "missing_skills": { "type": "array", "items": { "type": "string" } },
+                "score_breakdown": { "type": "object", "additionalProperties": { "type": "number" } },
+                "signals": { "type": "object", "additionalProperties": { "type": "string" } },
+                "risk_tags": { "type": "array", "items": { "type": "string" } },
+                "evidence_refs": { "type": "array", "items": { "type": "string" } },
+                "feature_values_used": { "type": "array", "items": { "type": "object" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

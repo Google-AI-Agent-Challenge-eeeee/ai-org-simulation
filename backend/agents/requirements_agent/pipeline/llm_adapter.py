@@ -21,6 +21,7 @@ LLMInvoker = Callable[[str, Mapping[str, Any], "LLMConfig"], str | Mapping[str, 
 
 REQUIREMENTS_AGENT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EXTRACTOR_PROMPT = REQUIREMENTS_AGENT_ROOT / "prompts" / "requirements_extractor_prompt.md"
+DEFAULT_MAPPING_PROMPT = REQUIREMENTS_AGENT_ROOT / "prompts" / "requirements_mapping_prompt.md"
 
 LLM_MODE_STUB = "stub"
 LLM_MODE_VERTEX = "vertex"
@@ -121,6 +122,30 @@ def build_section_extractor(
     return extractor
 
 
+def build_mapping_suggester(
+    *,
+    config: LLMConfig,
+    prompt_path: str | Path = DEFAULT_MAPPING_PROMPT,
+    invoker: LLMInvoker | None = None,
+) -> Callable[[Mapping[str, Any]], Mapping[str, Any]] | None:
+    """Build an LLM-assisted taxonomy mapping suggester.
+
+    The suggester proposes mappings only. The taxonomy matcher remains the
+    validator and rejects suggestions that do not match existing reference keys.
+    """
+
+    if config.mode == LLM_MODE_STUB:
+        return None
+
+    prompt_template = load_prompt(prompt_path)
+
+    def suggester(payload: Mapping[str, Any]) -> Mapping[str, Any]:
+        prompt = render_mapping_prompt(prompt_template, payload)
+        return call_llm_for_json(prompt, payload, config, invoker=invoker)
+
+    return suggester
+
+
 def call_llm_for_json(
     prompt: str,
     payload: Mapping[str, Any],
@@ -166,6 +191,22 @@ def render_section_extraction_prompt(
         + json.dumps(payload, ensure_ascii=False, indent=2)
         + "\n\n"
         + "Return only one JSON object that matches the section extraction contract."
+    )
+
+
+def render_mapping_prompt(
+    prompt_template: str,
+    payload: Mapping[str, Any],
+) -> str:
+    """Render the suggested-mapping prompt with unresolved candidates."""
+
+    return (
+        prompt_template.rstrip()
+        + "\n\n"
+        + "MAPPING_PAYLOAD_JSON:\n"
+        + json.dumps(payload, ensure_ascii=False, indent=2)
+        + "\n\n"
+        + "Return only one JSON object with a suggested_mappings array."
     )
 
 

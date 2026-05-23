@@ -56,8 +56,14 @@ class SimulationOrchestrator:
         SimulationOrchestrator.to_json(output, path)
     """
 
-    def __init__(self, llm_mode: LLMMode = LLMMode.STUB) -> None:
+    def __init__(
+        self,
+        llm_mode: LLMMode = LLMMode.STUB,
+        *,
+        strict_llm: bool = False,
+    ) -> None:
         self.llm_mode = llm_mode
+        self.strict_llm = strict_llm
 
     def run(
         self,
@@ -193,7 +199,7 @@ class SimulationOrchestrator:
 
             # Phase 6: PhaseContext 생성 후 speak_with_context 호출
             ctx = ctx_builder.build(phase, event, role)
-            agent = RoleAgent(card, self.llm_mode)
+            agent = RoleAgent(card, self.llm_mode, strict_llm=self.strict_llm)
             turn = agent.speak_with_context(ctx)
 
             # 검증 실패 시 재질문 (최대 1회)

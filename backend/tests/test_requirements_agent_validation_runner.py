@@ -10,6 +10,7 @@ from backend.agents.requirements_agent.pipeline.section_splitter import prepare_
 from backend.agents.requirements_agent.pipeline.validation_runner import (
     build_prd_evidence_map,
     build_validation_payload,
+    extract_project_fields,
     run_validation,
 )
 
@@ -49,6 +50,71 @@ def _candidate(candidate_id, section, text, *, confidence=0.92, source_evidence=
         "confidence": confidence,
         "status": "candidate",
     }
+
+
+def test_extract_project_fields_handles_korean_prd_meta_goal_duration_and_no_budget() -> None:
+    fields = extract_project_fields(
+        """
+        PRD:
+        실시간
+        실시간
+        알림
+        알림
+        센터
+        센터
+
+        0. Document Meta
+        제목
+        실시간
+        알림
+        센터 PRD
+        작성자 PM 이지은
+
+        1. TL;DR
+        모바일 앱 사용자가 중요한 이벤트를 놓치는 문제를 앱 내 통합 알림 센터와
+        푸시 알림 연동으로 해결하여 알림 열람율 +35%, CS 인입 -40% 달성을 목표로 합니다.
+
+        11. 가정 · 제약
+        기간: 6주 (1 스프린트 = 2주, 3 스프린트)
+        예산: 별도 추가 인프라 비용 없음
+        """
+    )
+
+    assert fields["project_name"] == "실시간 알림 센터 PRD"
+    assert "알림 열람율" in fields["project_goal"]
+    assert fields["duration_weeks"] == 6
+    assert fields["budget"] is None
+    assert fields["budget_status"] == "explicit_no_additional_budget"
+
+
+def test_validation_does_not_mark_explicit_no_additional_budget_as_missing() -> None:
+    prepared = prepare_document_sections(
+        """
+        # 실시간 알림 센터 PRD
+
+        ## TL;DR
+        알림 열람율 개선을 목표로 합니다.
+
+        ## Constraints
+        - 기간: 6주
+        - 예산: 별도 추가 인프라 비용 없음
+        """,
+        document_id="prd_validation",
+    )
+    draft = _draft([])
+    mapped = _mapped_requirements()
+    coverage = check_coverage(prepared["sections"])
+
+    result = run_validation(
+        prepared_document=prepared,
+        extracted_requirements_draft=draft,
+        mapped_requirements=mapped,
+        coverage_check=coverage,
+        project_fields=extract_project_fields(prepared["raw_text"]),
+    )
+
+    missing_fields = {item["field"] for item in result["missing_fields"]}
+    assert "budget" not in missing_fields
 
 
 def _draft(candidates):

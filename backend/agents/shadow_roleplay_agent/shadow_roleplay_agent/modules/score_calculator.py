@@ -115,7 +115,9 @@ class ScoreCalculator:
         overall = 0.0
 
         for dim_name, weight, _related_cats in _DIMENSIONS:
-            raw_score, deducted_by, penalty_detail = _calc_dim_score(dim_name, dim_issues[dim_name])
+            raw_score, deducted_by, penalty_detail = _calc_dim_score(
+                dim_name, dim_issues[dim_name]
+            )
 
             # phase_stability 조정
             phase_signal = ""

@@ -9,18 +9,38 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 JsonObject = dict[str, Any]
+MappingSuggester = Callable[[Mapping[str, Any]], Mapping[str, Any]]
 
 FEATURE_GROUPS = ("raw_features",)
 CONSTRAINT_GROUPS = ("raw_constraints",)
 RISK_GROUPS = ("raw_risk_candidates",)
 ROLE_GROUPS = ("raw_roles",)
 SKILL_GROUPS = ("raw_skills",)
+MAPPING_MODE_RULE = "rule"
+MAPPING_MODE_LLM_ASSISTED = "llm_assisted"
+MAPPING_MODE_AUTO = "auto"
+SUPPORTED_MAPPING_MODES = {MAPPING_MODE_RULE, MAPPING_MODE_LLM_ASSISTED, MAPPING_MODE_AUTO}
+AUTO_MAPPING_CONFIDENCE_THRESHOLD = 0.88
+SHORT_CANDIDATE_TERMS = {
+    "발송",
+    "실패율",
+    "활성화",
+    "권한",
+    "처리",
+    "연동",
+    "조회",
+    "설정",
+    "알림",
+    "대시보드",
+    "API",
+    "api",
+}
 
 
 def load_json(path: str | Path) -> JsonObject:
@@ -42,6 +62,8 @@ def match_requirements(
     rulebase: Mapping[str, Any],
     *,
     project_specific_mapping: Mapping[str, str] | None = None,
+    mapping_mode: str = MAPPING_MODE_RULE,
+    mapping_suggester: MappingSuggester | None = None,
     mapped_requirements_id: str = "mapped_requirements_draft",
 ) -> JsonObject:
     """Map raw extraction candidates to taxonomy features and review buckets.
@@ -51,11 +73,25 @@ def match_requirements(
     """
 
     project_specific_mapping = project_specific_mapping or {}
-    feature_candidates = list(_iter_candidates(extracted_requirements_draft, FEATURE_GROUPS))
-    constraint_candidates = list(_iter_candidates(extracted_requirements_draft, CONSTRAINT_GROUPS))
-    risk_candidates = list(_iter_candidates(extracted_requirements_draft, RISK_GROUPS))
-    role_candidates = list(_iter_candidates(extracted_requirements_draft, ROLE_GROUPS))
-    skill_candidates = list(_iter_candidates(extracted_requirements_draft, SKILL_GROUPS))
+    mapping_mode = _normalize_mapping_mode(mapping_mode)
+    normalized_candidates, normalization_trace = normalize_requirement_candidates(
+        _iter_candidates(extracted_requirements_draft, (
+            *FEATURE_GROUPS,
+            *CONSTRAINT_GROUPS,
+            *RISK_GROUPS,
+            *ROLE_GROUPS,
+            *SKILL_GROUPS,
+        ))
+    )
+    normalized_draft = {
+        **dict(extracted_requirements_draft),
+        "merged_requirement_candidates": normalized_candidates,
+    }
+    feature_candidates = list(_iter_candidates(normalized_draft, FEATURE_GROUPS))
+    constraint_candidates = list(_iter_candidates(normalized_draft, CONSTRAINT_GROUPS))
+    risk_candidates = list(_iter_candidates(normalized_draft, RISK_GROUPS))
+    role_candidates = list(_iter_candidates(normalized_draft, ROLE_GROUPS))
+    skill_candidates = list(_iter_candidates(normalized_draft, SKILL_GROUPS))
 
     mapped_features: list[JsonObject] = []
     unknown_requirements: list[JsonObject] = []
@@ -130,6 +166,24 @@ def match_requirements(
     )
     risk_factors.extend(_expand_risks(mapped_features, taxonomy))
 
+    suggested_mapping_trace: list[JsonObject] = []
+    if _should_use_mapping_suggester(mapping_mode, mapping_suggester):
+        assisted = _apply_suggested_mappings(
+            unknown_requirements,
+            taxonomy,
+            rulebase,
+            mapping_suggester=mapping_suggester,
+        )
+        mapped_features.extend(assisted["mapped_features"])
+        constraints = _merge_constraints([*constraints, *assisted["constraints"]])
+        roles = _merge_taxonomy_items([*roles, *assisted["roles"]])
+        skills = _merge_taxonomy_items([*skills, *assisted["skills"]])
+        unknown_requirements = assisted["remaining_unknown_requirements"]
+        low_confidence_items.extend(assisted["low_confidence_items"])
+        suggested_mapping_trace = assisted["suggested_mapping_trace"]
+        mapped_features = _merge_mapped_features(mapped_features)
+        risk_factors.extend(_expand_risks(assisted["mapped_features"], taxonomy))
+
     conflict_items = _dedupe_conflict_items(conflict_items)
     status = (
         "needs_human_confirm"
@@ -176,7 +230,359 @@ def match_requirements(
             + role_candidates
             + skill_candidates
         ),
+        "normalization_trace": normalization_trace,
+        "suggested_mapping_trace": suggested_mapping_trace,
     }
+
+
+def normalize_requirement_candidates(
+    candidates: Iterable[Mapping[str, Any]],
+) -> tuple[list[JsonObject], list[JsonObject]]:
+    """Normalize too-short candidate fragments using their source evidence."""
+
+    normalized_candidates: list[JsonObject] = []
+    trace: list[JsonObject] = []
+    for candidate in candidates:
+        normalized = dict(candidate)
+        text = str(normalized.get("text") or "")
+        replacement = _normalized_short_candidate_text(normalized)
+        if replacement and normalize_text(replacement) != normalize_text(text):
+            normalized["original_text"] = text
+            normalized["text"] = replacement
+            normalized["normalized_text"] = normalize_text(replacement)
+            normalized["normalization_status"] = "context_expanded"
+            normalized["normalization_reason"] = "Short or generic candidate expanded from source evidence context."
+            trace.append(
+                {
+                    "candidate_id": normalized.get("candidate_id", ""),
+                    "item_type": normalized.get("item_type", "other"),
+                    "original_text": text,
+                    "normalized_text": replacement,
+                    "reason": normalized["normalization_reason"],
+                    "source_evidence_ids": [
+                        evidence.get("evidence_id")
+                        for evidence in normalized.get("source_evidence", [])
+                        if evidence.get("evidence_id")
+                    ],
+                }
+            )
+        elif _is_unresolved_short_candidate(text):
+            normalized["normalization_status"] = "short_candidate_unresolved"
+            trace.append(
+                {
+                    "candidate_id": normalized.get("candidate_id", ""),
+                    "item_type": normalized.get("item_type", "other"),
+                    "original_text": text,
+                    "normalized_text": text,
+                    "reason": "Short or generic candidate could not be safely expanded.",
+                    "source_evidence_ids": [
+                        evidence.get("evidence_id")
+                        for evidence in normalized.get("source_evidence", [])
+                        if evidence.get("evidence_id")
+                    ],
+                }
+            )
+        normalized_candidates.append(normalized)
+    return normalized_candidates, trace
+
+
+def _normalize_mapping_mode(mode: str) -> str:
+    normalized = str(mode or MAPPING_MODE_RULE).strip().casefold()
+    if normalized not in SUPPORTED_MAPPING_MODES:
+        raise ValueError(
+            f"Unsupported mapping mode '{mode}'. Use one of: {', '.join(sorted(SUPPORTED_MAPPING_MODES))}."
+        )
+    return normalized
+
+
+def _should_use_mapping_suggester(
+    mapping_mode: str,
+    mapping_suggester: MappingSuggester | None,
+) -> bool:
+    return mapping_suggester is not None and mapping_mode in {
+        MAPPING_MODE_LLM_ASSISTED,
+        MAPPING_MODE_AUTO,
+    }
+
+
+def _normalized_short_candidate_text(candidate: Mapping[str, Any]) -> str:
+    text = str(candidate.get("text") or "").strip()
+    if not _is_unresolved_short_candidate(text):
+        return ""
+    evidence_texts = [
+        str(evidence.get("text", "")).strip()
+        for evidence in candidate.get("source_evidence", [])
+        if evidence.get("text")
+    ]
+    for evidence_text in evidence_texts:
+        phrase = _context_phrase_for_short_candidate(text, evidence_text)
+        if phrase and not _is_unresolved_short_candidate(phrase):
+            return phrase
+    return ""
+
+
+def _is_unresolved_short_candidate(text: str) -> bool:
+    normalized = normalize_text(text)
+    if not normalized:
+        return False
+    if normalized in {normalize_text(term) for term in SHORT_CANDIDATE_TERMS}:
+        return True
+    tokens = re.findall(r"[a-zA-Z0-9가-힣/+-]+", text)
+    return len(tokens) <= 1 and len(normalized) <= 8
+
+
+def _context_phrase_for_short_candidate(short_text: str, evidence_text: str) -> str:
+    clean_evidence = re.sub(r"\s+", " ", evidence_text).strip()
+    if len(clean_evidence) <= len(short_text):
+        return ""
+    domain_phrase = _domain_phrase_from_evidence(clean_evidence)
+    if domain_phrase:
+        return domain_phrase
+    escaped = re.escape(short_text.strip())
+    match = re.search(escaped, clean_evidence, flags=re.I)
+    if not match:
+        return ""
+    left = clean_evidence[max(0, match.start() - 28) : match.start()].strip()
+    right = clean_evidence[match.end() : match.end() + 28].strip()
+    phrase = _trim_context_phrase(f"{left} {short_text} {right}")
+    return phrase
+
+
+def _domain_phrase_from_evidence(evidence_text: str) -> str:
+    patterns = (
+        r"(푸시\s*발송\s*실패율)",
+        r"(알림\s*발송\s*성공\s*/?\s*실패율)",
+        r"(대시보드\s*활성화)",
+        r"(기능\s*활성화)",
+        r"(접근\s*권한\s*관리)",
+        r"(프로비저닝\s*권한)",
+        r"(FCM\s*/\s*APNs\s*[^,.;\n]{0,30})",
+        r"(JWT\s*[^,.;\n]{0,30})",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, evidence_text, re.I)
+        if match:
+            return _trim_context_phrase(match.group(1))
+    return ""
+
+
+def _trim_context_phrase(value: str) -> str:
+    clean = re.sub(r"\s+", " ", value).strip(" -:：,.;")
+    clean = re.sub(r"^(Given|When|Then|And|및|또는)\s+", "", clean, flags=re.I)
+    words = clean.split()
+    if len(words) > 8:
+        clean = " ".join(words[:8])
+    return clean.strip()
+
+
+def _apply_suggested_mappings(
+    unknown_requirements: list[JsonObject],
+    taxonomy: Mapping[str, Any],
+    rulebase: Mapping[str, Any],
+    *,
+    mapping_suggester: MappingSuggester,
+) -> JsonObject:
+    payload = {
+        "unknown_requirements": unknown_requirements,
+        "taxonomy_keys": _taxonomy_key_catalog(taxonomy),
+        "rulebase_version": rulebase.get("_meta", {}).get("version"),
+        "policy": {
+            "minimum_confidence": AUTO_MAPPING_CONFIDENCE_THRESHOLD,
+            "auto_extend_taxonomy": False,
+            "preserve_human_confirm_for_rejected_suggestions": True,
+        },
+    }
+    raw_result = dict(mapping_suggester(payload))
+    suggestions = _suggestions_by_candidate(raw_result.get("suggested_mappings", []))
+    mapped_features: list[JsonObject] = []
+    constraints: list[JsonObject] = []
+    roles: list[JsonObject] = []
+    skills: list[JsonObject] = []
+    remaining_unknown: list[JsonObject] = []
+    low_confidence_items: list[JsonObject] = []
+    trace: list[JsonObject] = []
+
+    for item in unknown_requirements:
+        suggestion = suggestions.get(str(item.get("candidate_id") or item.get("item_id") or ""))
+        if suggestion is None:
+            remaining_unknown.append(item)
+            continue
+        validation = _validate_suggested_mapping(item, suggestion, taxonomy)
+        trace_item = {
+            "candidate_id": item.get("candidate_id") or item.get("item_id") or "",
+            "text": item.get("text", ""),
+            "suggestion": suggestion,
+            "accepted": validation["accepted"],
+            "reason": validation["reason"],
+        }
+        trace.append(trace_item)
+        if not validation["accepted"]:
+            review_item = {
+                **item,
+                "suggested_mapping": {
+                    "target_type": suggestion.get("suggested_target_type"),
+                    "target_key": suggestion.get("suggested_target_key"),
+                    "confidence": suggestion.get("confidence"),
+                    "reason": suggestion.get("reason"),
+                    "rejected_reason": validation["reason"],
+                },
+            }
+            if validation["reason"] == "confidence_below_threshold":
+                low_confidence_items.append(review_item)
+            else:
+                remaining_unknown.append(review_item)
+            continue
+        target_type = str(suggestion.get("suggested_target_type"))
+        target_key = str(suggestion.get("suggested_target_key"))
+        if target_type == "feature":
+            mapped_features.append(
+                _mapped_feature(
+                    _candidate_from_review_item(item),
+                    {
+                        "feature_key": target_key,
+                        "matched_alias": item.get("text", ""),
+                        "match_method": "llm_suggested_mapping",
+                        "confidence": float(suggestion.get("confidence", 0.0)),
+                    },
+                    taxonomy,
+                )
+            )
+        elif target_type == "constraint":
+            constraints.append(
+                {
+                    "constraint_key": target_key,
+                    "text": item.get("text", ""),
+                    "constraint_type": _constraint_type(target_key),
+                    "confidence": float(suggestion.get("confidence", 0.0)),
+                    "source_evidence": item.get("source_evidence", []),
+                    "status": "mapped",
+                    "match_method": "llm_suggested_mapping",
+                }
+            )
+        elif target_type == "role":
+            role = taxonomy.get("standard_roles", {}).get(target_key, {})
+            roles.append(
+                {
+                    "name": target_key,
+                    "source_feature_keys": [],
+                    "reason": "Explicit role accepted from LLM-suggested mapping.",
+                    "job_category_codes": list(role.get("job_category_codes", [])),
+                    "match_method": "llm_suggested_mapping",
+                }
+            )
+        elif target_type == "skill":
+            skills.append(
+                {
+                    "name": target_key,
+                    "source_feature_keys": _skill_source_feature_keys(target_key, taxonomy),
+                    "reason": "Explicit skill accepted from LLM-suggested mapping.",
+                    "match_method": "llm_suggested_mapping",
+                }
+            )
+
+    return {
+        "mapped_features": mapped_features,
+        "constraints": constraints,
+        "roles": roles,
+        "skills": skills,
+        "remaining_unknown_requirements": remaining_unknown,
+        "low_confidence_items": low_confidence_items,
+        "suggested_mapping_trace": trace,
+    }
+
+
+def _taxonomy_key_catalog(taxonomy: Mapping[str, Any]) -> JsonObject:
+    return {
+        "features": sorted(taxonomy.get("features", {}).keys()),
+        "constraints": sorted(taxonomy.get("constraint_profiles", {}).keys()),
+        "roles": sorted(taxonomy.get("standard_roles", {}).keys()),
+        "skills": sorted(
+            {
+                skill
+                for feature in taxonomy.get("features", {}).values()
+                for skill in feature.get("skills", [])
+            }
+        ),
+    }
+
+
+def _suggestions_by_candidate(suggestions: Iterable[Mapping[str, Any]]) -> dict[str, JsonObject]:
+    result: dict[str, JsonObject] = {}
+    for suggestion in suggestions:
+        candidate_id = str(suggestion.get("candidate_id") or "")
+        if candidate_id:
+            result[candidate_id] = dict(suggestion)
+    return result
+
+
+def _validate_suggested_mapping(
+    item: Mapping[str, Any],
+    suggestion: Mapping[str, Any],
+    taxonomy: Mapping[str, Any],
+) -> JsonObject:
+    target_type = str(suggestion.get("suggested_target_type") or "")
+    target_key = str(suggestion.get("suggested_target_key") or "")
+    confidence = float(suggestion.get("confidence", 0.0) or 0.0)
+    if confidence < AUTO_MAPPING_CONFIDENCE_THRESHOLD:
+        return {"accepted": False, "reason": "confidence_below_threshold"}
+    if not item.get("source_evidence"):
+        return {"accepted": False, "reason": "missing_source_evidence"}
+    if target_type != str(item.get("item_type") or ""):
+        return {"accepted": False, "reason": "item_type_mismatch"}
+    if target_type == "feature" and target_key in taxonomy.get("features", {}):
+        return {"accepted": True, "reason": "accepted"}
+    if target_type == "constraint" and target_key in taxonomy.get("constraint_profiles", {}):
+        return {"accepted": True, "reason": "accepted"}
+    if target_type == "role" and target_key in taxonomy.get("standard_roles", {}):
+        return {"accepted": True, "reason": "accepted"}
+    if target_type == "skill" and target_key in _taxonomy_key_catalog(taxonomy)["skills"]:
+        return {"accepted": True, "reason": "accepted"}
+    return {"accepted": False, "reason": "target_key_not_found"}
+
+
+def _candidate_from_review_item(item: Mapping[str, Any]) -> JsonObject:
+    return {
+        "candidate_id": item.get("candidate_id") or item.get("item_id") or "",
+        "item_type": item.get("item_type", "feature"),
+        "text": item.get("text", ""),
+        "normalized_text": normalize_text(str(item.get("text", ""))),
+        "source_evidence": list(item.get("source_evidence", [])),
+        "confidence": item.get("confidence", 0.0),
+        "status": "candidate",
+    }
+
+
+def _skill_source_feature_keys(skill_name: str, taxonomy: Mapping[str, Any]) -> list[str]:
+    return [
+        feature_key
+        for feature_key, feature in taxonomy.get("features", {}).items()
+        if skill_name in feature.get("skills", [])
+    ]
+
+
+def _merge_taxonomy_items(items: Iterable[Mapping[str, Any]]) -> list[JsonObject]:
+    merged: dict[str, JsonObject] = {}
+    for item in items:
+        name = str(item.get("name") or "")
+        if not name:
+            continue
+        current = merged.setdefault(name, dict(item))
+        current["source_feature_keys"] = _unique_strings(
+            [
+                *current.get("source_feature_keys", []),
+                *item.get("source_feature_keys", []),
+            ]
+        )
+        if item.get("job_category_codes"):
+            current["job_category_codes"] = _unique_strings(
+                [
+                    *current.get("job_category_codes", []),
+                    *item.get("job_category_codes", []),
+                ]
+            )
+        if item.get("role_type"):
+            current["role_type"] = item["role_type"]
+    return list(merged.values())
 
 
 def _iter_candidates(
@@ -524,6 +930,7 @@ def _expand_taxonomy_items(
     for feature in mapped_features:
         taxonomy_feature = taxonomy["features"].get(feature["feature_key"], {})
         for name in taxonomy_feature.get(item_key, []):
+            standard_role = taxonomy.get("standard_roles", {}).get(name, {})
             entry = items_by_name.setdefault(
                 name,
                 {
@@ -533,6 +940,11 @@ def _expand_taxonomy_items(
                 },
             )
             entry["source_feature_keys"].append(feature["feature_key"])
+            if item_key == "roles":
+                if standard_role.get("job_category_codes"):
+                    entry["job_category_codes"] = list(standard_role["job_category_codes"])
+                if standard_role.get("role_type"):
+                    entry["role_type"] = standard_role["role_type"]
     for candidate in direct_candidates:
         if _is_conflict_candidate(candidate):
             unknown_requirements.append(
@@ -577,6 +989,8 @@ def _expand_taxonomy_items(
         )
         if item_key == "roles" and mapped_item.get("job_category_codes"):
             entry["job_category_codes"] = list(mapped_item["job_category_codes"])
+        if item_key == "roles" and mapped_item.get("role_type"):
+            entry["role_type"] = mapped_item["role_type"]
     return list(items_by_name.values())
 
 
@@ -599,6 +1013,7 @@ def _map_direct_taxonomy_item(
                     "name": role_name,
                     "source_feature_keys": [],
                     "job_category_codes": list(role.get("job_category_codes", [])),
+                    "role_type": role.get("role_type", "staffing"),
                 }
         return None
 
@@ -641,6 +1056,7 @@ def _map_direct_role_alias(
                 "name": role_name,
                 "source_feature_keys": [],
                 "job_category_codes": list(role.get("job_category_codes", [])),
+                "role_type": role.get("role_type", "staffing"),
                 "_confidence": float(info.get("confidence", 0.0)),
                 "_alias_length": len(normalized_alias),
             }
