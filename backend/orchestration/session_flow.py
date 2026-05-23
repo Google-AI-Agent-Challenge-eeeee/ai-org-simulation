@@ -11,8 +11,26 @@ import json
 import os
 import uuid
 from collections.abc import Iterator
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from backend.agents.requirements_agent.pipeline.llm_adapter import (
+    LLMConfig,
+    build_section_extractor,
+)
+from backend.agents.requirements_agent.pipeline.local_input_loader import (
+    DEFAULT_EMPLOYEE_DATA_DIR,
+    build_local_project_fields,
+    read_employee_data_headers,
+    validate_employee_column_rules_against_headers,
+)
+from backend.agents.requirements_agent.pipeline.requirements_pipeline import (
+    DEFAULT_REFERENCE_DIR,
+    RequirementsPipelineConfig,
+    load_references,
+    run_requirements_pipeline,
+)
 
 ROLE_MAP: dict[str, str] = {
     "PM": "PM",
@@ -49,117 +67,71 @@ SHADOW_AGENT_ROOT = REPO_ROOT / "backend/agents/shadow_roleplay_agent/shadow_rol
 SHADOW_AGENT_SAMPLES = SHADOW_AGENT_ROOT / "samples"
 SHADOW_AGENT_OUTPUTS = SHADOW_AGENT_ROOT / "outputs"
 
+DEFAULT_PRD_TEXT = """# 결제 및 사용자 관리 플랫폼 v1.0
 
-def create_session() -> dict[str, str]:
-    return {"session_id": f"sim_{uuid.uuid4().hex[:8]}"}
+Goal: 이메일 기반 인증, 결제 API 연동, 메인 대시보드를 포함하는 14일 스프린트 MVP.
+
+## Functional Requirements
+- 이메일 로그인
+- 결제 API 연동
+- 메인 대시보드 UI
+
+## Constraints
+- Duration: 2 weeks
+- Deploy on GCP Cloud Run
+- Frontend/backend API contract must stay synchronized.
+"""
+
+
+@dataclass
+class SessionRecord:
+    session_id: str
+    prd_text: str
+    pm_persona: dict[str, Any] | None = None
+    pm_priority: str | None = None
+    requirements_agent_result: dict[str, Any] | None = None
+    requirements_summary: dict[str, Any] | None = None
+    requirements_accepted: bool = False
+    selected_team_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+_SESSIONS: dict[str, SessionRecord] = {}
+
+
+def create_session(body: dict[str, Any] | None = None) -> dict[str, str]:
+    payload = body or {}
+    session_id = f"sim_{uuid.uuid4().hex[:8]}"
+    _SESSIONS[session_id] = SessionRecord(
+        session_id=session_id,
+        prd_text=_extract_prd_text(payload),
+        pm_persona=_dict_or_none(payload.get("pmPersona")),
+        pm_priority=_string_or_none(payload.get("pmPriority")),
+    )
+    return {"session_id": session_id}
 
 
 def get_requirements_summary(session_id: str) -> dict[str, Any]:
-    return {
-        "project_name": "결제 및 사용자 관리 플랫폼 v1.0",
-        "project_summary": (
-            "이메일 기반 인증, 결제 API 연동, 메인 대시보드를 포함하는 14일 스프린트 MVP. "
-            "외부 결제 API(PG사) 의존성이 높고 GCP Cloud Run 배포가 필수다."
-        ),
-        "required_roles": [
-            "PM",
-            "Backend Developer",
-            "Frontend Developer",
-            "QA Engineer",
-            "DevOps Engineer",
-        ],
-        "required_skills": [
-            "Python",
-            "FastAPI",
-            "PostgreSQL",
-            "React",
-            "TypeScript",
-            "Payment API",
-            "GCP Cloud Run",
-            "Docker",
-            "Pytest",
-            "CI/CD",
-        ],
-        "features": [
-            {
-                "feature_id": "feat_001",
-                "feature_name": "이메일 로그인",
-                "priority": "P0",
-                "assigned_role": "Backend Developer",
-                "estimated_days": 3,
-                "dependencies": [],
-                "risk_notes": "인증 플로우 미확정 시 FE 연동 블로킹",
-            },
-            {
-                "feature_id": "feat_002",
-                "feature_name": "결제 API 연동",
-                "priority": "P0",
-                "assigned_role": "Backend Developer",
-                "estimated_days": 4,
-                "dependencies": ["feat_001"],
-                "risk_notes": "외부 PG사 sandbox 응답 지연 가능성",
-            },
-            {
-                "feature_id": "feat_003",
-                "feature_name": "메인 대시보드 UI",
-                "priority": "P0",
-                "assigned_role": "Frontend Developer",
-                "estimated_days": 3,
-                "dependencies": ["feat_001"],
-            },
-            {
-                "feature_id": "feat_004",
-                "feature_name": "사용자 프로필 편집",
-                "priority": "P1",
-                "assigned_role": "Frontend Developer",
-                "estimated_days": 2,
-                "dependencies": ["feat_001"],
-            },
-            {
-                "feature_id": "feat_005",
-                "feature_name": "알림 시스템",
-                "priority": "P1",
-                "assigned_role": "Backend Developer",
-                "estimated_days": 2,
-                "dependencies": ["feat_001"],
-            },
-            {
-                "feature_id": "feat_006",
-                "feature_name": "로그 내보내기",
-                "priority": "P2",
-                "assigned_role": "Backend Developer",
-                "estimated_days": 1,
-            },
-            {
-                "feature_id": "feat_007",
-                "feature_name": "다크모드 토글",
-                "priority": "P2",
-                "assigned_role": "Frontend Developer",
-                "estimated_days": 1,
-            },
-        ],
-        "timeline_days": 14,
-        "milestones": [
-            {"label": "Kickoff", "day": 1},
-            {"label": "Design", "day": 3},
-            {"label": "Development", "day": 10},
-            {"label": "QA", "day": 14},
-        ],
-        "risk_flags": [
-            "외부 PG API 의존",
-            "14일 일정 촉박",
-            "FE-BE 스펙 동기화",
-            "GCP Cloud Run 경험 부족",
-        ],
-        "confidence": 92,
-    }
+    record = _get_or_create_session(session_id)
+    if record.requirements_summary is None:
+        agent_result = _run_requirements_agent(record)
+        record.requirements_agent_result = agent_result
+        record.requirements_summary = _to_requirements_summary(
+            agent_result["outputs"]["requirements_list"]
+        )
+    return record.requirements_summary
 
 
 def accept_requirements(session_id: str) -> dict[str, bool]:
+    _get_or_create_session(session_id).requirements_accepted = True
     return {"ok": True}
 
 
 def revise_requirements(session_id: str) -> dict[str, Any]:
+    record = _get_or_create_session(session_id)
+    record.requirements_agent_result = None
+    record.requirements_summary = None
+    record.requirements_accepted = False
     return get_requirements_summary(session_id)
 
 
@@ -193,6 +165,7 @@ def get_team_candidates(session_id: str) -> dict[str, Any]:
 
 
 def select_team(session_id: str, team_id: str | None = None) -> dict[str, bool]:
+    _get_or_create_session(session_id).selected_team_id = team_id
     return {"ok": True}
 
 
@@ -355,16 +328,16 @@ def iter_agent_turn_sse(chunk: dict[str, Any], msg_counter: int) -> Iterator[str
     turn = chunk["turn"]
     persona = _persona(chunk["agent_id"], ROLE_MAP.get(chunk["role"], "BE"))
 
-    for field, turn_type in [
+    for turn_field, turn_type in [
         ("observation", "observation"),
         ("concern", "concern"),
         ("dependency", "dependency"),
         ("proposed_action", "proposed_action"),
     ]:
-        text = turn.get(field, "").strip()
+        text = turn.get(turn_field, "").strip()
         if not text:
             continue
-        msg_id = f"msg_{msg_counter}_{field}"
+        msg_id = f"msg_{msg_counter}_{turn_field}"
         msg_counter += 1
         for i, token in enumerate(text.split(" ")):
             space = "" if i == 0 else " "
@@ -393,6 +366,170 @@ def _load_simulation_output() -> tuple[float, str, str, list[dict[str, Any]], li
         data.get("top_risks", []),
         data.get("must_fix_before_start", []),
     )
+
+
+def _get_or_create_session(session_id: str) -> SessionRecord:
+    if session_id not in _SESSIONS:
+        _SESSIONS[session_id] = SessionRecord(session_id=session_id, prd_text=DEFAULT_PRD_TEXT)
+    return _SESSIONS[session_id]
+
+
+def _run_requirements_agent(record: SessionRecord) -> dict[str, Any]:
+    references = load_references(DEFAULT_REFERENCE_DIR)
+    headers = read_employee_data_headers(DEFAULT_EMPLOYEE_DATA_DIR)
+    column_validation = validate_employee_column_rules_against_headers(
+        references["employee_column_rules"],
+        headers,
+    )
+    if column_validation["status"] != "passed":
+        raise RuntimeError("employee_column_rules.json conflicts with datasets/raw CSV headers.")
+
+    llm_config = LLMConfig.from_env(mode="stub")
+    extractor = build_section_extractor(config=llm_config, rulebase=references["rulebase"])
+    result = run_requirements_pipeline(
+        record.prd_text,
+        document_id=record.session_id,
+        document_type="prd",
+        source_uri=f"memory://sessions/{record.session_id}/prd",
+        project_fields=build_local_project_fields(record.prd_text),
+        extractor=extractor,
+        config=RequirementsPipelineConfig(write_outputs=False, human_confirm_complete=True),
+    )
+    result["session"] = {
+        "session_id": record.session_id,
+        "column_validation": column_validation,
+        "llm": llm_config.safe_summary(),
+    }
+    return result
+
+
+def _to_requirements_summary(requirements_list: dict[str, Any]) -> dict[str, Any]:
+    features = requirements_list.get("required_features", [])
+    roles = requirements_list.get("required_roles", [])
+    skills = requirements_list.get("required_skills", [])
+    risks = requirements_list.get("risk_factors", [])
+    timeline_days = _duration_to_days(requirements_list.get("duration_weeks"))
+
+    return {
+        "project_name": requirements_list.get("project_name") or "Untitled project",
+        "project_summary": requirements_list.get("project_goal") or "No project goal extracted.",
+        "required_roles": [_role_name(role) for role in roles],
+        "required_skills": [_skill_name(skill) for skill in skills],
+        "features": [
+            {
+                "feature_id": f"feat_{index + 1:03d}",
+                "feature_name": feature.get("standard_name")
+                or feature.get("feature_key")
+                or f"Feature {index + 1}",
+                "priority": _priority_for_index(index),
+                "assigned_role": _assigned_role_for_feature(feature, roles),
+                "estimated_days": _estimated_days_for_feature(index, timeline_days),
+                "dependencies": [],
+                **_feature_risk_note(feature, risks),
+            }
+            for index, feature in enumerate(features)
+        ],
+        "timeline_days": timeline_days,
+        "milestones": _milestones(timeline_days),
+        "risk_flags": [_risk_text(risk) for risk in risks[:6]],
+        "confidence": _requirements_confidence(requirements_list),
+    }
+
+
+def _duration_to_days(value: Any) -> int:
+    if isinstance(value, int | float) and value > 0:
+        return max(1, round(float(value) * 7))
+    if isinstance(value, dict):
+        candidates = [
+            value.get("max"),
+            value.get("maximum"),
+            value.get("to"),
+            value.get("min"),
+            value.get("minimum"),
+            value.get("from"),
+        ]
+        for candidate in candidates:
+            if isinstance(candidate, int | float) and candidate > 0:
+                return max(1, round(float(candidate) * 7))
+    return 14
+
+
+def _role_name(role: dict[str, Any]) -> str:
+    return str(role.get("role") or role.get("standard_name") or "Team Member")
+
+
+def _skill_name(skill: dict[str, Any]) -> str:
+    return str(skill.get("skill") or skill.get("standard_name") or "General")
+
+
+def _priority_for_index(index: int) -> str:
+    if index < 3:
+        return "P0"
+    if index < 6:
+        return "P1"
+    return "P2"
+
+
+def _assigned_role_for_feature(feature: dict[str, Any], roles: list[dict[str, Any]]) -> str:
+    source_key = feature.get("feature_key")
+    for role in roles:
+        if source_key in role.get("source_feature_keys", []):
+            return _role_name(role)
+    return _role_name(roles[0]) if roles else "Team Member"
+
+
+def _estimated_days_for_feature(index: int, timeline_days: int) -> int:
+    if timeline_days <= 7:
+        return 1
+    if index < 3:
+        return max(2, min(4, timeline_days // 5))
+    return max(1, min(3, timeline_days // 7))
+
+
+def _feature_risk_note(feature: dict[str, Any], risks: list[dict[str, Any]]) -> dict[str, str]:
+    source_key = feature.get("feature_key")
+    for risk in risks:
+        if source_key in risk.get("source_feature_keys", []):
+            return {"risk_notes": _risk_text(risk)}
+    return {}
+
+
+def _risk_text(risk: dict[str, Any]) -> str:
+    return str(risk.get("text") or risk.get("risk_key") or "Risk")
+
+
+def _milestones(timeline_days: int) -> list[dict[str, int | str]]:
+    return [
+        {"label": "Kickoff", "day": 1},
+        {"label": "Design", "day": max(2, round(timeline_days * 0.2))},
+        {"label": "Development", "day": max(3, round(timeline_days * 0.7))},
+        {"label": "QA", "day": timeline_days},
+    ]
+
+
+def _requirements_confidence(requirements_list: dict[str, Any]) -> int:
+    review_count = sum(
+        len(requirements_list.get(key, []))
+        for key in ("unknown_requirements", "missing_extractions", "low_confidence_items")
+    )
+    status = requirements_list.get("_meta", {}).get("status")
+    base = 92 if status == "completed" else 84
+    return max(50, base - min(review_count * 4, 30))
+
+
+def _extract_prd_text(payload: dict[str, Any]) -> str:
+    prd = payload.get("prd")
+    if isinstance(prd, str) and prd.strip():
+        return prd.strip()
+    return DEFAULT_PRD_TEXT
+
+
+def _dict_or_none(value: Any) -> dict[str, Any] | None:
+    return value if isinstance(value, dict) else None
+
+
+def _string_or_none(value: Any) -> str | None:
+    return value.strip() if isinstance(value, str) and value.strip() else None
 
 
 def _team_member(employee_id: str, name: str, assigned_role: str) -> dict[str, str]:

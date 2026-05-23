@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/sessions", tags=["simulation"])
 
 @router.post("")
 async def create_session(body: dict | None = None) -> dict[str, str]:
-    return session_flow.create_session()
+    return session_flow.create_session(body)
 
 
 @router.get("/{session_id}/requirements")
