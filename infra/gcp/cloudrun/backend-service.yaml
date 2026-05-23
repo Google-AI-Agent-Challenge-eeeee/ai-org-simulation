@@ -24,6 +24,14 @@ spec:
               value: INFO
             - name: LLM_MODE
               value: stub
+            - name: REQUIREMENTS_LLM_MODE
+              value: vertex
+            - name: SIMULATION_LLM_MODE
+              value: vertex
+            - name: REQUIREMENTS_STRICT_LLM
+              value: "false"
+            - name: ROLEPLAY_STRICT_LLM
+              value: "false"
             - name: GCP_PROJECT_ID
               value: PROJECT_ID
             - name: VERTEX_LOCATION

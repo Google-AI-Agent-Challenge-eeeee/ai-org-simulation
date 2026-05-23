@@ -467,6 +467,61 @@ def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
     assert "event: done" in body
 
 
+def test_stream_endpoint_uses_simulation_llm_mode_env(monkeypatch) -> None:
+    from backend.core.config import get_settings
+
+    def fake_stream(session_id: str, llm_mode: str) -> Iterator[str]:
+        assert session_id == "sim_vertex"
+        assert llm_mode == "vertex"
+        yield session_flow.sse("status", {"stage": "done", "text": "ok"})
+        yield session_flow.sse("done", {})
+
+    monkeypatch.setenv("SIMULATION_LLM_MODE", "vertex")
+    get_settings.cache_clear()
+    monkeypatch.setattr(session_flow, "iter_pipeline_sse", fake_stream)
+    client = TestClient(app)
+
+    with client.stream("GET", "/api/sessions/sim_vertex/stream") as response:
+        assert response.status_code == 200
+        body = response.read().decode("utf-8")
+
+    assert "event: done" in body
+    get_settings.cache_clear()
+
+
+def test_requirements_agent_vertex_failure_falls_back_to_stub(monkeypatch) -> None:
+    from backend.core.config import get_settings
+
+    original_build_section_extractor = session_flow.build_section_extractor
+
+    def fake_build_section_extractor(*, config, **kwargs):
+        if config.mode == "vertex":
+            raise RuntimeError("vertex unavailable")
+        return original_build_section_extractor(config=config, **kwargs)
+
+    monkeypatch.setenv("REQUIREMENTS_LLM_MODE", "vertex")
+    monkeypatch.setenv("GCP_PROJECT_ID", "test-project")
+    get_settings.cache_clear()
+    monkeypatch.setattr(
+        session_flow,
+        "build_section_extractor",
+        fake_build_section_extractor,
+    )
+    record = session_flow.SessionRecord(
+        session_id="sim_requirements_vertex_fallback",
+        prd_text="# Vertex Fallback Demo\n\nGoal: Build a demo dashboard.",
+    )
+
+    result = session_flow._run_requirements_agent(record)
+
+    llm = result["session"]["llm"]
+    assert llm["requested_mode"] == "vertex"
+    assert llm["actual_mode"] == "stub"
+    assert "vertex unavailable" in llm["fallback_error"]
+    assert record.metadata["requirements_llm"]["actual_mode"] == "stub"
+    get_settings.cache_clear()
+
+
 def test_roleplay_stream_populates_report_agent_outputs() -> None:
     client = TestClient(app)
     session_id = client.post(

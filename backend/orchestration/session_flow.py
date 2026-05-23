@@ -18,6 +18,7 @@ from typing import Any
 
 from backend.agents.report_agent import ReportAgent
 from backend.agents.requirements_agent.pipeline.llm_adapter import (
+    LLM_MODE_STUB,
     LLMConfig,
     build_section_extractor,
 )
@@ -33,6 +34,7 @@ from backend.agents.requirements_agent.pipeline.requirements_pipeline import (
     load_references,
     run_requirements_pipeline,
 )
+from backend.core.config import get_settings
 from backend.services.team_ranking import (
     RequirementsAgentTeamRankingAdapter,
     TeamRankingAdapterResult,
@@ -203,6 +205,7 @@ def sse(event: str, data: dict[str, Any]) -> str:
 
 def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
     _load_env_file()
+    settings = get_settings()
     record = _get_or_create_session(session_id)
     if isinstance(record.roleplay_outputs, dict):
         yield sse("backend_log", {"text": "Using cached roleplay report outputs"})
@@ -260,7 +263,20 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
         {"stage": "meeting", "text": "시뮬레이션 진행 중", "phase": "kickoff", "phaseIndex": 0},
     )
 
-    orchestrator = SimulationOrchestrator(llm_mode=llm_mode)
+    yield sse(
+        "backend_log",
+        {
+            "text": (
+                f"Shadow RolePlay Agent LLM mode: {llm_mode} "
+                f"(strict={settings.roleplay_strict_llm})"
+            )
+        },
+    )
+
+    orchestrator = SimulationOrchestrator(
+        llm_mode=llm_mode,
+        strict_llm=settings.roleplay_strict_llm,
+    )
     msg_counter = 0
 
     for chunk in orchestrator.run_stream(plan, cards):
@@ -290,6 +306,17 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
             try:
                 orchestrator_output = chunk.get("output")
                 if orchestrator_output is not None:
+                    yield sse(
+                        "backend_log",
+                        {
+                            "text": (
+                                "Shadow RolePlay Agent actual LLM mode: "
+                                f"{orchestrator_output.actual_llm_mode} "
+                                f"(vertex_turns={orchestrator_output.vertex_turn_count}, "
+                                f"fallbacks={orchestrator_output.fallback_count})"
+                            )
+                        },
+                    )
                     team = packet.selected_team
                     evidence_list = list(packet.evidence_metadata)
                     sim_log = PhaseLogCollector().collect(
@@ -902,7 +929,44 @@ def _run_requirements_agent(record: SessionRecord) -> dict[str, Any]:
     if column_validation["status"] != "passed":
         raise RuntimeError("employee_column_rules.json conflicts with datasets/raw CSV headers.")
 
-    llm_config = LLMConfig.from_env(mode="stub")
+    settings = get_settings()
+    requested_mode = (settings.requirements_llm_mode or settings.llm_mode).value
+    llm_config = LLMConfig.from_env(mode=requested_mode)
+    actual_config = llm_config
+    fallback_error = None
+
+    try:
+        result = _run_requirements_pipeline_for_record(record, references, llm_config)
+    except Exception as exc:
+        if llm_config.mode == LLM_MODE_STUB or settings.requirements_strict_llm:
+            raise
+        fallback_error = f"{type(exc).__name__}: {exc}"
+        actual_config = LLMConfig.from_env(mode=LLM_MODE_STUB)
+        result = _run_requirements_pipeline_for_record(record, references, actual_config)
+
+    llm_summary = actual_config.safe_summary()
+    llm_summary.update(
+        {
+            "requested_mode": llm_config.mode,
+            "actual_mode": actual_config.mode,
+            "fallback_error": fallback_error,
+            "strict": settings.requirements_strict_llm,
+        }
+    )
+    record.metadata["requirements_llm"] = llm_summary
+    result["session"] = {
+        "session_id": record.session_id,
+        "column_validation": column_validation,
+        "llm": llm_summary,
+    }
+    return result
+
+
+def _run_requirements_pipeline_for_record(
+    record: SessionRecord,
+    references: dict[str, Any],
+    llm_config: LLMConfig,
+) -> dict[str, Any]:
     extractor = build_section_extractor(config=llm_config, rulebase=references["rulebase"])
     result = run_requirements_pipeline(
         record.prd_text,
@@ -913,11 +977,6 @@ def _run_requirements_agent(record: SessionRecord) -> dict[str, Any]:
         extractor=extractor,
         config=RequirementsPipelineConfig(write_outputs=False, human_confirm_complete=True),
     )
-    result["session"] = {
-        "session_id": record.session_id,
-        "column_validation": column_validation,
-        "llm": llm_config.safe_summary(),
-    }
     return result
 
 
