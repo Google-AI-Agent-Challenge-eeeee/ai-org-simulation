@@ -16,3 +16,40 @@ body {
   font-family: ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  :root {
+    --background: #ffffff;
+    --foreground: #111827;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-surface,
+  .print-surface * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-surface {
+    background: #ffffff !important;
+  }
+
+  .print-section,
+  .print-section details {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

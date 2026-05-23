@@ -127,7 +127,12 @@ export async function selectTeam(
 
 export function getStreamUrl(sessionId: string): string {
   if (isMock) return `/api/mock-stream?session_id=${sessionId}`
-  return `${BACKEND_BASE_URL}/api/sessions/${sessionId}/stream`
+  const url = new URL(`${BACKEND_BASE_URL}/api/sessions/${sessionId}/stream`)
+  const llmMode = process.env.NEXT_PUBLIC_SIMULATION_LLM_MODE
+  if (llmMode === "stub" || llmMode === "vertex") {
+    url.searchParams.set("mode", llmMode)
+  }
+  return url.toString()
 }
 
 /* ─── Report ──────────────────────────── */
@@ -141,7 +146,10 @@ export async function fetchReport(
   const res = await fetch(
     `${BACKEND_BASE_URL}/api/sessions/${sessionId}/report`,
   )
-  if (!res.ok) throw new Error(`fetchReport failed: ${res.status}`)
+  if (!res.ok) {
+    const detail = await errorDetail(res)
+    throw new Error(detail ?? `fetchReport failed: ${res.status}`)
+  }
   return res.json() as Promise<Report>
 }
 
@@ -149,4 +157,19 @@ export async function fetchReport(
 
 function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms))
+}
+
+async function errorDetail(res: Response): Promise<string | null> {
+  try {
+    const body = (await res.json()) as {
+      detail?: string | { code?: string; message?: string; generationError?: string }
+    }
+    if (typeof body.detail === "string") return body.detail
+    if (body.detail?.generationError) {
+      return `${body.detail.message ?? body.detail.code}: ${body.detail.generationError}`
+    }
+    return body.detail?.message ?? body.detail?.code ?? null
+  } catch {
+    return null
+  }
 }

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterator
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from backend.core.config import get_settings
@@ -45,7 +45,20 @@ async def select_team(session_id: str, body: dict | None = None) -> dict[str, bo
 
 @router.get("/{session_id}/report")
 async def get_report(session_id: str) -> dict:
-    return session_flow.get_report(session_id)
+    try:
+        return session_flow.get_report(session_id)
+    except session_flow.ReportNotReadyError as exc:
+        detail: dict[str, str] = {
+            "code": "REPORT_NOT_READY",
+            "message": "Report is not ready. Run the simulation stream first.",
+            "sessionId": exc.session_id,
+        }
+        if exc.generation_error:
+            detail["generationError"] = exc.generation_error
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=detail,
+        ) from exc
 
 
 @router.get("/{session_id}/stream")
@@ -70,7 +83,7 @@ async def simulation_stream(session_id: str, mode: str | None = None) -> Streami
                 break
             yield chunk
             if isinstance(chunk, str) and chunk.startswith("event: message"):
-                await asyncio.sleep(0.028)
+                await asyncio.sleep(0.004)
             else:
                 await asyncio.sleep(0)
 

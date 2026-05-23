@@ -144,6 +144,103 @@ export interface PhaseSummary {
   summary: string
 }
 
+export interface ReportSummary {
+  projectName: string
+  verdict: string
+  scoreNote: string
+  generatedFrom: string[]
+  outputCoverage: {
+    phaseCount: number
+    topRiskCount: number
+    mustFixCount: number
+    scoreDimensionCount: number
+  }
+}
+
+export interface ScoreBreakdownItem {
+  dimension: string
+  rawScore: number
+  weightedScore: number
+  weight: number
+  status: string
+  deductedBy?: string[]
+  penaltyDetail?: string[]
+  phaseSignal?: string
+}
+
+export interface ReportRisk {
+  rank?: number
+  issueCategory: string
+  severity: string
+  status: string
+  observedInPhases: string[]
+  suggestedAction: string
+  evidenceRefs: string[]
+  rootCause?: string
+  finalIssueScore?: number
+}
+
+export interface MustFixItem {
+  issueCategory: string
+  severity: string
+  suggestedAction: string
+  affectedRoles: string[]
+}
+
+export interface EvidenceSummary {
+  total_evidence_refs?: number
+  total_confirmed_issues?: number
+  total_candidate_issues?: number
+  total_unresolved_turns?: number
+  phases_with_high_risk?: string[]
+}
+
+export interface PhaseDetail {
+  phase: SimulationPhase
+  phaseName: string
+  phaseObjective: string
+  conversationSummary: string
+  score: number
+  triggerSources: string[]
+  participantTurns: Array<{
+    agentId: string
+    role: string
+    observation: string
+    concern: string
+    dependency: string
+    proposedAction: string
+    evidenceRefsUsed: string[]
+    isValid: boolean
+  }>
+  detectedIssues: Array<{
+    issueId: string
+    issueCategory: string
+    description: string
+    raisedBy: string
+    severity: string
+    status: string
+    evidenceRefs: string[]
+  }>
+  decisions: Array<{ id: string; text: string; phase: string }>
+  actionItems: Array<{
+    actionId: string
+    description: string
+    ownerRole: string
+    priority: string
+    evidenceRefs: string[]
+  }>
+  unresolvedQuestions: Array<{ id: string; text: string; phase: string }>
+}
+
+export interface IssueSummary {
+  confirmedCount: number
+  candidateCount: number
+  invalidCount: number
+  confirmedIssues: ReportRisk[]
+  candidateIssues: ReportRisk[]
+  invalidIssues: ReportRisk[]
+}
+
 export type RecommendationType = "burnout" | "bottleneck" | "turnover" | "security"
 
 export interface Recommendation {
@@ -173,6 +270,13 @@ export interface Report {
   }
   requirementsSummary?: RequirementsAcceptedSummary
   phaseSummaries?: PhaseSummary[]
+  reportSummary?: ReportSummary
+  scoreBreakdown?: ScoreBreakdownItem[]
+  topRisks?: ReportRisk[]
+  mustFixBeforeStart?: MustFixItem[]
+  evidenceSummary?: EvidenceSummary
+  phaseDetails?: PhaseDetail[]
+  issueSummary?: IssueSummary
 }
 
 export interface SimulationInput {

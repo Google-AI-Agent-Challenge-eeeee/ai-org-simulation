@@ -200,6 +200,187 @@ def test_team_selection_uses_requirements_agent_ranking(monkeypatch) -> None:
     assert body["teams"][0]["skill_gaps"] == ["Backend Developer: API contract sync"]
 
 
+def test_pm_persona_is_used_as_roleplay_pm(monkeypatch) -> None:
+    import backend.services.team_ranking.adapter as adapter_module
+
+    roleplay_input = {
+        "project_id": "old_project",
+        "project_name": "PM Persona E2E",
+        "project_summary": "Verify PM input is used.",
+        "required_roles": ["Backend Developer"],
+        "required_skills": ["API Design"],
+        "features": [
+            {
+                "feature_id": "api",
+                "feature_name": "API",
+                "priority": "P0",
+                "assigned_role": "Backend Developer",
+                "tech_requirements": ["API Design"],
+                "dependencies": [],
+                "estimated_days": 3,
+                "risk_notes": "",
+            }
+        ],
+        "timeline": {
+            "total_sprint_days": 10,
+            "milestones": [
+                {"name": "API complete", "due_day": 5, "owner_role": "Backend Developer"}
+            ],
+        },
+        "constraints": [],
+        "risk_flags": [],
+    }
+
+    def fake_requirements_result(_record: object) -> dict[str, object]:
+        return {
+            "outputs": {
+                "requirements_list": {"project_name": "PM Persona E2E"},
+                "roleplay_requirements_input": dict(roleplay_input),
+            }
+        }
+
+    def fake_build_employee_team_rankings(
+        _requirements_list: dict[str, object],
+        roleplay_requirements_input: dict[str, object],
+        **_kwargs: object,
+    ) -> dict[str, object]:
+        selected_team = {
+            "team_id": "team_db_top_001",
+            "team_rank": 1,
+            "team_fit_score": 90.0,
+            "role_coverage_score": 1.0,
+            "skill_coverage_score": 1.0,
+            "availability_score": 0.9,
+            "team_risk_flags": ["availability_risk"],
+            "members": [
+                {"employee_id": "E_DB_PM", "employee_name": "DB Manager", "assigned_role": "PM"},
+                {
+                    "employee_id": "E_DB_BE",
+                    "employee_name": "DB Backend",
+                    "assigned_role": "Backend Developer",
+                },
+            ],
+        }
+        snapshots = [
+            {
+                "employee_id": "E_DB_PM",
+                "employee_name": "DB Manager",
+                "assigned_role": "PM",
+                "matched_skills": ["planning"],
+                "missing_skills": [],
+                "capacity_signal": "low_risk",
+                "communication_signal": "low_delay",
+                "delivery_signal": "stable",
+                "collaboration_signal": "connector",
+                "risk_tags": [],
+                "evidence_refs": [],
+            },
+            {
+                "employee_id": "E_DB_BE",
+                "employee_name": "DB Backend",
+                "assigned_role": "Backend Developer",
+                "matched_skills": ["API Design"],
+                "missing_skills": [],
+                "capacity_signal": "low_risk",
+                "communication_signal": "low_delay",
+                "delivery_signal": "stable",
+                "collaboration_signal": "review_hub",
+                "risk_tags": [],
+                "evidence_refs": [],
+            },
+        ]
+        risk_summary = {
+            "team_id": "team_db_top_001",
+            "risk_tags": [],
+            "risk_prior_scores": {},
+            "bottleneck_members": [],
+            "critical_dependencies": [],
+        }
+        return {
+            "employee_fit_ranking": {
+                "_meta": {"role_candidate_counts": {"PM": 1, "Backend Developer": 1}}
+            },
+            "team_composition_ranking": {
+                "team_rankings": [
+                    {
+                        **selected_team,
+                        "members": [
+                            {
+                                **member,
+                                "fit_score": 90.0,
+                                "matched_skills": ["API Design"],
+                                "missing_skills": [],
+                            }
+                            for member in selected_team["members"]
+                        ],
+                    }
+                ]
+            },
+            "roleplay_selected_team_record": selected_team,
+            "roleplay_employee_fit_profile_snapshots": snapshots,
+            "roleplay_team_risk_summary": risk_summary,
+            "roleplay_evidence_metadata": [],
+            "roleplay_simulation_input_packet": {
+                "simulation_id": "sim_pm_persona",
+                "project_context": roleplay_requirements_input,
+                "selected_team": selected_team,
+                "member_snapshots": snapshots,
+                "team_risk_summary": risk_summary,
+                "evidence_metadata": [],
+            },
+        }
+
+    monkeypatch.setattr(session_flow, "_ensure_requirements_agent_result", fake_requirements_result)
+    monkeypatch.setattr(
+        adapter_module,
+        "build_employee_team_rankings",
+        fake_build_employee_team_rankings,
+    )
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={
+            "prd": "# PM Persona E2E\n\nGoal: verify PM input is used.",
+            "pmPersona": {
+                "name": "Input PM",
+                "preset": "quality",
+                "persona": "Risk-aware PM who asks for explicit mitigation plans.",
+                "constraints": "Keep budget and compliance constraints visible.",
+            },
+            "pmPriority": "quality / protect release confidence",
+        },
+    ).json()["session_id"]
+
+    teams = client.get(f"/api/sessions/{session_id}/teams").json()["teams"]
+    members = teams[0]["members"]
+    pm_members = [member for member in members if member["assigned_role"] == "PM"]
+
+    assert pm_members == [
+        {
+            "employee_id": "pm_persona",
+            "employee_name": "Input PM",
+            "assigned_role": "PM",
+            "initials": "IP",
+            "color": "bg-purple-500",
+        }
+    ]
+    assert all(member["employee_id"] != "E_DB_PM" for member in members)
+
+    record = session_flow._get_or_create_session(session_id)
+    packet = session_flow._roleplay_packet(record)
+    pm_snapshot = next(item for item in packet.member_snapshots if item.assigned_role == "PM")
+
+    assert packet.project_context.required_roles[0] == "PM"
+    assert packet.selected_team.members[0].employee_name == "Input PM"
+    assert pm_snapshot.employee_name == "Input PM"
+    assert pm_snapshot.capacity_signal == "low_risk"
+    assert any("Risk-aware PM" in skill for skill in pm_snapshot.matched_skills)
+    assert any("protect release confidence" in skill for skill in pm_snapshot.matched_skills)
+    assert pm_snapshot.missing_skills == [
+        "PM user constraint: Keep budget and compliance constraints visible."
+    ]
+
+
 def test_team_select_returns_ok() -> None:
     client = TestClient(app)
 
@@ -218,6 +399,7 @@ def test_selected_team_is_reflected_in_report() -> None:
         f"/api/sessions/{session_id}/teams/select",
         json={"teamId": teams[0]["team_id"]},
     )
+    list(session_flow.iter_pipeline_sse(session_id, "stub"))
     report_response = client.get(f"/api/sessions/{session_id}/report")
 
     assert select_response.status_code == 200
@@ -225,18 +407,45 @@ def test_selected_team_is_reflected_in_report() -> None:
     assert report_response.json()["selectedTeam"]["teamId"] == teams[0]["team_id"]
 
 
-def test_report_contract_returns_selected_session_id() -> None:
+def test_report_returns_not_ready_before_stream() -> None:
     client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={"prd": "# Report Pending\n\nGoal: do not use sample output."},
+    ).json()["session_id"]
 
-    response = client.get("/api/sessions/sim_test/report")
+    response = client.get(f"/api/sessions/{session_id}/report")
+
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == "REPORT_NOT_READY"
+
+
+def test_report_contract_returns_selected_session_result() -> None:
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={"prd": "# Session Report\n\nGoal: build a session-scoped report."},
+    ).json()["session_id"]
+    list(session_flow.iter_pipeline_sse(session_id, "stub"))
+
+    response = client.get(f"/api/sessions/{session_id}/report")
 
     assert response.status_code == 200
     body = response.json()
-    assert body["id"] == "sim_test"
+    assert body["id"] == session_id
     assert body["team"]
     assert body["metrics"]["teamFitScore"] >= 0
     assert body["meetingSummary"]
     assert body["phaseSummaries"]
+    assert body["reportSummary"]["generatedFrom"] == [
+        "Simulation_OUTPUT",
+        "Team_Simulation_Log",
+        "Issue_Risk_Summary",
+        "Score_Breakdown",
+    ]
+    assert body["scoreBreakdown"]
+    assert body["topRisks"]
+    assert body["phaseDetails"]
 
 
 def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
@@ -256,6 +465,31 @@ def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
 
     assert "event: status" in body
     assert "event: done" in body
+
+
+def test_roleplay_stream_populates_report_agent_outputs() -> None:
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={"prd": "# Report Pipeline E2E\n\nGoal: verify roleplay to report output."},
+    ).json()["session_id"]
+
+    chunks = list(session_flow.iter_pipeline_sse(session_id, "stub"))
+    report = session_flow.get_report(session_id)
+    record = session_flow._get_or_create_session(session_id)
+
+    assert any("ReportAgent inputs finalized" in chunk for chunk in chunks)
+    assert isinstance(record.roleplay_outputs, dict)
+    assert report["reportSummary"]["generatedFrom"] == [
+        "Simulation_OUTPUT",
+        "Team_Simulation_Log",
+        "Issue_Risk_Summary",
+        "Score_Breakdown",
+    ]
+    assert len(report["scoreBreakdown"]) == 7
+    assert len(report["phaseDetails"]) == 5
+    assert report["phaseDetails"][0]["participantTurns"]
+    assert report["topRisks"]
 
 
 def test_shadow_requirements_payload_uses_session_prd_input() -> None:

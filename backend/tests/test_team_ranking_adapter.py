@@ -229,13 +229,26 @@ def test_team_ranking_adapter_pins_requester_pm_across_outputs(
         session_id="sim_pm",
         requirements_list={},
         roleplay_requirements_input=_roleplay_requirements_input(),
-        requester_pm={"name": "김PM", "preset": "speed"},
+        requester_pm={
+            "name": "김PM",
+            "preset": "speed",
+            "persona": "Risk-aware PM",
+            "constraints": "Keep release risk visible.",
+            "priority": "quality / protect release confidence",
+        },
     )
 
     assert result.total_combinations == 3
     assert result.teams[0]["members"][0]["employee_name"] == "김PM"
-    assert result.teams[0]["members"][0]["employee_id"] == "requester_pm"
+    assert result.teams[0]["members"][0]["employee_id"] == "pm_persona"
     packet = result.roleplay_packet
     assert packet.selected_team.members[0].employee_name == "김PM"
     assert packet.member_snapshots[0].employee_name == "김PM"
-    assert packet.member_snapshots[0].matched_skills[-1] == "speed PM style"
+    assert "speed PM style" in packet.member_snapshots[0].matched_skills
+    assert any("Risk-aware PM" in skill for skill in packet.member_snapshots[0].matched_skills)
+    assert any(
+        "protect release confidence" in skill for skill in packet.member_snapshots[0].matched_skills
+    )
+    assert packet.member_snapshots[0].missing_skills == [
+        "PM user constraint: Keep release risk visible."
+    ]

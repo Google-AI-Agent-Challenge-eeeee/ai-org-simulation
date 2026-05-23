@@ -94,6 +94,9 @@ class RequirementsAgentTeamRankingAdapter:
     ) -> TeamRankingAdapterResult:
         roleplay_input = dict(roleplay_requirements_input)
         roleplay_input["project_id"] = session_id
+        roleplay_input["required_roles"] = _required_roles_with_pm(
+            roleplay_input.get("required_roles")
+        )
         ranking_result = build_employee_team_rankings(
             requirements_list,
             roleplay_input,
@@ -195,7 +198,7 @@ def _requester_pm_member(requester_pm: Mapping[str, Any] | None) -> JsonObject |
     if not name:
         return None
     return {
-        "employee_id": str(requester_pm.get("employee_id") or "requester_pm"),
+        "employee_id": str(requester_pm.get("employee_id") or "pm_persona"),
         "employee_name": name,
         "assigned_role": "PM",
         "fit_score": 100.0,
@@ -209,8 +212,14 @@ def _requester_pm_skills(requester_pm: Mapping[str, Any] | None) -> list[str]:
     if requester_pm is None:
         return skills
     preset = str(requester_pm.get("preset") or "").strip()
+    persona = str(requester_pm.get("persona") or "").strip()
+    priority = str(requester_pm.get("priority") or "").strip()
     if preset:
         skills.append(f"{preset} PM style")
+    if persona:
+        skills.append(f"PM persona input: {_truncate(persona, 220)}")
+    if priority:
+        skills.append(f"PM operating priority: {_truncate(priority, 160)}")
     return _unique_strings(skills)
 
 
@@ -263,13 +272,13 @@ def _requester_pm_snapshot(
         "employee_name": pm_member["employee_name"],
         "assigned_role": "PM",
         "matched_skills": list(pm_member.get("matched_skills", [])),
-        "missing_skills": [],
+        "missing_skills": _requester_pm_constraints(requester_pm),
         "capacity_signal": "low_risk",
         "communication_signal": "low_delay",
         "delivery_signal": "stable",
         "collaboration_signal": "connector",
-        "risk_tags": [],
-        "evidence_refs": ["session.pmPersona"],
+        "risk_tags": ["pm_persona_input"],
+        "evidence_refs": ["pm.persona_input"],
     }
 
 
@@ -290,6 +299,25 @@ def _pin_pm_snapshot(snapshots: list[Any], pm_snapshot: Mapping[str, Any]) -> li
 
 def _is_pm_role(role: Any) -> bool:
     return str(role or "").strip() in {"PM", "Product Manager", "Product Lead"}
+
+
+def _required_roles_with_pm(raw_roles: Any) -> list[str]:
+    roles = [str(role) for role in raw_roles] if isinstance(raw_roles, list) else []
+    without_pm = [role for role in roles if not _is_pm_role(role)]
+    return ["PM", *without_pm]
+
+
+def _requester_pm_constraints(requester_pm: Mapping[str, Any] | None) -> list[str]:
+    if requester_pm is None:
+        return []
+    constraints = str(requester_pm.get("constraints") or "").strip()
+    if not constraints:
+        return []
+    return [f"PM user constraint: {_truncate(constraints, 220)}"]
+
+
+def _truncate(value: str, limit: int) -> str:
+    return value if len(value) <= limit else value[: limit - 1].rstrip() + "..."
 
 
 def _frontend_team_candidates_from_ranking(

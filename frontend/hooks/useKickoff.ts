@@ -49,23 +49,6 @@ export function useKickoff(sessionId: string) {
     }
   }, [tickElapsed])
 
-  useEffect(() => {
-    if (!sessionId) return
-    abortRef.current = new AbortController()
-    const { signal } = abortRef.current
-
-    if (isMock) {
-      runMock(sessionId, signal)
-    } else {
-      runReal(sessionId, signal)
-    }
-
-    return () => {
-      abortRef.current?.abort()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId])
-
   async function runMock(_sessionId: string, signal: AbortSignal) {
     const { buildMockEvents } = await import("@/lib/mock/scenario")
     const events = buildMockEvents()
@@ -131,6 +114,23 @@ export function useKickoff(sessionId: string) {
       signal,
     )
   }
+
+  useEffect(() => {
+    if (!sessionId) return
+    abortRef.current = new AbortController()
+    const { signal } = abortRef.current
+
+    if (isMock) {
+      runMock(sessionId, signal)
+    } else {
+      runReal(sessionId, signal)
+    }
+
+    return () => {
+      abortRef.current?.abort()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId])
 }
 
 function delay(ms: number) {

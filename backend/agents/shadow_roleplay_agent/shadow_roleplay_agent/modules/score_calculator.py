@@ -132,7 +132,10 @@ class ScoreCalculator:
                     raw_score * (1 - _PHASE_STABILITY_WEIGHT)
                     + avg_stability * _PHASE_STABILITY_WEIGHT
                 )
-                phase_signal = f"phase_stability_avg={avg_stability:.3f} → score {raw_score:.3f}→{adjusted:.3f}"
+                phase_signal = (
+                    f"phase_stability_avg={avg_stability:.3f} "
+                    f"score {raw_score:.3f}->{adjusted:.3f}"
+                )
                 raw_score = round(min(1.0, max(0.0, adjusted)), 4)
 
             weighted = round(raw_score * weight, 4)
