@@ -70,7 +70,7 @@ async def simulation_stream(session_id: str, mode: str | None = None) -> Streami
                 break
             yield chunk
             if isinstance(chunk, str) and chunk.startswith("event: message"):
-                await asyncio.sleep(0.028)
+                await asyncio.sleep(0.004)
             else:
                 await asyncio.sleep(0)
 

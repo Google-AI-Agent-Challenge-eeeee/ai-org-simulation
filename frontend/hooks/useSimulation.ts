@@ -72,26 +72,6 @@ export function useSimulation(sessionId: string) {
     }
   }, [tickElapsed])
 
-  useEffect(() => {
-    if (!sessionId) return
-    clearBackendLogs()
-    abortRef.current = new AbortController()
-    const { signal } = abortRef.current
-
-    const swallowAbort = (e: unknown) => {
-      if ((e as { name?: string })?.name !== "AbortError") throw e
-    }
-
-    if (isMock) {
-      runMock(sessionId, signal).catch(swallowAbort)
-    } else {
-      runReal(sessionId, signal).catch(swallowAbort)
-    }
-
-    return () => abortRef.current?.abort()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId])
-
   async function runMock(_sessionId: string, signal: AbortSignal) {
     const { buildMockEvents } = await import("@/lib/mock/scenario")
     const events = buildMockEvents(pmPersona)
@@ -190,8 +170,6 @@ export function useSimulation(sessionId: string) {
             })
           }
           appendToken(d.messageId, d.token)
-          // React가 토큰마다 렌더할 기회를 주어 타이핑 효과를 만든다
-          await delay(22)
         } else if (ev.event === "done") {
           setStage("done", STAGE_STATUS_TEXT.done)
           router.push(`/report/${sessionId}`)
@@ -200,6 +178,26 @@ export function useSimulation(sessionId: string) {
       signal,
     )
   }
+
+  useEffect(() => {
+    if (!sessionId) return
+    clearBackendLogs()
+    abortRef.current = new AbortController()
+    const { signal } = abortRef.current
+
+    const swallowAbort = (e: unknown) => {
+      if ((e as { name?: string })?.name !== "AbortError") throw e
+    }
+
+    if (isMock) {
+      runMock(sessionId, signal).catch(swallowAbort)
+    } else {
+      runReal(sessionId, signal).catch(swallowAbort)
+    }
+
+    return () => abortRef.current?.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId])
 }
 
 function delay(ms: number) {

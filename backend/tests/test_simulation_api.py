@@ -134,6 +134,90 @@ def test_team_selection_prefers_db_candidates(monkeypatch) -> None:
     assert body["teams"][0]["team_id"] == "team_db_top_001"
 
 
+def test_pm_persona_is_used_as_roleplay_pm(monkeypatch) -> None:
+    from backend.services.team_selector import TeamSelectionResult
+
+    def fake_db_candidates(_record: object) -> TeamSelectionResult:
+        return TeamSelectionResult(
+            total_combinations=3,
+            teams=[
+                {
+                    "team_id": "team_db_top_001",
+                    "team_name": "DB Top Recommendation",
+                    "team_rank": 1,
+                    "team_fit_score": 90.0,
+                    "role_coverage_score": 1.0,
+                    "skill_coverage_score": 1.0,
+                    "availability_score": 0.9,
+                    "team_risk_flags": ["availability_risk"],
+                    "members": [
+                        {
+                            "employee_id": "E_DB_PM",
+                            "employee_name": "DB Manager",
+                            "assigned_role": "PM",
+                            "initials": "DM",
+                            "color": "bg-purple-500",
+                        },
+                        {
+                            "employee_id": "E_DB_BE",
+                            "employee_name": "DB Backend",
+                            "assigned_role": "Backend Developer",
+                            "initials": "DB",
+                            "color": "bg-blue-600",
+                        },
+                    ],
+                }
+            ],
+        )
+
+    monkeypatch.setattr(session_flow, "_load_db_team_candidates", fake_db_candidates)
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={
+            "prd": "# PM Persona E2E\n\nGoal: verify PM input is used.",
+            "pmPersona": {
+                "name": "Input PM",
+                "preset": "quality",
+                "persona": "Risk-aware PM who asks for explicit mitigation plans.",
+                "constraints": "Keep budget and compliance constraints visible.",
+            },
+            "pmPriority": "quality / protect release confidence",
+        },
+    ).json()["session_id"]
+
+    teams = client.get(f"/api/sessions/{session_id}/teams").json()["teams"]
+    members = teams[0]["members"]
+    pm_members = [member for member in members if member["assigned_role"] == "PM"]
+
+    assert pm_members == [
+        {
+            "employee_id": "pm_persona",
+            "employee_name": "Input PM",
+            "assigned_role": "PM",
+            "initials": "IP",
+            "color": "bg-purple-500",
+        }
+    ]
+    assert all(member["employee_id"] != "E_DB_PM" for member in members)
+
+    record = session_flow._get_or_create_session(session_id)
+    requirements_payload = session_flow._shadow_requirements_payload(record)
+    team_record = session_flow._shadow_selected_team_record(record)
+    snapshots = session_flow._shadow_member_snapshots_payload(team_record, record)
+    pm_snapshot = next(item for item in snapshots if item["assigned_role"] == "PM")
+
+    assert requirements_payload["required_roles"][0] == "PM"
+    assert team_record["members"][0]["employee_name"] == "Input PM"
+    assert pm_snapshot["employee_name"] == "Input PM"
+    assert pm_snapshot["capacity_signal"] == "low_risk"
+    assert any("Risk-aware PM" in skill for skill in pm_snapshot["matched_skills"])
+    assert any("protect release confidence" in skill for skill in pm_snapshot["matched_skills"])
+    assert pm_snapshot["missing_skills"] == [
+        "PM user constraint: Keep budget and compliance constraints visible."
+    ]
+
+
 def test_team_select_returns_ok() -> None:
     client = TestClient(app)
 
@@ -194,6 +278,29 @@ def test_stream_endpoint_uses_sse_media_type(monkeypatch) -> None:
 
     assert "event: status" in body
     assert "event: done" in body
+
+
+def test_roleplay_stream_populates_report_agent_outputs() -> None:
+    client = TestClient(app)
+    session_id = client.post(
+        "/api/sessions",
+        json={"prd": "# Report Pipeline E2E\n\nGoal: verify roleplay to report output."},
+    ).json()["session_id"]
+
+    chunks = list(session_flow.iter_pipeline_sse(session_id, "stub"))
+    report = session_flow.get_report(session_id)
+
+    assert any("ReportAgent inputs finalized" in chunk for chunk in chunks)
+    assert report["reportSummary"]["generatedFrom"] == [
+        "Simulation_OUTPUT",
+        "Team_Simulation_Log",
+        "Issue_Risk_Summary",
+        "Score_Breakdown",
+    ]
+    assert len(report["scoreBreakdown"]) == 7
+    assert len(report["phaseDetails"]) == 5
+    assert report["phaseDetails"][0]["participantTurns"]
+    assert report["topRisks"]
 
 
 def test_shadow_requirements_payload_uses_session_prd_input() -> None:

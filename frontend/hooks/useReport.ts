@@ -13,13 +13,27 @@ export function useReport(sessionId: string) {
 
   useEffect(() => {
     if (!sessionId) return
-    setLoading(true)
-    fetchReport(sessionId, pmPersona)
-      .then(setReport)
-      .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : "Unknown error"),
-      )
-      .finally(() => setLoading(false))
+    let active = true
+
+    void Promise.resolve().then(async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const nextReport = await fetchReport(sessionId, pmPersona)
+        if (active) setReport(nextReport)
+      } catch (e: unknown) {
+        if (active) {
+          setError(e instanceof Error ? e.message : "Unknown error")
+        }
+      } finally {
+        if (active) setLoading(false)
+      }
+    })
+
+    return () => {
+      active = false
+    }
   }, [sessionId, pmPersona])
 
   return { report, loading, error }

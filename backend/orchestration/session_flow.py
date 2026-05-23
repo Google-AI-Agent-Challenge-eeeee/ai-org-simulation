@@ -148,10 +148,13 @@ def get_team_candidates(session_id: str) -> dict[str, Any]:
     if record.team_candidates is None:
         db_result = _load_db_team_candidates(record)
         if db_result is None:
-            record.team_candidates = _load_sample_team_candidates()
+            record.team_candidates = _teams_with_pm_persona(
+                record,
+                _load_sample_team_candidates(),
+            )
             record.team_candidates_total = 1247
         else:
-            record.team_candidates = db_result.teams
+            record.team_candidates = _teams_with_pm_persona(record, db_result.teams)
             record.team_candidates_total = db_result.total_combinations
     return {"totalCombinations": record.team_candidates_total or 0, "teams": record.team_candidates}
 
@@ -235,6 +238,11 @@ def sse(event: str, data: dict[str, Any]) -> str:
 def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
     _load_env_file()
     record = _get_or_create_session(session_id)
+    if isinstance(record.metadata.get("roleplay_outputs"), dict):
+        yield sse("backend_log", {"text": "Using cached roleplay report outputs"})
+        yield sse("status", {"stage": "done", "text": "시뮬레이션 완료"})
+        yield sse("done", {})
+        return
 
     from backend.agents.shadow_roleplay_agent.shadow_roleplay_agent.modules import (
         AgentCardBuilder,
@@ -267,7 +275,7 @@ def iter_pipeline_sse(session_id: str, llm_mode: str) -> Iterator[str]:
     packet, evidence_index = builder.build(
         requirements=requirements_payload,
         team_record=team_record,
-        snapshots=_shadow_member_snapshots_payload(team_record),
+        snapshots=_shadow_member_snapshots_payload(team_record, record),
         risk_summary=risk_summary_payload,
         evidence_metadata=SHADOW_AGENT_SAMPLES / "sample_evidence_metadata.json",
         simulation_id=session_id,
@@ -392,7 +400,7 @@ def iter_agent_turn_sse(chunk: dict[str, Any], msg_counter: int) -> Iterator[str
             continue
         msg_id = f"msg_{msg_counter}_{turn_field}"
         msg_counter += 1
-        for i, token in enumerate(text.split(" ")):
+        for i, token in enumerate(_chunk_text_for_sse(text)):
             space = "" if i == 0 else " "
             yield sse(
                 "message",
@@ -404,6 +412,12 @@ def iter_agent_turn_sse(chunk: dict[str, Any], msg_counter: int) -> Iterator[str
                 },
             )
     return msg_counter
+
+
+def _chunk_text_for_sse(text: str, words_per_chunk: int = 12) -> Iterator[str]:
+    words = text.split(" ")
+    for start in range(0, len(words), words_per_chunk):
+        yield " ".join(words[start : start + words_per_chunk])
 
 
 def _roleplay_outputs_for_report(record: SessionRecord) -> dict[str, Any]:
@@ -515,6 +529,7 @@ def _team_member_from_sample(
 
 def _selected_team(record: SessionRecord) -> dict[str, Any] | None:
     teams = record.team_candidates or _load_sample_team_candidates()
+    teams = _teams_with_pm_persona(record, teams)
     record.team_candidates = teams
     selected_id = record.selected_team_id or (teams[0]["team_id"] if teams else None)
     return next((team for team in teams if team["team_id"] == selected_id), None)
@@ -553,10 +568,48 @@ def _team_personas(team: dict[str, Any] | None) -> list[dict[str, str]]:
     ]
 
 
+def _teams_with_pm_persona(
+    record: SessionRecord,
+    teams: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return [_team_with_pm_persona(record, team) for team in teams]
+
+
+def _team_with_pm_persona(record: SessionRecord, team: dict[str, Any]) -> dict[str, Any]:
+    members = [
+        member
+        for member in team.get("members", [])
+        if not _is_pm_role(member.get("assigned_role"))
+    ]
+    badges = list(team.get("badges", []))
+    if "PM persona" not in badges:
+        badges.append("PM persona")
+    return {
+        **team,
+        "badges": badges,
+        "members": [_pm_persona_member(record), *members],
+    }
+
+
+def _pm_persona_member(record: SessionRecord) -> dict[str, str]:
+    return _team_member("pm_persona", _pm_persona_name(record), "PM")
+
+
+def _pm_persona_name(record: SessionRecord) -> str:
+    name = (record.pm_persona or {}).get("name")
+    return name.strip() if isinstance(name, str) and name.strip() else "PM"
+
+
+def _is_pm_role(role: Any) -> bool:
+    if not isinstance(role, str):
+        return False
+    return role.strip().casefold() in {"pm", "project manager", "product manager"}
+
+
 def _shadow_requirements_payload(record: SessionRecord) -> dict[str, Any]:
     summary = record.requirements_summary or get_requirements_summary(record.session_id)
     sample = _load_json(SHADOW_AGENT_SAMPLES / "sample_requirements_list.json")
-    required_roles = summary.get("required_roles") or sample.get("required_roles", [])
+    required_roles = _shadow_required_roles(summary, sample)
     required_skills = summary.get("required_skills") or sample.get("required_skills", [])
     features = _shadow_feature_payloads(summary, required_skills, sample)
 
@@ -572,6 +625,15 @@ def _shadow_requirements_payload(record: SessionRecord) -> dict[str, Any]:
         "constraints": _shadow_constraints(record, sample),
         "risk_flags": summary.get("risk_flags") or sample.get("risk_flags", []),
     }
+
+
+def _shadow_required_roles(summary: dict[str, Any], sample: dict[str, Any]) -> list[str]:
+    roles = [
+        str(role)
+        for role in (summary.get("required_roles") or sample.get("required_roles", []))
+    ]
+    without_pm = [role for role in roles if not _is_pm_role(role)]
+    return ["PM", *without_pm]
 
 
 def _shadow_feature_payloads(
@@ -709,36 +771,62 @@ def _shadow_selected_team_record(record: SessionRecord) -> dict[str, Any]:
     }
 
 
-def _shadow_member_snapshots_payload(team_record: dict[str, Any]) -> list[dict[str, Any]]:
+def _shadow_member_snapshots_payload(
+    team_record: dict[str, Any],
+    record: SessionRecord | None = None,
+) -> list[dict[str, Any]]:
     risk_flags = team_record.get("team_risk_flags", [])
+    snapshots = []
+    for index, member in enumerate(team_record.get("members", [])):
+        assigned_role = str(member.get("assigned_role", "Team Member"))
+        is_pm = _is_pm_role(assigned_role)
+        snapshots.append(
+            {
+                "employee_id": str(member.get("employee_id", "")),
+                "employee_name": str(member.get("employee_name", "")),
+                "assigned_role": assigned_role,
+                "matched_skills": _shadow_matched_skills(assigned_role, record),
+                "missing_skills": _shadow_missing_skills(
+                    assigned_role,
+                    risk_flags,
+                    record,
+                ),
+                "capacity_signal": (
+                    "low_risk" if is_pm else _shadow_capacity_signal(index, risk_flags)
+                ),
+                "communication_signal": "low_delay" if is_pm else "medium_delay",
+                "delivery_signal": "stable" if is_pm else ("variable" if risk_flags else "stable"),
+                "collaboration_signal": _shadow_collaboration_signal(assigned_role),
+                "risk_tags": _shadow_risk_tags(assigned_role, risk_flags),
+                "evidence_refs": _shadow_evidence_refs(assigned_role),
+            }
+        )
+    return snapshots
+
+
+def _shadow_risk_tags(assigned_role: str, risk_flags: list[str]) -> list[str]:
+    if _is_pm_role(assigned_role):
+        return ["pm_persona_input"]
+    return risk_flags[:2]
+
+
+def _shadow_evidence_refs(assigned_role: str) -> list[str]:
+    if _is_pm_role(assigned_role):
+        return ["pm.persona_input"]
     return [
-        {
-            "employee_id": str(member.get("employee_id", "")),
-            "employee_name": str(member.get("employee_name", "")),
-            "assigned_role": str(member.get("assigned_role", "Team Member")),
-            "matched_skills": _shadow_matched_skills(str(member.get("assigned_role", ""))),
-            "missing_skills": _shadow_missing_skills(
-                str(member.get("assigned_role", "")), risk_flags
-            ),
-            "capacity_signal": _shadow_capacity_signal(index, risk_flags),
-            "communication_signal": "medium_delay",
-            "delivery_signal": "variable" if risk_flags else "stable",
-            "collaboration_signal": _shadow_collaboration_signal(
-                str(member.get("assigned_role", ""))
-            ),
-            "risk_tags": risk_flags[:2],
-            "evidence_refs": [
-                "employee.job_category_code",
-                "employee.performance_score",
-                "employee.engagement_score",
-            ],
-        }
-        for index, member in enumerate(team_record.get("members", []))
+        "employee.job_category_code",
+        "employee.performance_score",
+        "employee.engagement_score",
     ]
 
 
-def _shadow_matched_skills(assigned_role: str) -> list[str]:
+def _shadow_matched_skills(
+    assigned_role: str,
+    record: SessionRecord | None = None,
+) -> list[str]:
     role_key = ROLE_MAP.get(assigned_role, assigned_role)
+    if _is_pm_role(assigned_role):
+        return _shadow_pm_matched_skills(record)
     return {
         "PM": ["planning", "stakeholder alignment"],
         "BE": ["api design", "backend implementation"],
@@ -749,12 +837,43 @@ def _shadow_matched_skills(assigned_role: str) -> list[str]:
     }.get(role_key, ["general execution"])
 
 
-def _shadow_missing_skills(assigned_role: str, risk_flags: list[str]) -> list[str]:
+def _shadow_pm_matched_skills(record: SessionRecord | None) -> list[str]:
+    skills = ["planning", "stakeholder alignment", "risk triage"]
+    persona = _string_from_pm_persona(record, "persona")
+    preset = _string_from_pm_persona(record, "preset")
+    if persona:
+        skills.append(f"PM persona input: {_truncate(persona, 220)}")
+    if preset:
+        skills.append(f"PM style preset: {preset}")
+    if record and record.pm_priority:
+        skills.append(f"PM operating priority: {_truncate(record.pm_priority, 160)}")
+    return skills
+
+
+def _shadow_missing_skills(
+    assigned_role: str,
+    risk_flags: list[str],
+    record: SessionRecord | None = None,
+) -> list[str]:
+    if _is_pm_role(assigned_role):
+        constraint = _string_from_pm_persona(record, "constraints")
+        return [f"PM user constraint: {_truncate(constraint, 220)}"] if constraint else []
     if "role_gap" in risk_flags:
         return [f"{assigned_role} exact job-category coverage"]
     if "workload_risk" in risk_flags:
         return ["workload buffer"]
     return []
+
+
+def _string_from_pm_persona(record: SessionRecord | None, key: str) -> str:
+    if record is None or not isinstance(record.pm_persona, dict):
+        return ""
+    value = record.pm_persona.get(key)
+    return value.strip() if isinstance(value, str) else ""
+
+
+def _truncate(value: str, limit: int) -> str:
+    return value if len(value) <= limit else value[: limit - 1].rstrip() + "..."
 
 
 def _shadow_capacity_signal(index: int, risk_flags: list[str]) -> str:

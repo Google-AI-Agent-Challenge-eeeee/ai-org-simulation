@@ -127,7 +127,12 @@ export async function selectTeam(
 
 export function getStreamUrl(sessionId: string): string {
   if (isMock) return `/api/mock-stream?session_id=${sessionId}`
-  return `${BACKEND_BASE_URL}/api/sessions/${sessionId}/stream`
+  const url = new URL(`${BACKEND_BASE_URL}/api/sessions/${sessionId}/stream`)
+  const llmMode = process.env.NEXT_PUBLIC_SIMULATION_LLM_MODE
+  if (llmMode === "stub" || llmMode === "vertex") {
+    url.searchParams.set("mode", llmMode)
+  }
+  return url.toString()
 }
 
 /* ─── Report ──────────────────────────── */
