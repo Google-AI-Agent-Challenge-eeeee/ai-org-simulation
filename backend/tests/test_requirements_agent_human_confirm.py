@@ -15,6 +15,10 @@ from backend.agents.requirements_agent.pipeline.requirements_pipeline import (
 ROOT = Path("backend/agents/requirements_agent")
 
 
+def _generated_outputs_exist() -> bool:
+    return any(path.name != ".gitkeep" for path in (ROOT / "outputs").iterdir())
+
+
 def _review_item(item_id, text, item_type="feature"):
     return {
         "item_id": item_id,
@@ -263,4 +267,4 @@ def test_pipeline_applies_project_specific_mapping_without_mutating_taxonomy() -
         "AR product preview": "file_upload_media"
     }
     assert taxonomy_after == taxonomy_before
-    assert not any((ROOT / "outputs").iterdir())
+    assert not _generated_outputs_exist()

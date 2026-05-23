@@ -5,6 +5,13 @@ from backend.agents.requirements_agent.pipeline.section_splitter import (
 )
 
 
+OUTPUT_DIR = Path("backend/agents/requirements_agent/outputs")
+
+
+def _generated_outputs_exist() -> bool:
+    return any(path.name != ".gitkeep" for path in OUTPUT_DIR.iterdir())
+
+
 def test_prepare_document_sections_preserves_raw_text_and_refs() -> None:
     raw_text = (
         "# Notification Center MVP\r\n"
@@ -50,4 +57,4 @@ def test_long_sections_are_split_with_overlap_without_output_files() -> None:
     assert chunks[1]["overlap_with_previous"] is True
     assert chunks[0]["section_text"].split("\n\n")[-1] in chunks[1]["section_text"]
     assert all(check["budget_status"] != "over_limit" for check in prepared["section_token_checks"])
-    assert not any(Path("backend/agents/requirements_agent/outputs").iterdir())
+    assert not _generated_outputs_exist()
