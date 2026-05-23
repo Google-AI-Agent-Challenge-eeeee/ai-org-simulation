@@ -2,7 +2,7 @@ import json
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from backend.core.constants.enums import Environment, LLMMode
@@ -38,8 +38,19 @@ class Settings(BaseSettings):
     firestore_emulator_host: str | None = None
 
     llm_mode: LLMMode = LLMMode.STUB
+    requirements_llm_mode: LLMMode | None = None
+    simulation_llm_mode: LLMMode | None = None
+    requirements_strict_llm: bool = False
+    roleplay_strict_llm: bool = False
 
     cors_allow_origins_raw: str = Field(default='["*"]', alias="CORS_ALLOW_ORIGINS")
+
+    @field_validator("requirements_llm_mode", "simulation_llm_mode", mode="before")
+    @classmethod
+    def _empty_llm_mode_to_none(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @property
     def cors_allow_origins(self) -> list[str]:

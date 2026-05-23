@@ -64,7 +64,7 @@ async def get_report(session_id: str) -> dict:
 @router.get("/{session_id}/stream")
 async def simulation_stream(session_id: str, mode: str | None = None) -> StreamingResponse:
     settings = get_settings()
-    llm_mode = mode if mode in ("stub", "vertex") else settings.llm_mode.value
+    llm_mode = _resolve_simulation_llm_mode(mode, settings)
 
     async def event_generator():
         loop = asyncio.get_event_loop()
@@ -96,3 +96,13 @@ async def simulation_stream(session_id: str, mode: str | None = None) -> Streami
             "Connection": "keep-alive",
         },
     )
+
+
+def _resolve_simulation_llm_mode(mode: str | None, settings) -> str:
+    if mode in ("stub", "vertex"):
+        return mode
+
+    configured = settings.simulation_llm_mode or settings.llm_mode
+    if configured.value == "vertex":
+        return "vertex"
+    return "stub"
