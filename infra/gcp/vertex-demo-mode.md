@@ -12,10 +12,22 @@ fallbacks enabled:
 gcloud run services update ai-org-backend \
   --region="asia-northeast3" \
   --project="ai-org-simulation-497121" \
-  --update-env-vars="LLM_MODE=stub,REQUIREMENTS_LLM_MODE=vertex,SIMULATION_LLM_MODE=vertex,REQUIREMENTS_STRICT_LLM=false,ROLEPLAY_STRICT_LLM=false,VERTEX_LOCATION=asia-northeast3,VERTEX_MODEL=gemini-2.5-flash"
+  --update-env-vars="LLM_MODE=stub,REQUIREMENTS_LLM_MODE=vertex,SIMULATION_LLM_MODE=vertex,REQUIREMENTS_STRICT_LLM=false,ROLEPLAY_STRICT_LLM=false,VERTEX_LOCATION=global,VERTEX_MODEL=gemini-2.5-flash-lite"
 ```
 
-## 2026-05-23 Deploy Smoke
+## 2026-05-23 Flash-Lite Deploy Smoke
+
+- Service: `ai-org-backend`
+- Revision: `ai-org-backend-00004-wfx`
+- URL: `https://ai-org-backend-206678464190.asia-northeast3.run.app`
+- Runtime modes: `REQUIREMENTS_LLM_MODE=vertex`, `SIMULATION_LLM_MODE=vertex`
+- Model: `gemini-2.5-flash-lite`
+- Location: `global`
+- Health: `GET /health` returned `status=ok`, `env=staging`, `llm_mode=stub`
+- Requirements smoke: `POST /api/sessions` + `GET /api/sessions/{id}/requirements` returned `200` in about 10.9s with CORS headers.
+- RolePlay stream smoke: `GET /api/sessions/{id}/stream?mode=vertex` emitted `Shadow RolePlay Agent LLM mode: vertex` and message events.
+
+## 2026-05-23 Flash Deploy Smoke
 
 - Service: `ai-org-backend`
 - Revision: `ai-org-backend-00002-d74`
@@ -44,6 +56,6 @@ SIMULATION_LLM_MODE=vertex
 REQUIREMENTS_STRICT_LLM=false
 ROLEPLAY_STRICT_LLM=false
 GCP_PROJECT_ID=ai-org-simulation-497121
-VERTEX_LOCATION=asia-northeast3
-VERTEX_MODEL=gemini-2.5-flash
+VERTEX_LOCATION=global
+VERTEX_MODEL=gemini-2.5-flash-lite
 ```
