@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createSession } from "@/lib/api"
+import { createSessionFromFile } from "@/lib/api"
 import { useSessionStore } from "@/store/sessionStore"
 import type { PmStylePreset } from "@/lib/constants"
 
@@ -10,7 +10,7 @@ export function useInputForm() {
   const router = useRouter()
   const { setSessionId, setPmPersona, reset } = useSessionStore()
 
-  const [prd, setPrd]             = useState("")
+  const [prdFile, setPrdFile]     = useState<File | null>(null)
 
   // PM Persona
   const [pmName, setPmName]             = useState("")
@@ -26,16 +26,16 @@ export function useInputForm() {
   const [error, setError]     = useState<string | null>(null)
 
   const isValid =
-    prd.trim().length >= 1 &&
+    prdFile !== null &&
     pmName.trim().length >= 1 &&
     pmPersona.trim().length >= 2
 
   function handleFileSelect(file: File) {
-    setPrd(file.name)
+    setPrdFile(file)
   }
 
   async function handleSubmit() {
-    if (!isValid) return
+    if (!isValid || !prdFile) return
     setError(null)
     setLoading(true)
     reset()
@@ -53,11 +53,10 @@ export function useInputForm() {
         : `${pmPriority}${pmPriorityExtra ? ` / ${pmPriorityExtra}` : ""}`
 
     try {
-      const id = await createSession({
-        prd: prd.trim(),
+      const id = await createSessionFromFile({
         pmPersona: persona,
         pmPriority: priorityText,
-      })
+      }, prdFile)
       setSessionId(id)
       setPmPersona(persona)
       router.push(`/session/${id}/requirements`)
@@ -69,7 +68,6 @@ export function useInputForm() {
   }
 
   return {
-    prd, setPrd,
     pmName, setPmName,
     pmPreset, setPmPreset,
     pmPersona, setPmPersonaText,

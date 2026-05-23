@@ -1,3 +1,4 @@
+import base64
 from collections.abc import Iterator
 
 from fastapi.testclient import TestClient
@@ -14,6 +15,72 @@ def test_create_session_returns_generated_session_id() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["session_id"].startswith("sim_")
+
+
+def test_create_session_from_pdf_upload_uses_extracted_prd_text(monkeypatch) -> None:
+    from backend.services import prd_file_parser
+
+    def fake_extract_pdf_text(_file_bytes: bytes) -> tuple[str, int]:
+        return (
+            "# Inventory Control MVP\n\n"
+            "Goal: Build an inventory control dashboard in 4 weeks.\n\n"
+            "## Functional Requirements\n"
+            "- Dashboard analytics\n",
+            2,
+        )
+
+    monkeypatch.setattr(prd_file_parser, "extract_pdf_text", fake_extract_pdf_text)
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/sessions/from-file",
+        json={
+            "fileName": "inventory-prd.pdf",
+            "contentType": "application/pdf",
+            "fileBase64": base64.b64encode(b"%PDF demo").decode("ascii"),
+            "pmPersona": {
+                "name": "Test PM",
+                "preset": "speed",
+                "persona": "Fast decision maker",
+            },
+            "pmPriority": "speed",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["session_id"].startswith("sim_")
+    assert body["file_name"] == "inventory-prd.pdf"
+    assert body["page_count"] == 2
+
+    requirements = client.get(f"/api/sessions/{body['session_id']}/requirements")
+
+    assert requirements.status_code == 200
+    requirements_body = requirements.json()
+    assert requirements_body["project_name"] == "Inventory Control MVP"
+    assert "inventory control dashboard" in requirements_body["project_summary"]
+
+
+def test_create_session_from_pdf_upload_rejects_short_extraction(monkeypatch) -> None:
+    from backend.services import prd_file_parser
+
+    def fake_extract_pdf_text(_file_bytes: bytes) -> tuple[str, int]:
+        return "   ", 1
+
+    monkeypatch.setattr(prd_file_parser, "extract_pdf_text", fake_extract_pdf_text)
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/sessions/from-file",
+        json={
+            "fileName": "scanned-prd.pdf",
+            "contentType": "application/pdf",
+            "fileBase64": base64.b64encode(b"%PDF demo").decode("ascii"),
+        },
+    )
+
+    assert response.status_code == 400
+    assert "Could not extract enough text" in response.json()["detail"]
 
 
 def test_requirements_review_contract_matches_frontend_shape() -> None:

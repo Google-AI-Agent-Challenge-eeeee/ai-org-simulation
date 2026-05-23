@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 
 from backend.core.config import get_settings
 from backend.orchestration import session_flow
+from backend.services import prd_file_parser
 
 router = APIRouter(prefix="/api/sessions", tags=["simulation"])
 
@@ -15,6 +16,30 @@ router = APIRouter(prefix="/api/sessions", tags=["simulation"])
 @router.post("")
 async def create_session(body: dict | None = None) -> dict[str, str]:
     return session_flow.create_session(body)
+
+
+@router.post("/from-file")
+async def create_session_from_file(body: dict | None = None) -> dict[str, object]:
+    payload = body or {}
+    try:
+        parsed_file = prd_file_parser.parse_prd_file_upload(payload)
+    except prd_file_parser.PrdFileParseError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    session_payload = {
+        **payload,
+        "prd": parsed_file.text,
+    }
+    session = session_flow.create_session(session_payload)
+    return {
+        **session,
+        "file_name": parsed_file.file_name,
+        "page_count": parsed_file.page_count,
+        "extracted_chars": len(parsed_file.text),
+    }
 
 
 @router.get("/{session_id}/requirements")

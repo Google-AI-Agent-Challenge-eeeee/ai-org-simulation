@@ -17,6 +17,7 @@ import { MOCK_REQUIREMENTS } from "./mock/requirements"
 import { MOCK_TEAMS } from "./mock/teams"
 
 const isMock = process.env.NEXT_PUBLIC_MOCK === "true"
+const MAX_PRD_FILE_BYTES = 5 * 1024 * 1024
 
 /* ─── Session ─────────────────────────── */
 
@@ -29,6 +30,35 @@ export async function createSession(input: SimulationInput): Promise<string> {
     body: JSON.stringify(input),
   })
   if (!res.ok) throw new Error(`createSession failed: ${res.status}`)
+  const { session_id } = (await res.json()) as { session_id: string }
+  return session_id
+}
+
+export async function createSessionFromFile(
+  input: Omit<SimulationInput, "prd">,
+  file: File,
+): Promise<string> {
+  if (isMock) return startMockSession()
+  if (file.size > MAX_PRD_FILE_BYTES) {
+    throw new Error("PDF 파일은 5MB 이하만 업로드할 수 있습니다.")
+  }
+
+  const fileBase64 = await fileToBase64(file)
+  const res = await fetch(`${BACKEND_BASE_URL}/api/sessions/from-file`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fileName: file.name,
+      contentType: file.type || "application/pdf",
+      fileBase64,
+      pmPersona: input.pmPersona,
+      pmPriority: input.pmPriority,
+    }),
+  })
+  if (!res.ok) {
+    const detail = await errorDetail(res)
+    throw new Error(detail ?? `createSessionFromFile failed: ${res.status}`)
+  }
   const { session_id } = (await res.json()) as { session_id: string }
   return session_id
 }
@@ -157,6 +187,16 @@ export async function fetchReport(
 
 function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms))
+}
+
+async function fileToBase64(file: File): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  let binary = ""
+  const chunkSize = 0x8000
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize))
+  }
+  return btoa(binary)
 }
 
 async function errorDetail(res: Response): Promise<string | null> {
